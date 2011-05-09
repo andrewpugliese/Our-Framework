@@ -8,12 +8,14 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using B1.ILoggingManagement;
 
 namespace B1.LoggingManagement
 {
     #pragma warning disable 1591 // disable the xmlComments warning
+
     /// <summary>
     /// Class that represents a trace message.
     /// </summary>
@@ -39,7 +41,7 @@ namespace B1.LoggingManagement
 
     /// <summary>
     /// Target for tracing to memory mapped log file. 
-    /// </summary>
+    /// </summary>FF
     /// <remarks>
     /// There is only one trace log per machine. If the trace log is NOT being read, not tracing
     /// occurs. Reading of the trace log can be done with the 
@@ -48,6 +50,19 @@ namespace B1.LoggingManagement
     /// </remarks>
     public class TraceLog : ILoggingTarget
     {   
+        private static Lazy<ConcurrentQueue<TraceMessage>> _traceQueue = new Lazy<ConcurrentQueue<TraceMessage>>(
+                LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static Lazy<Task> _traceWriterThread = new Lazy<Task>(
+                new Func<Task>( () => 
+                    {
+                        Task thread = new Task(QueueThread, TaskCreationOptions.LongRunning);
+                        thread.Start();
+                        return thread;
+                    }), LazyThreadSafetyMode.ExecutionAndPublication);
+
+        private static bool _shutdown = false;
+
         /// <summary>
         /// 
         /// </summary>
@@ -69,11 +84,13 @@ namespace B1.LoggingManagement
         public void Write(string message, bool appendText, int eventId, long eventReference, 
                 System.Diagnostics.EventLogEntryType entryType, enumEventPriority enumPriority)
         {
-            if(!MemoryMappedLog.TraceWriter.BeingRead)
+            if (!MemoryMappedLog.TraceWriter.BeingRead)
                 return;
 
-            MemoryMappedLog.TraceWriter.Write(GetTraceBytes(
-                    new TraceMessage()
+            if (_traceWriterThread.Value.Status != TaskStatus.Running)
+                return;
+
+            _traceQueue.Value.Enqueue(new TraceMessage()
                     {
                         Time = DateTime.Now.ToString("HH:mm:ss.fffffff"),
                         Context = LoggingContext.Context,
@@ -82,7 +99,7 @@ namespace B1.LoggingManagement
                         ProcessName = Process.GetCurrentProcess().ProcessName,
                         ThreadId = Thread.CurrentThread.ManagedThreadId,
                         Message = message
-                    }));
+                    });
         }
 
         /// <summary>
@@ -139,6 +156,42 @@ namespace B1.LoggingManagement
             {
                 return (TraceMessage)serializer.ReadObject(ms);
             }
+        }
+
+        internal static void QueueThread()
+        {
+            while(!_shutdown)
+            {
+                if(!MemoryMappedLog.TraceWriter.BeingRead)
+                {
+                    Thread.Sleep(500);
+                    continue;
+                }
+                
+                TraceMessage msg;
+
+                while(_traceQueue.Value.TryDequeue(out msg))
+                {
+                    if(_shutdown)
+                        return;
+
+                    if(!MemoryMappedLog.TraceWriter.BeingRead)
+                        continue;
+                                         
+                    MemoryMappedLog.TraceWriter.Write(GetTraceBytes(msg));
+
+                }
+
+                Thread.Sleep(0);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        ~TraceLog()
+        {
+            _shutdown = true;
         }
 
     }
