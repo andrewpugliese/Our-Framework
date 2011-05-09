@@ -1,0 +1,421 @@
+Date last modified: 2011-02-04
+File name: GettingStarted.txt
+
+*************************************************************************
+
+Getting Started Base One Framework
+
+1. Infrastructure
+	a. Install Microsoft Enterprise Library Version 5.0 (for Database and Logging Application Blocks)
+		i. Note: If not completely installed, the following dll's need to be available in the bin directory
+			of the application:
+			1. Microsoft.Practices.EnterpriseLibrary.Common.dll
+			2. Microsoft.Practices.EnterpriseLibrary.Data.dll
+			3. Microsoft.Practices.Unity.dll
+			4. Microsoft.Practices.Unity.Interception.dll
+			5. Microsoft.Practices.ServiceLocation.dll
+			6. Microsoft.Practices.EnterpriseLibrary.Logging.dll
+			
+	b. Install Visual Studio 2008 B1Framework Version 1.0 or
+
+	c. Install Visual Studio 2010 B1Framework Version 1.1 or later
+
+	d. Install SqlServer 2008 (Only if using SqlServer)
+		i. Make sure sqlcmd is available in path and can communicate to server.
+			1. From dos command prompt: sqlcmd -S yourSqlServerName
+				i. If you sqlcmd is not found; you must ensure that it exists on your machine
+					and that directory is in your PATH.
+
+				ii. If sqlcmd can be found, but you receive an error:
+					Error: Microsoft SQL Server Native Client 10.0 : A network-related or 
+						instance-specific error has occurred while establishing a connection to SQL Server.
+						Server is not found or not accessible. Check if instance name is correct and if
+						SQL Server is configured to allow remote connections. For more information see
+						SQL Server Books Online.
+
+					Then you must do the following:
+						a. Verify your serverName is correct.
+						b. Ensure that TCP/IP is enabled for SqlServer using Configuration Manager of SqlServer Tools
+
+			2. If you receive a numeric prompt from Sqlcmd, then you have succeeded; just type EXIT.
+			
+		ii. Read the APPENDIX at the bottom of the document and follow the steps
+
+	e. (If using Oracle Database), Install Oracle 11g Release 2(recommended)
+		i. Make sure sqlplus is available in path and can communicate to server.
+ 			1. From dos command prompt: sqlplus myusername/mypassword@Host/servicename
+				Host specifies hostname or ipAddress of database server
+				Servicename specifies the service name of the database instance.
+
+				i. If you sqlplus is not found; you must ensure that it exists on your machine
+					and that directory is in your PATH.
+
+				ii. If sqlplus can be found, but you recieve an error:
+					ORA-12154: TNS:could not resolve the connect identifier specified
+					Then you must verify that there is a tnsnames.ora file in your path (and only 1).
+
+					Make sure the service name is setup properly in your tnsnames.ora file.
+					
+			2. If you received the sql prompt, then you have succeeded; just type EXIT or CTRL - C.
+
+		ii. Read the APPENDIX at the bottom of the document and follow the steps
+			
+	f. (If using DB2 Database), Install DB2Express 9.7.2.2.
+		i. Make sure db2cmd is available in path and can launched from a dos window. (When this works it will launch another dos window
+			but it will have all DB2 environment setup.
+
+				1. If you db2cmd is not found; you must ensure that it exists on your machine
+					and that directory is in your PATH.
+					
+				2. If you received the dos prompt, then you have succeeded; just type EXIT or CTRL - C.
+			
+2. Open VS Studio Solution file B1Framework\SourceCode\B1Framework.sln
+
+3. Rebuild All
+
+4. Set B1.Utility.DbSetup as the startup project
+
+5. Modify the app.config file.
+    a. Copy B1Framework\SourceCode\Utility\B1.Utility.DatabaseSetup\SampleApp.config to app.config in the same directory
+      
+
+    b. To Setup a Database modify the settings of the DbSetupConfiguration section (comments found in SampleApp.config)
+
+NOTE:        
+        // Depending on whether you want to recreate a database or just drop
+        // the objects, you can choose a file with the specific logic
+        // 
+        // To recreate the database, you can use the following file.
+        // Since this file, has hard coded file paths, you may need a different
+        // file for each developer (for local db's).  To do this, have the developer
+        // substitute the value with a filename that will be local to their
+        // environment.  
+        // MAKE SURE ALL THE PATH REFERENCES ARE CORRECT FOR THE TARGET MACHINE
+        // ALSO SINCE THE DB MAY NOT EXIST YET, YOU MUST NOT CONNECT TO THE DB
+        // THEREFORE USE THE ServerOnly command prefix
+        // SEE STEP 7 FOR MORE INFO
+        <add key ="ResetDb" value ="ServerOnly scripts\setup\B1.SampleDb.developerName.sql"/>
+        
+        // to keep an existing db, but drop all user objects, use the following
+NOTE:   // TO USE THIS COMMAND, THE DATABASE MUST EXIST ALREADY     
+        <add key ="ResetDb" value ="scripts\setup\B1.SampleDb.DropObjects.sql"/>
+        
+	For Oracle and SQLServer
+        // To drop/create DB or tablespace
+        <add key ="ResetDb" value ="B1.SampleDb.developerName.sql"/>
+        // to keep an existing db, but drop all user objects, use the following
+        <add key ="ResetDb" value ="B1.SampleDb.DropObjects.sql"/>
+        For DB2:
+        // to drop/create db
+        <add key ="ResetDb" value ="B1.SampleDb.DropCreateDb.sql"/>
+        // to keep an existing db, but drop all schema objects, use the following
+        <add key ="ResetDb" value ="B1.SampleDb.DropCreateSchema.sql"/>
+		
+		Run steps 6 - 8
+
+	c. To connect to an existing (B1Sample) db, adjust the dataConfiguration and connection strings section:
+
+	d. For logging, refer to the SampleApp.Config loggingConfigurations section
+	
+    <!-- Keys needed for running an application or utility -->
+	<!-- for connecting to a database -->
+    <add key="ConnectionKey" value="SQLSERVER2008LOCAL"/> 	// points to one of entries in the connectionStrings
+	
+	<!-- for logging functionality -->
+    <add key="LoggingKey" value="BasicLogging"/> 	// points to one of entries in the logging configuration
+	
+	<!-- for testing application session; MUST be Unique for each app instance and correspond to a record in B1.AppMaster -->
+    <add key="ApplicationId" value="DbSetup1"/>
+	
+	e. If you want to use Entities with the DbAccessMgr (examples can be found in TestDataAccessMgr.testEntities()), 
+	   you will need to copy the connectionstring "SampleDbEntities" from SampleApp.config. Although this 
+	   string will be in your app.config, the EF driver will never actually be loaded. This is just needed to get
+	   entity information and metadata.
+
+6. Create Windows EventLog source. Here's a sample DOS command line to run as Administrator:
+
+    eventcreate /so DbSetupMgr /L Application /D SourceCreate /T Information /ID 1
+		
+7. Setting up a new database:
+
+	a. SQLServer: Currently, it will rebuild (or create) a database call B1Sample
+
+        Verify the B1.SampleDb.cmd file in the B1Framework\SourceCode\Database\SQLServer\Scripts\Setup directory
+        The databases that we created are expected to have two filegroups (SqlServer) or tablespaces (Oracle)
+            B1Core		- holds tables, views, etc
+            B1CoreIdx	- holds indexes
+        While these are samples, they provide an understanding that the objects should be architected in a way
+        that allows for maintenance, growth, and performance.
+        You are not forced to use these and only these settings; but they are a sample and the objects that will
+        be created to expect however.  So unless those files are modified then please use these for the demo.
+
+        Please look at file B1.SampleDb.sql file.
+
+            , filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\B1Sample.mdf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\B1Sample_B1Core.ndf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\B1Sample_B1CoreIdx.ndf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\B1Sample_log.ldf' 
+        
+        It will create a new schema call B1 and create the objects under this schema
+
+NOTE: IF DATABASE ALREADY EXISTS, YOU MAY NEED TO CLOSE ALL EXISTING CONNECTIONS IF THE SCRIPT FAILS TO
+        	
+	b. Oracle: it will drop/recreate a tablespace but NOT a database.
+	
+        Verify the B1.SampleDb.cmd file in the B1Framework\SourceCode\Database\Oracle\Scripts\Setup directory
+        
+        NOTE: You may have to change the path of these files for the tablespaces and filegroups.  
+            Please look at file B1.SampleDb.sql file.
+
+            create tablespace B1Core datafile 'C:\oraclexe\oradata\XE\B1Core.DBF'
+						SIZE 20M AUTOEXTEND ON
+					/
+					create tablespace B1CoreIdx
+						datafile 'C:\oraclexe\oradata\XE\B1CoreIdx.DBF'
+
+        NOTE: For Oracle .sql files MUST ALL be ended with a / character otherwise sqlplus will hang
+                waiting for input.
+
+NOTE: IF DATABASE ALREADY EXISTS, YOU WILL NEED TO CLOSE ALL EXISTING CONNECTIONS
+
+	c. DB2: it will drop/recreate a database or drop/recreate a schema (depends on which .sql file you reference)
+		in your app.config file (ResetDb) key.
+		
+		To drop/create a database: B1.SampleDb.DropCreateDb.developersname.sql
+		To drop/create a schema: B1.SampleDb.DropCreateSchema.sql
+
+8. From the DbSetup tab of the application, click start.  It will begin to rebuild the db and put
+	the results into the file in the config file.  From the ui, you can click to view the results.
+	
+	The objects include the data dictionary tables which will contain the database catalog data and the 
+	stored procedures used to maintain them.
+	
+	In addition, there is a UniqueIds table and supporting stored procedure
+	
+	Configuration tables for application configuration.
+	
+	TestSequence table for demo purposes
+	
+	Just check for errors.
+	If you click on the button next to the results file, it will open up the file in the editor
+	listed in the config file.
+	
+	NOTE: You are looking to verify that there are NO errors listed.
+	
+	Besides creating database (sqlserver), filegroup or tablespace, it will create user, tables and procdures as
+	found in the \DatabaseType\Scripts\Setup\DatabaseName.cmd file.
+	The table ddl is found in \DatabaseType\Tables directory
+	The procedure ddl is found in the \DatabaseType\Procedures directory
+	
+9. When you have a successful build, you can switch to the next tab (TestDataAccessMgr).
+	a. Click the rowcount button to verify the table is empty and DataAccessMgr is working.
+		Note: First time may seem slow if running locally with a database server as the server
+			may need to startup.  (more pronounced with local oracle)
+			
+	b. To test Inserts: Click StartInsert;  Verify with Rowcount button and paging buttons.
+		This will begin to insert records into the B1.TestSequence table.
+		
+	c. To test Updates: Click the StartUpdate; this will update the records (starting from first)
+		and update datetimes, remarks and add a clob.
+
+	d. To test Deletes: Click the StartDelete; this will delete the records (starting from first).
+
+	e. To test Merge: Click the StartMerge; this will Merge/Update the records (starting from first)
+		and update datetimes, remarks and add a clob.  Then it will perform Merge/Insert of 5 new records (check rowcount)
+		
+	f. You can change TraceLevel and see tracing (while inserting or updating)
+	
+	g. You can perform transaction tests (success adds 4 rows, failures add 2 rows; check rowcount before/after)
+	
+	h. Paging can be tested with First, Last, Prev, Next buttons.  The radio buttons demonstrate differnet indexes
+	and paging with join queries as well as a stateless version to be used in a web environement.
+	
+10. At this point we have completed the tests and verified the components are working.  You can
+	stop the inserting, updating, etc. (or continue for your own performance tests)
+
+*************************************************************************************************************************
+APPENDIX FOR SETTING UP A DEVELOPER'S WORKSTATION
+
+Prior to Release 1.9.1.0:
+
+-- Since the DataAccess assebmly has references to Oracle and DB2 libraries, your workstation must be able to find
+	this reference so that the Build process can copy these DLLs locally to the application's bin directory.
+	
+EVEN IF YOU ARE USING A SINGLE DATABASE SERVER, YOU MUST DO THIS ONE TIME STEP
+
+NOTE: 	If the Oracle or DB2 dll does not show up in the VS Studio Add References dialog box, you can copy the file to the following directory:
+(Just adjust path for OS version (x32 vs x64 bit) and .NetFramework version (4.0 vs 2.0))
+x64 Bit
+C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0
+x32 Bit
+C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0
+
+If you will be executing from externally hosted Applications or Services (e.g. ISS or Studio Debugger for web site)
+where you do not control what version of that .exe is, then you may need to have both versions of the DLL (if you are
+on a x64 bit OS).
+To do this just register both versions of the dll in the GAC for example:
+
+IBM 64 bit
+    C:\Windows\system32>gacutil /i c:\b1\b1framework\thirdparty\Db2\Ibm.Data\V9_7_2_2_x64\IBM.Data.DB2.dll
+    or 
+IBM 32 bit
+    C:\Windows\system32>gacutil /i c:\b1\b1framework\thirdparty\Db2\Ibm.Data\V9_7_2_2_x32\IBM.Data.DB2.dll
+
+Oracle 64 bit
+    C:\Windows\system32>gacutil /i c:\b1\b1framework\thirdparty\oracle\odp.net\11gv2_x64\Oracle.DataAccess.dll
+    or
+Oracle 32 bit
+    C:\Windows\system32>gacutil /i c:\b1\b1framework\thirdparty\oracle\odp.net\11gv2_x32\Oracle.DataAccess.dll
+
+ONLY IF YOU ARE GOING TO CONNECT TO A DB2 OR AN ORACLE DATABASE
+
+MACHINE.CONFIG
+ If you are getting this error: Activation error occured while trying to get instance of type Database, "DBName"
+	because of an upgrade to .Net Framework 4.0,
+	you need to add a section to your machine.config in the C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\Config directory.
+	
+	- Open up your the machine.config in the C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727\CONFIG directory. 
+	- Locate the <DbProviderFactories> and copy the entire <add/> tag that starts like this:
+	  <add name="Oracle Data Provider for .NET" invariant="Oracle.DataAccess.Client" ..... />
+	- Open up your the machine.config in the C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\Config directory.
+	- Locate the <DbProviderFactories> and copy what you had pasted after the last <add/> section already there.
+
+From Release 1.9.1.0 and later
+-- The DataAccess assembly no longer has a hard reference to the database provider dll's.  So it is no longer necessary
+	to make sure all the provider dll's are registered; ONLY the one that you will be using.
+	NOTE: The Database Provider is referenced in each of the Helper Assemblies implementing the IDataAccessProvider Interface
+	-- for conveniance these assemblies are included in the sample solution file.  If you use this solution with all the assemblies
+		you will need to follow the steps above for each of the helper assemblies.  Otherwise, you only need to keep the single
+		data provider assembly you will be using.
+		
+
+
+*************************************************************************************************************************
+APPENDIX FOR TROUBLESHOOTING SETTING UP A NEW DATABASE
+	
+1. For Oracle, you MUST create the database seperately using Oracle's Administration tools.  In addition, you must setup
+	a local named service for that new database using Oracle's Net Configuration tools.
+	
+2. You can do the same for SqlServer and DB2, but there is a sample script provided for creating databases directly with 
+	the utility.
+	
+3. The DbSetup utility uses the back-end specific command line tools for executing ddl statements:
+	SqlServer: uses sqlcmd (inside cmd.exe)
+	Oracle: uses sqlplus (inside cmd.exe)
+	Db2: uses db2 (under db2cmd environment; which runs inside cmd.exe)
+	
+4. The utility uses configuration files for input and output to/from the command line tool.
+
+	The configuration keys specify the input and output files:
+		
+		<add key="InputFilename" value="scripts\setup\DT.SampleDb.cmd"/>	
+		<add key="OutputFilename" value="DT.SampleDb.BuildResults.txt"/>
+
+		Just make sure the path and input filename exists.
+		The output filename will be created and appended with the results of the operations.
+
+	To view the contents of these files, one can click on the button next to the text box on the utility dialog.
+	You can change the text editor to one of your choice using the following key:
+	
+		// use any text editor; notepad is also good if you do not have notepadd++
+		<add key="TextEditor" value="notepad++"/>	
+
+	The actual commands that will be sent to the database command line tool are also stored in files.
+	They NEED to follow the back-end specifications for proper syntax.  
+	(While they can be named anything; it is recommended that they end with the .SQL suffix.)
+	
+	The utility will open the InputFile and proceed to search for filenames to feed into the command line tool.
+	To distinguish the command file from the back-end specific ddl files, the command file will have a .cmd suffix.
+	
+	For simplicity all the ddl and cmd files will share a common directory as the root.  This configured with the
+	following key:
+	
+		<add key="DDLSourceDirectory" value="C:\B1\GitHub\B1Framework\SourceCode\Database\Oracle"/> 
+		
+	For organization, there are subdirectories under this directory for Tables, procedures, Scripts, etc.
+	This hierarchy is NOT required, but whatever you chose, you just need to be consistent with your paths.
+	
+5. The command files (.cmd) used by the utility have some flexible features: 
+
+
+		Command file for Building the Base One Sample Database
+
+		Files NEED to be listed in dependancy order.
+
+		Objects which are dependant on other objects need to be
+		listed after the object they are dependant on.
+
+		Files NEED to be listed in relative path from where
+		the setup application has defined in the config key: DDLSourceDirectory
+
+		The following are command keywords:
+
+		BreakWithMsg "Your Message Here"
+			The setup utility with display your message and wait for a response
+			to either quit or continue
+
+
+		RunCmdFile Scripts\anotherFile.cmd
+			The setup utility will open up and process the contents of the 
+			listed command file before continuing with the current command file.
+
+
+		ServerOnly 	SqlDDLFile.sql
+			The setup utility will NOT connect to a database but only login
+			to the server to process the file. This is used for commands
+			that do not require connecting to a particular database such as
+			when creating a new database.
+			
+		Field substitutions enclosed with {}
+		By enclosing a string in the curly braces, the setup utility will replace
+		the string with the value found in the app.config file.
+		This allows for each developer to specify different files for their environment
+		while keeping the main cmd file the same (and only having 1 copy to maintain).
+
+		This is helpful when building databases that contain file locations that are
+		specific to each environment.
+ 
+ 6. Since each command line tool has a different syntax for specifying inputs and outputs, the utility generates
+	a dos batch file (DDL.BAT).  This batch file is executed inside a windows command shell via windows process class:
+
+	psi.FileName = "cmd.exe";
+	psi.Arguments = "/C ddl.bat";
+
+	For DB2 it is slightly different:
+	
+	psi.FileName = "db2cmd.exe";
+	psi.Arguments = "-c -w -i ddl.bat";
+	
+	The batch file is responsible for 2 things:
+		a. Calling the command line tool and with arguments for the input file and an output file.
+		b. Appending the output file to the main results file specificed in the configuration settings.
+		
+		SqlServer Example:
+		
+			if exist cmdOutput.txt del cmdOutput.txt
+			sqlcmd -S ServerName -Uusername -Ppassword -d databasename  -i "fullyqualifiedinputfilenameandpath" -o cmdOutput.txt
+			type cmdOutput.txt >> fullyqualifiedoutputfilenameandpath		
+			
+7. Sometimes if the utility hangs while executing a script, this is usually because the command line tool has stopped and it will
+	be necessary to debug this.
+	
+	For  example, with Oracle, sqlplus will put up a prompt window waiting for user input (even though we started this from the command line).
+	The utility and the user will have no way of knowing this.  As a result, it is recommended to execute the DDL.BAT directly from exporer or 
+	dos window.  If there is a prompt or error message, you will see this and can take appropriate action.  Once you have corrected the problem
+	you can try again from the utility.
+	
+	NOTE: Often when using sqlplus in Oracle, you will need to kill any hanging processes using TaskManager when you see that the utility is
+	hung waithing for the command line tool.
+	
+	Another special case for Oracle is the syntax for output, to do this we must use a spool command.  This is done
+	by wrapping these commands inside of another .sql file that is given to sqlplus as input:
+	
+	sqlplus myusername/mypassword@Host/servicename @SQLWrapper.sql
+	
+	Here is an example of the SQLWrapper.sql file:
+	
+	spool cmdOutput.txt
+	whenever sqlerror exit sql.sqlcode
+	start fullyqualifiedinputfilename
+	exit
+			

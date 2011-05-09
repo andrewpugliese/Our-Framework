@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="LoggingConfigurations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="LoggingConfig">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="LoggingTargets">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="LoggingTarget">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="Params">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element maxOccurs="unbounded" name="Param">
+                                                                    <xs:complexType>
+                                                                        <xs:attribute name="ParamKey" type="xs:string" use="required" />
+                                                                        <xs:attribute name="ParamValue" type="xs:string" use="required" />
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                            </xs:sequence>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                                <xs:attribute name="TargetType" type="xs:string" use="required" />
+                                                <xs:attribute name="LogName" type="xs:string" use="required" />
+                                                <xs:attribute name="Priorities" type="xs:string" use="required" />
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="LoggingKey" type="xs:string" use="required" />
+                        <xs:attribute name="BackupLogFileName" type="xs:string" use="required" />
+                        <xs:attribute name="BackupLogFileDirectory" type="xs:string" use="required" />
+                        <xs:attribute name="TraceLevel" type="xs:string" use="required" />
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,16 @@
+What's new 1.10
+ 
+
+Common Core
+- ObjectFactory create function changed
+- Two new ForEach extension methods
+- GetValueOrDefault made public	
+
+Logging:
+- Memory File Logging first pass complete
+- Methods for multi threaded testing of memory file logging
+- Gui for testing memory file logging added to DBSetup app.
+
+Documentation:
+- DataAccess
+- Logging

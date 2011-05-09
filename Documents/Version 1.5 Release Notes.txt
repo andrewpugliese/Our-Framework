@@ -1,0 +1,57 @@
+What's new 1.5
+
+DataAccess improvements:
+TableDMLManager
+ - Added select with case statements support
+ - Added ability to reference columns by alias
+ - Added select distinct
+ - Added support for function/constants in select
+ 
+Unit Tests for DataAccess Manager
+ - Added Delete testing functionality which uses paging to delete all the rows in TestSequence table in multi-threaded
+	approach, that can be performed while inserting/updating and paging.
+- Added ServerVersion, DbProviderVersion, ServerDateTime text boxes to display after successful connection.
+  
+ Core
+ - Added Copyright and Company along with Major/Minor version to assembly
+ - Made Core assembly the shared assembly for these attributes across all components to have uniform build versions
+ - XmlHelper.cs added functions from last merge.
+ - ObjectFactory added functions to search the loaded assemblies and the executable folder to find the DAL assembly
+     and create the instance dynamically.
+ - Added a Unit Test project for Core assembly - added Unit Tests for ObjectFactory methods.
+ 
+Logging
+ - New interfaces/methods for supporting Enterprise Library LogEntry class
+ 
+-------------------------------------------
+What's in process for the upcoming releases
+
+CatalogManager
+ - Begin development of Dynamic SQL for querying DbCatalog which will replace need for stored procedures.
+	This code using the DMLManager and demonstrates its capabilities.
+
+DB2 Support:
+- Adding debug scripting to DB2Command objects so that they can be executed in ControlCenter
+- Analysis of iSeries support requirements
+- CompoundSQL with embedded transactions analysis/support with IBM assistance.
+
+DataAccess
+- MergeDbCommand (Upsert) capability across all 3 back-ends
+
+PagingMgr 
+- Adding overloaded constructor to accept DMLManager object to provide paging on custom queries (that follow the indexing requirement)
+
+-----------------------------------
+What's in the queue to be addressed	
+
+DB2
+- iSeries Support Implementation
+- Implement recommendations/suggestions from IBM regading CompoundSQL with embedded transactions
+
+DataAccess
+- Implement Dynamic Loading of third-party libraries (ODP.NET, IBM.DATA, System.Data.SQLClient) depending
+	on connection string and DataAccessManager instantiation.
+- Configurable setting on whether to use application catalog tables or direct to database catalog tables/views.
+
+PagingMgr 
+- Enhancement for returning custom classes instead of datatable (compatibility with EntityFramework across all back-ends)

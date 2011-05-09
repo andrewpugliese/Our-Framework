@@ -1,0 +1,61 @@
+What's new 1.6
+
+DataAccess improvements:
+DB2 UDB Support
+- Bug fixes for handling parameter cloning for Command Blocks
+- Implemented Nested Transactions in CompoundSQL
+- Implemented DB2Command Debug Scripting
+- Development of Dynamic SQL for querying DbCatalog which will replace need for stored procedures.
+
+DbCatalogManager
+ - Begin development of Dynamic SQL for querying DbCatalog which will replace need for stored procedures.
+	This code using the DMLManager and demonstrates its capabilities.
+ 
+Unit Tests for DataAccess Manager
+ - Added DateTime column formatting to display microseconds to compare different times
+ - Fixed bug with StopDelete test
+ 
+PagingMgr 
+- Adding overloaded constructor to accept DMLManager object to provide paging on custom queries (that follow the indexing requirement) 
+ 
+DatabaseSetup utility
+- Added 3 radio buttons for paging on TestSequence: 
+  -- Paging on primary key 
+  -- Paging on compound index (AppSequenceName, AppSequenceId)
+  -- Pagind on TestSequence joined to itself and paged on compound index (AppSequenceName, AppSequenceId) 
+
+DMLManager
+- Can use variables when building where or join predicates
+- Support for joing tables to themselves
+ 
+-------------------------------------------
+What's in process for the upcoming releases
+
+DB2 Support:
+- Analysis of iSeries support requirements
+
+DataAccess
+- MergeDbCommand (Upsert) capability across all 3 back-ends
+
+PagingMgr
+- Adding sessionless web support
+
+-----------------------------------
+What's in the queue to be addressed	
+
+DB2
+- iSeries Support Implementation
+
+DataAccess
+- Implement Dynamic Loading of third-party libraries (ODP.NET, IBM.DATA, System.Data.SQLClient) depending
+	on connection string and DataAccessManager instantiation.
+- Configurable setting on whether to use application catalog tables or direct to database catalog tables/views.
+- DbCommand: Extend with DebugScript property
+
+PagingMgr 
+- Enhancement for returning custom classes instead of datatable (compatibility with EntityFramework across all back-ends)
+
+Documentation
+ - DataAccess
+ - Paging
+ - Logging

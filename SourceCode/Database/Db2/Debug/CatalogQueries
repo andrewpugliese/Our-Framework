@@ -1,0 +1,16 @@
+select * from sysibm.tables where tabschema = 'B1'
+select * from syscat.tables where tabschema = 'B1'
+
+select * from syscat.columns  where tabschema = 'B1'
+
+select * from syscat.indexes where owner = 'B1'
+
+select * from sysibm.sqltables where table_schem = 'B1'
+select * from sysibm.sqlschemas 
+select * from sysibm.sqlprimarykeys where pktable_schem = 'B1'
+select * from sysibm.sqlforeignkeys where fktable_schem = 'B1';
+select * from sysibm.sqlcolumns where table_schem = 'B1';
+
+
+
+select * from sysibm.sqlprimarykeys where pktable_schem = 'B1'

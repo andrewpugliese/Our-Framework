@@ -1,0 +1,28 @@
+What's new 1.9
+ 
+DataAccessManager:
+ - Dynamic loading of Database Provider Dll's from a configured directory path
+	- requires new configuration key in App.Config (DbProviderDllPath); shown in sampleApp.config.
+	- This key should contain the path as it exists on each workstation that points to the Binary directory.
+	  This is where the three helper assemblies (and their dependent files), SqlHelper, OracleHelper, Db2Helper
+	  will be copied in the post build.
+	- This path is given to the new constructor of the DataAccess component to dynamically load via the ObjectFactory.
+	
+ - Includes 4 new assemblies: (solution file update)
+	IDataAccessProvider: 	Contains the interface definition.
+	SqlServerDataProvider:	Contains the SqlServer implementation.
+	OracleDataProvider:		Contains the Oracle implementation.
+	Db2DataProvider:		Contains the Db2 implementation.
+ - The DataAccessManager no longer requires a reference to the database provider libraries.
+	Instead it will reference the interface assembly.
+ - Supports BuildChangeDbCommand which returns an UpdateDb command with a where clause that includes
+	the parameters specified by caller.
+ 
+Database Setup Utility:
+ - Modified to demonstrate and test new MergeDbCommand functionality: 
+	- StartMerge with use the merge command to update all the rows in the TestSequence table.
+		- Like update, it will be multithreaded and add a comment to the remarks column.
+		- In addition, it will use the merge command to insert 5 new rows.
+		NOTE: The Insert branch of the MergeDbCommand does not yet work for Oracle
+			Also the Update branch does not work when a column includes a CLOB that is greater than 4000 chars.
+   

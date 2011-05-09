@@ -1,0 +1,34 @@
+What's new 1.7
+
+ 
+-------------------------------------------
+What's in process for the upcoming releases
+
+DB2 Support:
+- Analysis of iSeries support requirements
+
+DataAccess
+- MergeDbCommand (Upsert) capability across all 3 back-ends
+
+PagingMgr
+- Adding sessionless web support
+
+-----------------------------------
+What's in the queue to be addressed	
+
+DB2
+- iSeries Support Implementation
+
+DataAccess
+- Implement Dynamic Loading of third-party libraries (ODP.NET, IBM.DATA, System.Data.SQLClient) depending
+	on connection string and DataAccessManager instantiation.
+- Configurable setting on whether to use application catalog tables or direct to database catalog tables/views.
+- DbCommand: Extend with DebugScript property
+
+PagingMgr 
+- Enhancement for returning custom classes instead of datatable (compatibility with EntityFramework across all back-ends)
+
+Documentation
+ - DataAccess
+ - Paging
+ - Logging

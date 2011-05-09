@@ -1,0 +1,32 @@
+2011-02-15
+
+B1FrameworkBuildProcess.txt
+
+*************************************************
+
+Steps to create build for B1Framework
+
+1. Build the help system and check it in
+
+2. Wait for communication from Andrew/Mark/Narayan for offical name of tag
+
+3. Create B1Frameworkx.y directory, where x is major version and y is minor version number
+
+4. Pull the files from GIT repository.  Launch Git Bash and perform the following two commands
+ - execute $ cd /c/b1/B1Frameworkx.y
+ - execute $ git clone git@github.com:sasherman/B1Framework.git
+
+5. Pull from the tag using Git GUI.
+ - Open git gui and open the repository in the c/b1/B1Frameworkx.y/B1Framework
+ - Goto menu Branch->Checkout. Select Tag radio button. Select Version_x.y and click checkout
+
+6. Zip up the c/b1/B1Frameworkx.y directory
+
+7. Copy appropriate sample.app.config file to app.config file
+
+8. Build and test the framework
+
+9. If the tests pass we are proceed to next step, if not start over from step one once bugs are fixed
+
+10. Copy zip file to B1 FTP server
+
