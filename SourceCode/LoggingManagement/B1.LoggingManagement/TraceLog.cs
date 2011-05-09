@@ -158,7 +158,7 @@ namespace B1.LoggingManagement
             }
         }
 
-        internal static void QueueThread()
+        private static void QueueThread()
         {
             while(!_shutdown)
             {
