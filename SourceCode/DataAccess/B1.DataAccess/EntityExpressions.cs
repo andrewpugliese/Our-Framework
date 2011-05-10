@@ -154,21 +154,21 @@ namespace B1.DataAccess
         }
 
 
-        public Dictionary<string, string> GetColumnDictionary(Type type, string alias)
+        internal static Dictionary<string, string> GetColumnDictionary(Type type, string alias)
         {
            return type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
                     .ToDictionary(p => p.Name, p => string.Format("{0}.{1}", alias, p.Name));
                     
         }
 
-        public string GetColumnList(Type type, string alias)
+        internal static string GetColumnList(Type type, string alias)
         {
             return type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
                     .Aggregate(new StringBuilder(), (sb, p) => sb.AppendFormat("{0}{1}.{2}", sb.Length == 0 ? "" : ", ",
                         alias, p.Name)).ToString();
         }
 
-        public string GetColumnList(IEnumerable<Tuple<Type, string>> columns, string alias)
+        internal static string GetColumnList(IEnumerable<Tuple<Type, string>> columns, string alias)
         {
             return columns.Aggregate(new StringBuilder(), (sb, c) => sb.AppendFormat("{0}{1}.{2}", 
                     sb.Length == 0 ? "" : ", ", alias, c.Item2)).ToString();
@@ -177,6 +177,36 @@ namespace B1.DataAccess
         private string GetNextTableAlias()
         {
             return string.Format("T{0}", TableCount);
+        }
+
+        internal static string AdjustParamNameLength(string paramName, List<DbPredicateParameter> parameters, DataAccessMgr daMgr)
+        {
+            if(paramName.Length <= Constants.ParamNameOracleMaxLength || 
+                    daMgr.DatabaseType == DataAccessMgr.EnumDbType.SqlServer)
+                return paramName;
+            else
+            {
+                int count = 1;
+                string newParamName;
+                string suffix;
+                do
+                {
+                    suffix = count.ToString();
+                    newParamName = paramName + suffix;
+                    if (newParamName.Length > Constants.ParamNameOracleMaxLength)
+                        newParamName = paramName.Substring(0, Constants.ParamNameOracleMaxLength - suffix.Length)
+                                + suffix;
+                }
+                while (parameters.Count( p => p.ParameterName.ToLower() == newParamName.ToLower()) > 0
+                        && ++count > 0);
+
+                return newParamName;
+            }
+        }
+
+        internal static string BuildParamName(string paramName,  List<DbPredicateParameter> parameters, DataAccessMgr daMgr)
+        {
+            return daMgr.BuildParamName(AdjustParamNameLength(paramName, parameters, daMgr));
         }
 
     }
@@ -277,7 +307,7 @@ namespace B1.DataAccess
                     alias = _tableMgr._schemaTables.First().Value.First().Key;
 
                 return string.Format("SELECT {0}",
-                        _tableMgr.GetColumnList(genericTypes.First(), alias));
+                        LinqTableMgr.GetColumnList(genericTypes.First(), alias));
 
                 throw new NotImplementedException();
             }
@@ -589,8 +619,8 @@ namespace B1.DataAccess
 
         internal string GetSelect(bool withAlias = true)
         {
-            return _select.Aggregate(new StringBuilder(), (sb, s) => sb.AppendFormat("{0}{1}", sb.Length > 0 ? ", " : "",
-                    s.Item2, withAlias ? string.Format(" AS {0}",s.Item1) : "")).ToString();
+            return _select.Aggregate(new StringBuilder(), (sb, s) => sb.AppendFormat("{0}{1}{2}", sb.Length > 0 ? ", " : "",
+                    s.Item2, withAlias && s.Item1 != null ? string.Format(" AS {0}",s.Item1) : "")).ToString();
         }
 
         internal List<Tuple<string, string>> GetSelectList()
@@ -613,9 +643,9 @@ namespace B1.DataAccess
                     Type type = ObjectContext.GetObjectType(TypeVisitor.GetNonGenericTypes(param.Type)[0]);
                     if(type != null)
                     {
-                        foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
+                        foreach(var kvp in LinqTableMgr.GetColumnDictionary(type, alias))
                         {
-                            _select.Add(new Tuple<string, string>(kvp.Key, kvp.Value));
+                            _select.Add(new Tuple<string, string>(null, kvp.Value));
                         }
                     }
 
@@ -643,7 +673,11 @@ namespace B1.DataAccess
                 if(node.Member.DeclaringType.IsGenericType &&
                         node.Member.DeclaringType.GetGenericTypeDefinition() == typeof(IGrouping<,>))
                 {
-                    _select.AddRange(_parser.GetOuterGroupBySelectList());
+                    foreach(var col in _parser.GetOuterGroupBySelectList())
+                    {
+                        _select.Add(new Tuple<string,string>(string.IsNullOrWhiteSpace(_currentAliasName) ? null :
+                                _currentAliasName, col.Item2));
+                    }
                 }
                 else
                 {
@@ -656,7 +690,8 @@ namespace B1.DataAccess
                     {
                         MemberInfo member = ((MemberExpression)node.Expression).Member;
 
-                        _select.Add(new Tuple<string, string>(node.Member.Name, string.Format("{0}.{1}",
+                        _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
+                                null : _currentAliasName, string.Format("{0}.{1}",
                                 _tableMgr._typeToAlias[member.DeclaringType][member.Name],
                                 node.Member.Name)));
                     }
@@ -679,7 +714,7 @@ namespace B1.DataAccess
                         }
 
                         _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
-                                node.Member.Name : _currentAliasName, string.Format("{0}.{1}", alias, node.Member.Name)));
+                                null : _currentAliasName, string.Format("{0}.{1}", alias, node.Member.Name)));
                     }
                 }
             }
@@ -715,9 +750,9 @@ namespace B1.DataAccess
                 else
                     alias = _tableMgr._aliasStack.Last();
 
-                foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
+                foreach(var kvp in LinqTableMgr.GetColumnDictionary(type, alias))
                 {
-                    _select.Add(new Tuple<string, string>(kvp.Key, kvp.Value));
+                    _select.Add(new Tuple<string, string>(null, kvp.Value));
                 }
             }
             else
@@ -747,7 +782,7 @@ namespace B1.DataAccess
                 _caseStatement.AppendFormat("{0}    ELSE {1}{0}END AS {2} {0}", Environment.NewLine, 
                         elseParser._sqlPredicate.ToString(), _currentAliasName);
                 _inCaseStatement = false;
-                _select.Add(new Tuple<string, string>(_currentAliasName, _caseStatement.ToString()));
+                _select.Add(new Tuple<string, string>(null, _caseStatement.ToString()));
                 _caseStatement.Length = 0;
             }
 
@@ -1237,7 +1272,7 @@ namespace B1.DataAccess
                 {
                     _currentParameter.MemberAccess = Expression.Lambda(node).Compile();
                     _currentParameter.Value = Expression.Lambda(node).Compile().DynamicInvoke();
-                    _currentParameter.ParameterName = _daMgr.BuildParamName(node.Member.Name);
+                    _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
                     _sqlPredicate.Append(_daMgr.BuildBindVariableName(_currentParameter.ParameterName));
                     _tableMgr._parameters.Add(_currentParameter);
                     _currentParameter = null;
@@ -1485,27 +1520,44 @@ namespace B1.DataAccess
     internal class ObjectParser
     {
         internal QualifiedEntity _qualifiedTable;
+        internal List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
 
+        private string _columns;
+        private string _values;
         private Type _entityType;
+        private DataAccessMgr _daMgr;
+        private object _objRef;
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {
+            _daMgr = daMgr;
+            _objRef = obj;
+
             EntityContainer cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
                         entityContext.DefaultContainerName, DataSpace.CSpace);
 
             StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
 
             _entityType = ObjectContext.GetObjectType(obj.GetType());
-            _qualifiedTable = StorageMetaData.GetQualifiedEntity(_entityType.Name);
-           
+
+            EntitySetBase entitySet = cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
+                        es => es.ElementType.Name == _entityType.Name);
+
+            _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+
+            Parse();
+
         }
 
         internal ObjectParser(object obj, DataAccessMgr daMgr, string schemaName = null)
         {
+            _daMgr = daMgr;
             Type type = obj.GetType();
         
             _qualifiedTable = new QualifiedEntity() { EntityName = type.Name, SchemaName = schemaName };
             _entityType = type;
+
+            Parse();
         }
 
         internal string GetInsertSql()
@@ -1515,6 +1567,45 @@ namespace B1.DataAccess
             sb.AppendFormat(" {0}.{1}", _qualifiedTable.SchemaName, _qualifiedTable.EntityName);
 
             return sb.ToString();
+        }
+
+        internal void Parse()
+        {
+            StringBuilder sbColumns = new StringBuilder("");
+            StringBuilder sbValues = new StringBuilder("");
+
+            foreach(PropertyInfo prop in _entityType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public 
+                    | BindingFlags.Instance))
+            {
+                string columnName = prop.Name;
+
+                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName, _qualifiedTable.EntityName, columnName);
+
+                if(!column.IsAutoGenerated && !column.IsComputed)
+                {
+                    sbColumns.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
+                            prop.Name);    
+
+                    DbPredicateParameter param = new DbPredicateParameter()
+                        {
+                            ColumnName = columnName,
+                            TableName = _qualifiedTable.EntityName,
+                            SchemaName = _qualifiedTable.SchemaName,
+                            ParameterName = LinqTableMgr.BuildParamName(columnName, _parameters, _daMgr),
+                            MemberAccess = Expression.Lambda(
+                                Expression.Property(Expression.Constant(_objRef), prop)).Compile() 
+                        };
+
+                    _parameters.Add(param);
+
+                     sbValues.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
+                            _daMgr.BuildBindVariableName(param.ParameterName)); 
+
+                }
+                   
+            }
+            _columns = string.Format("({0})", sbColumns);
+            _values = string.Format("VALUES ({0})", sbValues);
         }
     }
 }

@@ -810,7 +810,7 @@ namespace B1.Utility.DatabaseSetup
                                   where a.ConfigValue != null
                                   //group a by new { a.ConfigKey, a.ConfigSetName, a.ConfigValue } into g
                                   group a by a.ConfigKey into g
-                                  select new { key = g.Key};
+                                  select new { theKey = g.Key};
                               
             var resultsSelfJoin1 = from a in entities.AppConfigSettings
                                    join b in entities.AppConfigSettings on a.ConfigKey equals b.ConfigKey
