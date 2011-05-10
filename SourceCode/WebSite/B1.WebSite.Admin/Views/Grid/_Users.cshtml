@@ -1,0 +1,25 @@
+﻿@model IEnumerable<B1.Data.Models.UserMaster>
+
+<table id="idVersionList" width="100%">
+    <thead>
+        <tr>
+            <th class="checkbox"></th>
+            <th class="key" width="50px">User Code</th>
+            <th width="100px">User ID</th>
+            <th width="100px">First Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td class="checkbox"></td>
+            <td class="editable key">@item.UserCode</td>
+            <td class="editable">@item.UserId</td>
+            <td class="editable">@item.FirstName</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+
+

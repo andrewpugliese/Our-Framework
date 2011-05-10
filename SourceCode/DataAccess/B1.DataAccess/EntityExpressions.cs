@@ -61,7 +61,9 @@ namespace B1.DataAccess
 
             if(_cspaceEntityContainer != null && entityType != null)
             {
-                return _cspaceEntityContainer.BaseEntitySets.First( es => es.ElementType.Name == entityType.Name).Name;
+                EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.First(es => es.ElementType.Name == entityType.Name);
+                QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+                return entity.EntityName;
             }
             else
                 return entityType.Name;
@@ -82,11 +84,16 @@ namespace B1.DataAccess
                 
                 if(entitySet != null)
                 {
-                    tableName = entitySet.Name;
-
                     QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-                    if(entity != null)
+                    if (entity != null)
+                    {
                         schemaName = entity.SchemaName;
+                        tableName = entity.EntityName;
+                    }
+                    else
+                    {
+                        tableName = entitySet.Name;
+                    }
                 }
             }
             

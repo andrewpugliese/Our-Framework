@@ -2,6 +2,34 @@
     ViewBag.Title = "Index";
 }
 
+<script type="text/javascript">
+
+function showControllerView(action) {
+    $.ajax({
+        url: action,
+        type: "get",
+        format: "html",
+        cache: false,
+        data: null,
+        success: function (result) {
+            $("#gridContainer").html(result);
+        },
+        error: function (xhr, status, error) {
+            alert(xhr.responseText);
+            //?? showModalDialog(xhr.statusText, xhr.responseText);
+        }
+    });    
+}
+
+</script>
+
 <h2>Index</h2>
 
-@* Show the grid here
+<a href="javascript: showControllerView('@Url.Action("AppSessions")');">App Sessions</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="javascript: showControllerView('@Url.Action("UserSessions")');">User Sessions</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="javascript: showControllerView('@Url.Action("Users")');">Users</a>
+
+@* Show the grid here *@
+<div id="gridContainer">
+
+</div>

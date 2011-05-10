@@ -4,8 +4,10 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using System.Configuration;
+using System.Data.Common;
 
 using B1.DataAccess;
+using B1.Data.Models;
 
 namespace B1.WebSite.Admin.Controllers
 {
@@ -29,12 +31,37 @@ namespace B1.WebSite.Admin.Controllers
             return View();
         }
 
-        public ActionResult User()
+        public ActionResult AppSessions()
         {
-            DataAccessMgr daMgr = new DataAccessMgr(ConfigurationManager.AppSettings["ConnectionKey"]);
-            DbTableDmlMgr dml = daMgr.DbCatalogGetTableDmlMgr("B1.UserMaster");
-            //?? daMgr.ExecuteDataSet(
-            return View();
+            B1SampleEntities entities = new B1SampleEntities();
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+            var query = from a in entities.AppSessions
+                        select new { a.AppCode, a.AppId };
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
+            return PartialView("_AppSessions", daMgr.ExecuteCollection<AppSession>(dbCmd, null));
+        }
+
+        public ActionResult UserSessions()
+        {
+            B1SampleEntities entities = new B1SampleEntities();
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+            var query = from a in entities.UserSessions
+                        select new { a.AppCode, a.UserId };
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
+            return PartialView("_UserSessions", daMgr.ExecuteCollection<UserSession>(dbCmd, null));
+        }
+
+        public ActionResult Users()
+        {
+            B1SampleEntities entities = new B1SampleEntities();
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+            var query = from a in entities.UserMasters
+                        select new { a.UserCode, a.UserId, a.FirstName };
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
+            return PartialView("_Users", daMgr.ExecuteCollection<UserMaster>(dbCmd, null));
         }
     }
 }

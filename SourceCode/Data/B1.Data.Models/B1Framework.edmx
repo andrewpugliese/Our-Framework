@@ -1,0 +1,495 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="B1SampleModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+        <EntityContainer Name="B1SampleModelStoreContainer">
+          <EntitySet Name="AppMaster" EntityType="B1SampleModel.Store.AppMaster" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="AppSessions" EntityType="B1SampleModel.Store.AppSessions" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="SignonControl" EntityType="B1SampleModel.Store.SignonControl" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="UserMaster" EntityType="B1SampleModel.Store.UserMaster" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="UserSessions" EntityType="B1SampleModel.Store.UserSessions" store:Type="Tables" Schema="B1" />
+          <AssociationSet Name="FK_AppMaster_UserMaster" Association="B1SampleModel.Store.FK_AppMaster_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMaster" />
+            <End Role="AppMaster" EntitySet="AppMaster" />
+          </AssociationSet>
+          <AssociationSet Name="FK_AppSessions_AppMaster_Code" Association="B1SampleModel.Store.FK_AppSessions_AppMaster_Code">
+            <End Role="AppMaster" EntitySet="AppMaster" />
+            <End Role="AppSessions" EntitySet="AppSessions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignonControl_UserMaster" Association="B1SampleModel.Store.FK_SignonControl_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMaster" />
+            <End Role="SignonControl" EntitySet="SignonControl" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserMaster_UserMaster" Association="B1SampleModel.Store.FK_UserMaster_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMaster" />
+            <End Role="UserMaster1" EntitySet="UserMaster" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserSessions_UserMaster_UserCode" Association="B1SampleModel.Store.FK_UserSessions_UserMaster_UserCode">
+            <End Role="UserMaster" EntitySet="UserMaster" />
+            <End Role="UserSessions" EntitySet="UserSessions" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="AppMaster">
+          <Key>
+            <PropertyRef Name="AppCode" />
+          </Key>
+          <Property Name="AppCode" Type="int" Nullable="false" />
+          <Property Name="AppId" Type="varchar" Nullable="false" MaxLength="32" />
+          <Property Name="Remarks" Type="varchar" Nullable="false" MaxLength="512" />
+          <Property Name="IsTaskProcessingEngine" Type="bit" Nullable="false" />
+          <Property Name="LastModifiedUserCode" Type="int" />
+          <Property Name="LastModifiedDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="AppSessions">
+          <Key>
+            <PropertyRef Name="AppCode" />
+            <PropertyRef Name="MultipleSessionCode" />
+          </Key>
+          <Property Name="AppCode" Type="int" Nullable="false" />
+          <Property Name="AppId" Type="varchar" Nullable="false" MaxLength="32" />
+          <Property Name="AppProduct" Type="varchar" Nullable="false" MaxLength="64" />
+          <Property Name="AppVersion" Type="varchar" Nullable="false" MaxLength="24" />
+          <Property Name="MultipleSessionCode" Type="bigint" Nullable="false" />
+          <Property Name="MachineName" Type="varchar" Nullable="false" MaxLength="64" />
+          <Property Name="ProcessId" Type="bigint" Nullable="false" />
+          <Property Name="StartDateTime" Type="datetime" Nullable="false" />
+          <Property Name="StatusDateTime" Type="datetime" Nullable="false" />
+          <Property Name="EnvironmentSettings" Type="varchar" Nullable="false" MaxLength="512" />
+          <Property Name="ConfigSettings" Type="varchar" Nullable="false" MaxLength="512" />
+          <Property Name="StatusMessage" Type="varchar" Nullable="false" MaxLength="512" />
+        </EntityType>
+        <EntityType Name="SignonControl">
+          <Key>
+            <PropertyRef Name="ControlCode" />
+          </Key>
+          <Property Name="ControlCode" Type="tinyint" Nullable="false" />
+          <Property Name="RestrictSignon" Type="bit" Nullable="false" />
+          <Property Name="ForceSignoff" Type="bit" Nullable="false" />
+          <Property Name="StatusSeconds" Type="smallint" Nullable="false" />
+          <Property Name="TimeoutSeconds" Type="smallint" Nullable="false" />
+          <Property Name="FailedAttemptLimit" Type="tinyint" Nullable="false" />
+          <Property Name="RestrictSignonMsg" Type="varchar" MaxLength="256" />
+          <Property Name="SignoffWarningMsg" Type="varchar" MaxLength="256" />
+          <Property Name="LastModifiedUserCode" Type="int" />
+          <Property Name="LastModifiedDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="UserMaster">
+          <Key>
+            <PropertyRef Name="UserCode" />
+          </Key>
+          <Property Name="UserCode" Type="int" Nullable="false" />
+          <Property Name="UserId" Type="varchar" Nullable="false" MaxLength="64" />
+          <Property Name="FirstName" Type="varchar" Nullable="false" MaxLength="40" />
+          <Property Name="LastName" Type="varchar" Nullable="false" MaxLength="60" />
+          <Property Name="DefaultAccessGroupCode" Type="int" Nullable="false" />
+          <Property Name="SignonRestricted" Type="bit" Nullable="false" />
+          <Property Name="MultipleSignonAllowed" Type="bit" Nullable="false" />
+          <Property Name="ForcePasswordChange" Type="bit" Nullable="false" />
+          <Property Name="FailedSignonAttempts" Type="tinyint" Nullable="false" />
+          <Property Name="UserPassword" Type="varchar" Nullable="false" MaxLength="96" />
+          <Property Name="PasswordSalt" Type="varchar" Nullable="false" MaxLength="96" />
+          <Property Name="EmailAddress" Type="varchar" MaxLength="96" />
+          <Property Name="LastSignonDateTime" Type="datetime" />
+          <Property Name="NamePrefix" Type="varchar" MaxLength="5" />
+          <Property Name="MiddleName" Type="varchar" MaxLength="40" />
+          <Property Name="NameSuffix" Type="varchar" MaxLength="5" />
+          <Property Name="Remarks" Type="varchar" MaxLength="512" />
+          <Property Name="LastModifiedUserCode" Type="int" />
+          <Property Name="LastModifiedDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="UserSessions">
+          <Key>
+            <PropertyRef Name="SessionCode" />
+            <PropertyRef Name="UserCode" />
+          </Key>
+          <Property Name="SessionCode" Type="bigint" Nullable="false" />
+          <Property Name="UserCode" Type="int" Nullable="false" />
+          <Property Name="UserId" Type="varchar" Nullable="false" MaxLength="64" />
+          <Property Name="SignonDateTime" Type="datetime" Nullable="false" />
+          <Property Name="SessionDateTime" Type="datetime" Nullable="false" />
+          <Property Name="ForceSignoff" Type="bit" Nullable="false" />
+          <Property Name="AppCode" Type="int" Nullable="false" />
+          <Property Name="AppId" Type="varchar" Nullable="false" MaxLength="32" />
+          <Property Name="AppVersion" Type="varchar" Nullable="false" MaxLength="24" />
+          <Property Name="AppMachine" Type="varchar" Nullable="false" MaxLength="64" />
+          <Property Name="RemoteAddress" Type="varchar" MaxLength="64" />
+        </EntityType>
+        <Association Name="FK_AppMaster_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.Store.UserMaster" Multiplicity="0..1" />
+          <End Role="AppMaster" Type="B1SampleModel.Store.AppMaster" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="AppMaster">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_AppSessions_AppMaster_Code">
+          <End Role="AppMaster" Type="B1SampleModel.Store.AppMaster" Multiplicity="1" />
+          <End Role="AppSessions" Type="B1SampleModel.Store.AppSessions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AppMaster">
+              <PropertyRef Name="AppCode" />
+            </Principal>
+            <Dependent Role="AppSessions">
+              <PropertyRef Name="AppCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignonControl_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.Store.UserMaster" Multiplicity="0..1" />
+          <End Role="SignonControl" Type="B1SampleModel.Store.SignonControl" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="SignonControl">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserMaster_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.Store.UserMaster" Multiplicity="0..1" />
+          <End Role="UserMaster1" Type="B1SampleModel.Store.UserMaster" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="UserMaster1">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserSessions_UserMaster_UserCode">
+          <End Role="UserMaster" Type="B1SampleModel.Store.UserMaster" Multiplicity="1" />
+          <End Role="UserSessions" Type="B1SampleModel.Store.UserSessions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="UserSessions">
+              <PropertyRef Name="UserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="B1SampleModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+        <EntityContainer Name="B1SampleEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="AppMasters" EntityType="B1SampleModel.AppMaster" />
+          <EntitySet Name="AppSessions" EntityType="B1SampleModel.AppSession" />
+          <EntitySet Name="SignonControls" EntityType="B1SampleModel.SignonControl" />
+          <EntitySet Name="UserMasters" EntityType="B1SampleModel.UserMaster" />
+          <EntitySet Name="UserSessions" EntityType="B1SampleModel.UserSession" />
+          <AssociationSet Name="FK_AppMaster_UserMaster" Association="B1SampleModel.FK_AppMaster_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMasters" />
+            <End Role="AppMaster" EntitySet="AppMasters" />
+          </AssociationSet>
+          <AssociationSet Name="FK_AppSessions_AppMaster_Code" Association="B1SampleModel.FK_AppSessions_AppMaster_Code">
+            <End Role="AppMaster" EntitySet="AppMasters" />
+            <End Role="AppSessions" EntitySet="AppSessions" />
+          </AssociationSet>
+          <AssociationSet Name="FK_SignonControl_UserMaster" Association="B1SampleModel.FK_SignonControl_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMasters" />
+            <End Role="SignonControl" EntitySet="SignonControls" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserMaster_UserMaster" Association="B1SampleModel.FK_UserMaster_UserMaster">
+            <End Role="UserMaster" EntitySet="UserMasters" />
+            <End Role="UserMaster1" EntitySet="UserMasters" />
+          </AssociationSet>
+          <AssociationSet Name="FK_UserSessions_UserMaster_UserCode" Association="B1SampleModel.FK_UserSessions_UserMaster_UserCode">
+            <End Role="UserMaster" EntitySet="UserMasters" />
+            <End Role="UserSessions" EntitySet="UserSessions" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="AppMaster">
+          <Key>
+            <PropertyRef Name="AppCode" />
+          </Key>
+          <Property Name="AppCode" Type="Int32" Nullable="false" />
+          <Property Name="AppId" Type="String" Nullable="false" MaxLength="32" Unicode="false" FixedLength="false" />
+          <Property Name="Remarks" Type="String" Nullable="false" MaxLength="512" Unicode="false" FixedLength="false" />
+          <Property Name="IsTaskProcessingEngine" Type="Boolean" Nullable="false" />
+          <Property Name="LastModifiedUserCode" Type="Int32" />
+          <Property Name="LastModifiedDateTime" Type="DateTime" />
+          <NavigationProperty Name="UserMaster" Relationship="B1SampleModel.FK_AppMaster_UserMaster" FromRole="AppMaster" ToRole="UserMaster" />
+          <NavigationProperty Name="AppSessions" Relationship="B1SampleModel.FK_AppSessions_AppMaster_Code" FromRole="AppMaster" ToRole="AppSessions" />
+        </EntityType>
+        <EntityType Name="AppSession">
+          <Key>
+            <PropertyRef Name="AppCode" />
+            <PropertyRef Name="MultipleSessionCode" />
+          </Key>
+          <Property Name="AppCode" Type="Int32" Nullable="false" />
+          <Property Name="AppId" Type="String" Nullable="false" MaxLength="32" Unicode="false" FixedLength="false" />
+          <Property Name="AppProduct" Type="String" Nullable="false" MaxLength="64" Unicode="false" FixedLength="false" />
+          <Property Name="AppVersion" Type="String" Nullable="false" MaxLength="24" Unicode="false" FixedLength="false" />
+          <Property Name="MultipleSessionCode" Type="Int64" Nullable="false" />
+          <Property Name="MachineName" Type="String" Nullable="false" MaxLength="64" Unicode="false" FixedLength="false" />
+          <Property Name="ProcessId" Type="Int64" Nullable="false" />
+          <Property Name="StartDateTime" Type="DateTime" Nullable="false" />
+          <Property Name="StatusDateTime" Type="DateTime" Nullable="false" />
+          <Property Name="EnvironmentSettings" Type="String" Nullable="false" MaxLength="512" Unicode="false" FixedLength="false" />
+          <Property Name="ConfigSettings" Type="String" Nullable="false" MaxLength="512" Unicode="false" FixedLength="false" />
+          <Property Name="StatusMessage" Type="String" Nullable="false" MaxLength="512" Unicode="false" FixedLength="false" />
+          <NavigationProperty Name="AppMaster" Relationship="B1SampleModel.FK_AppSessions_AppMaster_Code" FromRole="AppSessions" ToRole="AppMaster" />
+        </EntityType>
+        <EntityType Name="SignonControl">
+          <Key>
+            <PropertyRef Name="ControlCode" />
+          </Key>
+          <Property Name="ControlCode" Type="Byte" Nullable="false" />
+          <Property Name="RestrictSignon" Type="Boolean" Nullable="false" />
+          <Property Name="ForceSignoff" Type="Boolean" Nullable="false" />
+          <Property Name="StatusSeconds" Type="Int16" Nullable="false" />
+          <Property Name="TimeoutSeconds" Type="Int16" Nullable="false" />
+          <Property Name="FailedAttemptLimit" Type="Byte" Nullable="false" />
+          <Property Name="RestrictSignonMsg" Type="String" MaxLength="256" Unicode="false" FixedLength="false" />
+          <Property Name="SignoffWarningMsg" Type="String" MaxLength="256" Unicode="false" FixedLength="false" />
+          <Property Name="LastModifiedUserCode" Type="Int32" />
+          <Property Name="LastModifiedDateTime" Type="DateTime" />
+          <NavigationProperty Name="UserMaster" Relationship="B1SampleModel.FK_SignonControl_UserMaster" FromRole="SignonControl" ToRole="UserMaster" />
+        </EntityType>
+        <EntityType Name="UserMaster">
+          <Key>
+            <PropertyRef Name="UserCode" />
+          </Key>
+          <Property Name="UserCode" Type="Int32" Nullable="false" />
+          <Property Name="UserId" Type="String" Nullable="false" MaxLength="64" Unicode="false" FixedLength="false" />
+          <Property Name="FirstName" Type="String" Nullable="false" MaxLength="40" Unicode="false" FixedLength="false" />
+          <Property Name="LastName" Type="String" Nullable="false" MaxLength="60" Unicode="false" FixedLength="false" />
+          <Property Name="DefaultAccessGroupCode" Type="Int32" Nullable="false" />
+          <Property Name="SignonRestricted" Type="Boolean" Nullable="false" />
+          <Property Name="MultipleSignonAllowed" Type="Boolean" Nullable="false" />
+          <Property Name="ForcePasswordChange" Type="Boolean" Nullable="false" />
+          <Property Name="FailedSignonAttempts" Type="Byte" Nullable="false" />
+          <Property Name="UserPassword" Type="String" Nullable="false" MaxLength="96" Unicode="false" FixedLength="false" />
+          <Property Name="PasswordSalt" Type="String" Nullable="false" MaxLength="96" Unicode="false" FixedLength="false" />
+          <Property Name="EmailAddress" Type="String" MaxLength="96" Unicode="false" FixedLength="false" />
+          <Property Name="LastSignonDateTime" Type="DateTime" />
+          <Property Name="NamePrefix" Type="String" MaxLength="5" Unicode="false" FixedLength="false" />
+          <Property Name="MiddleName" Type="String" MaxLength="40" Unicode="false" FixedLength="false" />
+          <Property Name="NameSuffix" Type="String" MaxLength="5" Unicode="false" FixedLength="false" />
+          <Property Name="Remarks" Type="String" MaxLength="512" Unicode="false" FixedLength="false" />
+          <Property Name="LastModifiedUserCode" Type="Int32" />
+          <Property Name="LastModifiedDateTime" Type="DateTime" />
+          <NavigationProperty Name="AppMasters" Relationship="B1SampleModel.FK_AppMaster_UserMaster" FromRole="UserMaster" ToRole="AppMaster" />
+          <NavigationProperty Name="SignonControls" Relationship="B1SampleModel.FK_SignonControl_UserMaster" FromRole="UserMaster" ToRole="SignonControl" />
+          <NavigationProperty Name="UserMaster1" Relationship="B1SampleModel.FK_UserMaster_UserMaster" FromRole="UserMaster" ToRole="UserMaster1" />
+          <NavigationProperty Name="UserMaster2" Relationship="B1SampleModel.FK_UserMaster_UserMaster" FromRole="UserMaster1" ToRole="UserMaster" />
+          <NavigationProperty Name="UserSessions" Relationship="B1SampleModel.FK_UserSessions_UserMaster_UserCode" FromRole="UserMaster" ToRole="UserSessions" />
+        </EntityType>
+        <EntityType Name="UserSession">
+          <Key>
+            <PropertyRef Name="SessionCode" />
+            <PropertyRef Name="UserCode" />
+          </Key>
+          <Property Name="SessionCode" Type="Int64" Nullable="false" />
+          <Property Name="UserCode" Type="Int32" Nullable="false" />
+          <Property Name="UserId" Type="String" Nullable="false" MaxLength="64" Unicode="false" FixedLength="false" />
+          <Property Name="SignonDateTime" Type="DateTime" Nullable="false" />
+          <Property Name="SessionDateTime" Type="DateTime" Nullable="false" />
+          <Property Name="ForceSignoff" Type="Boolean" Nullable="false" />
+          <Property Name="AppCode" Type="Int32" Nullable="false" />
+          <Property Name="AppId" Type="String" Nullable="false" MaxLength="32" Unicode="false" FixedLength="false" />
+          <Property Name="AppVersion" Type="String" Nullable="false" MaxLength="24" Unicode="false" FixedLength="false" />
+          <Property Name="AppMachine" Type="String" Nullable="false" MaxLength="64" Unicode="false" FixedLength="false" />
+          <Property Name="RemoteAddress" Type="String" MaxLength="64" Unicode="false" FixedLength="false" />
+          <NavigationProperty Name="UserMaster" Relationship="B1SampleModel.FK_UserSessions_UserMaster_UserCode" FromRole="UserSessions" ToRole="UserMaster" />
+        </EntityType>
+        <Association Name="FK_AppMaster_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.UserMaster" Multiplicity="0..1" />
+          <End Role="AppMaster" Type="B1SampleModel.AppMaster" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="AppMaster">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_AppSessions_AppMaster_Code">
+          <End Role="AppMaster" Type="B1SampleModel.AppMaster" Multiplicity="1" />
+          <End Role="AppSessions" Type="B1SampleModel.AppSession" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="AppMaster">
+              <PropertyRef Name="AppCode" />
+            </Principal>
+            <Dependent Role="AppSessions">
+              <PropertyRef Name="AppCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_SignonControl_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.UserMaster" Multiplicity="0..1" />
+          <End Role="SignonControl" Type="B1SampleModel.SignonControl" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="SignonControl">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserMaster_UserMaster">
+          <End Role="UserMaster" Type="B1SampleModel.UserMaster" Multiplicity="0..1" />
+          <End Role="UserMaster1" Type="B1SampleModel.UserMaster" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="UserMaster1">
+              <PropertyRef Name="LastModifiedUserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_UserSessions_UserMaster_UserCode">
+          <End Role="UserMaster" Type="B1SampleModel.UserMaster" Multiplicity="1" />
+          <End Role="UserSessions" Type="B1SampleModel.UserSession" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="UserMaster">
+              <PropertyRef Name="UserCode" />
+            </Principal>
+            <Dependent Role="UserSessions">
+              <PropertyRef Name="UserCode" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="B1SampleModelStoreContainer" CdmEntityContainer="B1SampleEntities">
+          <EntitySetMapping Name="AppMasters"><EntityTypeMapping TypeName="B1SampleModel.AppMaster"><MappingFragment StoreEntitySet="AppMaster">
+            <ScalarProperty Name="AppCode" ColumnName="AppCode" />
+            <ScalarProperty Name="AppId" ColumnName="AppId" />
+            <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+            <ScalarProperty Name="IsTaskProcessingEngine" ColumnName="IsTaskProcessingEngine" />
+            <ScalarProperty Name="LastModifiedUserCode" ColumnName="LastModifiedUserCode" />
+            <ScalarProperty Name="LastModifiedDateTime" ColumnName="LastModifiedDateTime" />
+          </MappingFragment></EntityTypeMapping></EntitySetMapping>
+          <EntitySetMapping Name="AppSessions"><EntityTypeMapping TypeName="B1SampleModel.AppSession"><MappingFragment StoreEntitySet="AppSessions">
+            <ScalarProperty Name="AppCode" ColumnName="AppCode" />
+            <ScalarProperty Name="AppId" ColumnName="AppId" />
+            <ScalarProperty Name="AppProduct" ColumnName="AppProduct" />
+            <ScalarProperty Name="AppVersion" ColumnName="AppVersion" />
+            <ScalarProperty Name="MultipleSessionCode" ColumnName="MultipleSessionCode" />
+            <ScalarProperty Name="MachineName" ColumnName="MachineName" />
+            <ScalarProperty Name="ProcessId" ColumnName="ProcessId" />
+            <ScalarProperty Name="StartDateTime" ColumnName="StartDateTime" />
+            <ScalarProperty Name="StatusDateTime" ColumnName="StatusDateTime" />
+            <ScalarProperty Name="EnvironmentSettings" ColumnName="EnvironmentSettings" />
+            <ScalarProperty Name="ConfigSettings" ColumnName="ConfigSettings" />
+            <ScalarProperty Name="StatusMessage" ColumnName="StatusMessage" />
+          </MappingFragment></EntityTypeMapping></EntitySetMapping>
+          <EntitySetMapping Name="SignonControls"><EntityTypeMapping TypeName="B1SampleModel.SignonControl"><MappingFragment StoreEntitySet="SignonControl">
+            <ScalarProperty Name="ControlCode" ColumnName="ControlCode" />
+            <ScalarProperty Name="RestrictSignon" ColumnName="RestrictSignon" />
+            <ScalarProperty Name="ForceSignoff" ColumnName="ForceSignoff" />
+            <ScalarProperty Name="StatusSeconds" ColumnName="StatusSeconds" />
+            <ScalarProperty Name="TimeoutSeconds" ColumnName="TimeoutSeconds" />
+            <ScalarProperty Name="FailedAttemptLimit" ColumnName="FailedAttemptLimit" />
+            <ScalarProperty Name="RestrictSignonMsg" ColumnName="RestrictSignonMsg" />
+            <ScalarProperty Name="SignoffWarningMsg" ColumnName="SignoffWarningMsg" />
+            <ScalarProperty Name="LastModifiedUserCode" ColumnName="LastModifiedUserCode" />
+            <ScalarProperty Name="LastModifiedDateTime" ColumnName="LastModifiedDateTime" />
+          </MappingFragment></EntityTypeMapping></EntitySetMapping>
+          <EntitySetMapping Name="UserMasters"><EntityTypeMapping TypeName="B1SampleModel.UserMaster"><MappingFragment StoreEntitySet="UserMaster">
+            <ScalarProperty Name="UserCode" ColumnName="UserCode" />
+            <ScalarProperty Name="UserId" ColumnName="UserId" />
+            <ScalarProperty Name="FirstName" ColumnName="FirstName" />
+            <ScalarProperty Name="LastName" ColumnName="LastName" />
+            <ScalarProperty Name="DefaultAccessGroupCode" ColumnName="DefaultAccessGroupCode" />
+            <ScalarProperty Name="SignonRestricted" ColumnName="SignonRestricted" />
+            <ScalarProperty Name="MultipleSignonAllowed" ColumnName="MultipleSignonAllowed" />
+            <ScalarProperty Name="ForcePasswordChange" ColumnName="ForcePasswordChange" />
+            <ScalarProperty Name="FailedSignonAttempts" ColumnName="FailedSignonAttempts" />
+            <ScalarProperty Name="UserPassword" ColumnName="UserPassword" />
+            <ScalarProperty Name="PasswordSalt" ColumnName="PasswordSalt" />
+            <ScalarProperty Name="EmailAddress" ColumnName="EmailAddress" />
+            <ScalarProperty Name="LastSignonDateTime" ColumnName="LastSignonDateTime" />
+            <ScalarProperty Name="NamePrefix" ColumnName="NamePrefix" />
+            <ScalarProperty Name="MiddleName" ColumnName="MiddleName" />
+            <ScalarProperty Name="NameSuffix" ColumnName="NameSuffix" />
+            <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+            <ScalarProperty Name="LastModifiedUserCode" ColumnName="LastModifiedUserCode" />
+            <ScalarProperty Name="LastModifiedDateTime" ColumnName="LastModifiedDateTime" />
+          </MappingFragment></EntityTypeMapping></EntitySetMapping>
+          <EntitySetMapping Name="UserSessions"><EntityTypeMapping TypeName="B1SampleModel.UserSession"><MappingFragment StoreEntitySet="UserSessions">
+            <ScalarProperty Name="SessionCode" ColumnName="SessionCode" />
+            <ScalarProperty Name="UserCode" ColumnName="UserCode" />
+            <ScalarProperty Name="UserId" ColumnName="UserId" />
+            <ScalarProperty Name="SignonDateTime" ColumnName="SignonDateTime" />
+            <ScalarProperty Name="SessionDateTime" ColumnName="SessionDateTime" />
+            <ScalarProperty Name="ForceSignoff" ColumnName="ForceSignoff" />
+            <ScalarProperty Name="AppCode" ColumnName="AppCode" />
+            <ScalarProperty Name="AppId" ColumnName="AppId" />
+            <ScalarProperty Name="AppVersion" ColumnName="AppVersion" />
+            <ScalarProperty Name="AppMachine" ColumnName="AppMachine" />
+            <ScalarProperty Name="RemoteAddress" ColumnName="RemoteAddress" />
+          </MappingFragment></EntityTypeMapping></EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams>
+      <Diagram Name="B1Framework">
+        <EntityTypeShape EntityType="B1SampleModel.AppMaster" Width="1.5" PointX="3" PointY="1.75" Height="2.2496956380208335" IsExpanded="true" />
+        <EntityTypeShape EntityType="B1SampleModel.AppSession" Width="1.5" PointX="5.25" PointY="1.375" Height="3.0714322916666656" IsExpanded="true" />
+        <EntityTypeShape EntityType="B1SampleModel.SignonControl" Width="1.5" PointX="3" PointY="5.125" Height="2.7427376302083317" IsExpanded="true" />
+        <EntityTypeShape EntityType="B1SampleModel.UserMaster" Width="1.5" PointX="0.75" PointY="4" Height="4.8792529296875" IsExpanded="true" />
+        <EntityTypeShape EntityType="B1SampleModel.UserSession" Width="1.5" PointX="3" PointY="8.625" Height="2.9070849609374996" IsExpanded="true" />
+        <AssociationConnector Association="B1SampleModel.FK_AppMaster_UserMaster" ManuallyRouted="false">
+          <ConnectorPoint PointX="1.5" PointY="4" />
+          <ConnectorPoint PointX="1.5" PointY="2.8748478190104167" />
+          <ConnectorPoint PointX="3" PointY="2.8748478190104167" />
+        </AssociationConnector>
+        <AssociationConnector Association="B1SampleModel.FK_AppSessions_AppMaster_Code" ManuallyRouted="false">
+          <ConnectorPoint PointX="4.5" PointY="2.8748478190104167" />
+          <ConnectorPoint PointX="5.25" PointY="2.8748478190104167" />
+        </AssociationConnector>
+        <AssociationConnector Association="B1SampleModel.FK_SignonControl_UserMaster" ManuallyRouted="false">
+          <ConnectorPoint PointX="2.25" PointY="6.4963688151041659" />
+          <ConnectorPoint PointX="3" PointY="6.4963688151041659" />
+        </AssociationConnector>
+        <AssociationConnector Association="B1SampleModel.FK_UserMaster_UserMaster" ManuallyRouted="false">
+          <ConnectorPoint PointX="1.2819230769230767" PointY="8.8792529296875" />
+          <ConnectorPoint PointX="1.2819230769230767" PointY="9.1292529296875" />
+          <ConnectorPoint PointX="1.7284615384615383" PointY="9.1292529296875" />
+          <ConnectorPoint PointX="1.7284615384615383" PointY="8.8792529296875" />
+        </AssociationConnector>
+        <AssociationConnector Association="B1SampleModel.FK_UserSessions_UserMaster_UserCode" ManuallyRouted="false">
+          <ConnectorPoint PointX="0.98470903846153834" PointY="8.8792529296875" />
+          <ConnectorPoint PointX="0.98470903846153834" PointY="10.3306689453125" />
+          <ConnectorPoint PointX="3" PointY="10.3306689453125" />
+        </AssociationConnector>
+      </Diagram>
+    </Diagrams>
+  </Designer>
+</edmx:Edmx>
