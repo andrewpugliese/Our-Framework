@@ -79,7 +79,21 @@ namespace B1.LoggingManagement
         /// 
         /// </summary>
         [ThreadStatic]
-        public static Stack<string> Context = new Stack<string>();
+        private static Stack<string> _Context = new Stack<string>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public static Stack<string> Context
+        {
+            get
+            {
+                if(_Context == null)
+                    _Context = new Stack<string>();
+
+                return _Context;
+            }
+        }
 
         /// <summary>
         /// 
@@ -95,9 +109,6 @@ namespace B1.LoggingManagement
         /// <param name="newContext"></param>
         public LoggingContext(string newContext)
         {
-            if(Context == null)
-                Context = new Stack<string>();
-
             Context.Push(newContext);
         }
     }
