@@ -1249,6 +1249,21 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
+            foreach(DbPredicateParameter param in insertParser._parameters)
+            {
+                DbColumnStructure column = DbCatalogGetColumn(insertParser._qualifiedTable.SchemaName, 
+                        insertParser._qualifiedTable.EntityName,
+                        param.ColumnName);
+
+                AddNewParameterToCollection(dbParams
+                    , param.ParameterName
+                    , column.DataTypeGenericDb
+                    , column.DataTypeNativeDb
+                    , column.MaxLength
+                    , ParameterDirection.Input
+                    , DBNull.Value);
+            }
+
             string insertSql = insertParser.GetInsertSql();
 
             // return the new dbCommand
@@ -2495,6 +2510,8 @@ namespace B1.DataAccess
         {
             try
             {
+                UpdateParameterValues(dbCommand);
+
                 SetParameterValues(dbCommand, parameterNameValues);
 
                 // dbCmdDebug will not have any runtime overhead and is used only when you are debugging

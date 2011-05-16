@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -31,8 +32,14 @@ namespace B1.DataAccess
 
         internal List<string> _aliasStack = new List<string>();
 
+        /// <summary>
+        ///  Types to member name to table alias. Most useful for anonymous types that contain members that are tables/entities
+        /// </summary>
         internal Dictionary<Type, Dictionary<string, string>> _typeToAlias = new Dictionary<Type,Dictionary<string, string>>();
 
+        /// <summary>
+        /// Schema to table alias to table name
+        /// </summary>
         internal Dictionary<string, Dictionary<string, string>> _schemaTables =
                 new Dictionary<string, Dictionary<string, string>>();
 
@@ -100,6 +107,34 @@ namespace B1.DataAccess
             return string.Format("{0}.{1}", schemaName, tableName);
         }
 
+        public QualifiedEntity GetQualifiedEntity(Type type)
+        {
+            Type entityType = ObjectContext.GetObjectType(type);
+
+            EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
+                        es => es.ElementType.Name == entityType.Name);
+
+            return StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+        }
+
+        public QualifiedEntity GetQualifiedEntityFromAlias(string alias)
+        {
+            string schemaName = null;
+            string tableName = null;
+
+            foreach(var kvp in _schemaTables)
+            {
+                if(kvp.Value.ContainsKey(alias))
+                {
+                    tableName = kvp.Value[alias];
+                    schemaName = kvp.Key;
+                    break;
+                }
+            }
+
+            return StorageMetaData.GetQualifiedEntity(schemaName, tableName);
+        }
+
         public string GetSchema(Type type)
         {
             Type entityType = ObjectContext.GetObjectType(type);
@@ -161,24 +196,41 @@ namespace B1.DataAccess
         }
 
 
-        internal static Dictionary<string, string> GetColumnDictionary(Type type, string alias)
+        internal Dictionary<string, string> GetColumnDictionary(Type type, string alias)
         {
-           return type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
-                    .ToDictionary(p => p.Name, p => string.Format("{0}.{1}", alias, p.Name));
-                    
+            QualifiedEntity entity = GetQualifiedEntity(type);
+
+            Dictionary<string, string> columns = new Dictionary<string,string>();
+
+            foreach(PropertyInfo p in  type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public 
+                    | BindingFlags.Instance))
+            {
+                string columnName = entity.GetColumnName(p.Name);
+
+                if(columnName != null)
+                    columns.Add(columnName, string.Format("{0}.{1}", alias, columnName));
+            }
+
+            return columns;
         }
 
-        internal static string GetColumnList(Type type, string alias)
+        internal string GetColumnList(Type type, string alias)
         {
-            return type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.Instance)
-                    .Aggregate(new StringBuilder(), (sb, p) => sb.AppendFormat("{0}{1}.{2}", sb.Length == 0 ? "" : ", ",
-                        alias, p.Name)).ToString();
-        }
+            QualifiedEntity entity = GetQualifiedEntity(type);
 
-        internal static string GetColumnList(IEnumerable<Tuple<Type, string>> columns, string alias)
-        {
-            return columns.Aggregate(new StringBuilder(), (sb, c) => sb.AppendFormat("{0}{1}.{2}", 
-                    sb.Length == 0 ? "" : ", ", alias, c.Item2)).ToString();
+            StringBuilder sb = new StringBuilder();
+
+            foreach(PropertyInfo p in type.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public 
+                    | BindingFlags.Instance))
+            {
+                string columnName = entity.GetColumnName(p.Name);
+
+                if(columnName != null)
+                    sb.AppendFormat("{0}{1}.{2}", sb.Length == 0 ? "" : ", ",
+                        alias, columnName);
+            }
+
+            return sb.ToString();
         }
 
         private string GetNextTableAlias()
@@ -314,7 +366,7 @@ namespace B1.DataAccess
                     alias = _tableMgr._schemaTables.First().Value.First().Key;
 
                 return string.Format("SELECT {0}",
-                        LinqTableMgr.GetColumnList(genericTypes.First(), alias));
+                        _tableMgr.GetColumnList(genericTypes.First(), alias));
 
                 throw new NotImplementedException();
             }
@@ -650,7 +702,7 @@ namespace B1.DataAccess
                     Type type = ObjectContext.GetObjectType(TypeVisitor.GetNonGenericTypes(param.Type)[0]);
                     if(type != null)
                     {
-                        foreach(var kvp in LinqTableMgr.GetColumnDictionary(type, alias))
+                        foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
                         {
                             _select.Add(new Tuple<string, string>(null, kvp.Value));
                         }
@@ -695,12 +747,15 @@ namespace B1.DataAccess
                     if(node.Expression is MemberExpression &&
                             _tableMgr._typeToAlias.ContainsKey(((MemberExpression)node.Expression).Member.DeclaringType))
                     {
+     
                         MemberInfo member = ((MemberExpression)node.Expression).Member;
+                        alias = _tableMgr._typeToAlias[member.DeclaringType][member.Name];
+                        QualifiedEntity entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
 
                         _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
                                 null : _currentAliasName, string.Format("{0}.{1}",
-                                _tableMgr._typeToAlias[member.DeclaringType][member.Name],
-                                node.Member.Name)));
+                                alias,
+                                entity.GetColumnName(node.Member.Name))));
                     }
                     else
                     {
@@ -720,8 +775,11 @@ namespace B1.DataAccess
                             }
                         }
 
+                        QualifiedEntity entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
+
                         _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
-                                null : _currentAliasName, string.Format("{0}.{1}", alias, node.Member.Name)));
+                                null : _currentAliasName, string.Format("{0}.{1}", alias, 
+                                entity.GetColumnName(node.Member.Name))));
                     }
                 }
             }
@@ -757,7 +815,7 @@ namespace B1.DataAccess
                 else
                     alias = _tableMgr._aliasStack.Last();
 
-                foreach(var kvp in LinqTableMgr.GetColumnDictionary(type, alias))
+                foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
                 {
                     _select.Add(new Tuple<string, string>(null, kvp.Value));
                 }
@@ -1242,12 +1300,15 @@ namespace B1.DataAccess
             // Database column reference
             if(_tableMgr._knownTypes._types.Contains(node.Member.DeclaringType))
             {
-                string columName = node.Member.Name;
+                QualifiedEntity entity = _tableMgr.GetQualifiedEntity(node.Member.DeclaringType);
+
+                string columName = entity.GetColumnName(node.Member.Name);
 
                 string alias = "";
 
                 if(_tableMgr._aliasStack.Count() == 0)
                     alias = _tableMgr.Add(node.Member.DeclaringType);
+
                 else if(node.Expression is MemberExpression)
                 {   
                     MemberExpression member = ((MemberExpression)node.Expression);
@@ -1433,18 +1494,28 @@ namespace B1.DataAccess
         public string SchemaName {get; set;}
         public string EntityName {get; set;}
 
+        public Dictionary<string, string> _propertyToColumnMap = new Dictionary<string,string>();
+
         public QualifiedEntity() { }
         public QualifiedEntity(string schemaName, string entityName)
         {
             SchemaName = schemaName;
             EntityName = entityName;
         }
+
+        public string GetColumnName(string propertyName)
+        {
+            return _propertyToColumnMap.ContainsKey(propertyName) ? _propertyToColumnMap[propertyName]
+                : null;
+        }
+
     }
 
     internal class StorageMetaData
     {
-        private readonly static object _lock = new object();
+        private readonly static ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
+        //Key is fully qualified .NET type name
         private static Dictionary<string, QualifiedEntity> _metaData = 
                 new Dictionary<string, QualifiedEntity>();
 
@@ -1453,56 +1524,106 @@ namespace B1.DataAccess
 
         public static void EnsureStorageMetaData(ObjectContext context, EntityContainer cspace)
         {
-            lock(_lock)
+            _lock.EnterUpgradeableReadLock();
+            try
             {
                 Assembly assembly = Assembly.GetAssembly(context.GetType());
 
                 if(_assembliesLoaded.Contains(assembly))
                     return;
 
-                Assembly contextAssembly = Assembly.GetAssembly(context.GetType());
-                foreach(string ssdlResourceName in contextAssembly.GetManifestResourceNames().Where(
-                        r => r.EndsWith(".ssdl", StringComparison.CurrentCultureIgnoreCase)))
+                _lock.EnterWriteLock();
+
+                try
                 {
-                    XDocument ssdlDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
-                            ssdlResourceName));
-
-                    //Find correct way to do this.
-                    string mslResourceName = ssdlResourceName.Replace(".ssdl", ".msl");
-                    XDocument mslDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
-                            mslResourceName));
-
-                    XNamespace ns = mslDoc.Elements().First().GetDefaultNamespace();
-
-                    //mapping for storage name to entitysetname
-                    Dictionary<string, string> storageNameToTypeName = 
-                            mslDoc.Descendants(ns + "EntityTypeMapping").ToDictionary(
-                                e => e.Element(ns + "MappingFragment").Attribute("StoreEntitySet").Value,
-                                e => e.Attribute("TypeName").Value);
-
-                    ns = ssdlDoc.Elements().First().GetDefaultNamespace();
-
-                    foreach(XElement set in ssdlDoc.Descendants(ns + "EntityContainer")
-                                .First().Elements(ns + "EntitySet"))
+                    Assembly contextAssembly = Assembly.GetAssembly(context.GetType());
+                    foreach(string ssdlResourceName in contextAssembly.GetManifestResourceNames().Where(
+                            r => r.EndsWith(".ssdl", StringComparison.CurrentCultureIgnoreCase)))
                     {
-                        string name = set.Attribute("Name").Value;
-                        string schema = set.Attribute("Schema").Value;
-                        string type = cspace.BaseEntitySets.First( 
-                                b => b.ElementType.FullName == storageNameToTypeName[name]).ElementType.FullName;
-                        _metaData.Add(type, new QualifiedEntity(schema, name));
-                    }
-                }       
+                        XDocument ssdlDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
+                                ssdlResourceName));
 
-                _assembliesLoaded.Add(assembly);
+                        //Find correct way to do this.
+                        string mslResourceName = ssdlResourceName.Replace(".ssdl", ".msl");
+                        XDocument mslDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
+                                mslResourceName));
+
+                        XNamespace ns = mslDoc.Elements().First().GetDefaultNamespace();
+
+                        //mapping for storage name to entitysetname
+                        Dictionary<string, XElement> storageNameToMappingFragment = 
+                                mslDoc.Descendants(ns + "EntityTypeMapping").ToDictionary(
+                                    e => e.Element(ns + "MappingFragment").Attribute("StoreEntitySet").Value,
+                                    e => e);
+
+                        ns = ssdlDoc.Elements().First().GetDefaultNamespace();
+
+                        foreach(XElement set in ssdlDoc.Descendants(ns + "EntityContainer")
+                                    .First().Elements(ns + "EntitySet"))
+                        {
+                            string name = set.Attribute("Name").Value;
+                            string schema = set.Attribute("Schema").Value;
+
+                            string typeName = storageNameToMappingFragment[name].Attribute("TypeName").Value;
+
+                        
+                            string type = cspace.BaseEntitySets.First( 
+                                    b => b.ElementType.FullName == typeName).ElementType.FullName;
+
+                            QualifiedEntity entity = new QualifiedEntity(schema, name);
+
+                            foreach(XElement prop in storageNameToMappingFragment[name].Descendants().Where(e => e.Name.LocalName == "ScalarProperty"))
+                            {
+                                entity._propertyToColumnMap.Add(prop.Attribute("Name").Value, prop.Attribute("ColumnName").Value);
+                            }
+
+                            _metaData.Add(type, entity);
+                        }
+                    }       
+
+                    _assembliesLoaded.Add(assembly);
+                }
+                finally
+                {
+                    _lock.ExitWriteLock();
+                }
+            }
+            finally
+            {
+               _lock.ExitUpgradeableReadLock();
             }
         }
 
         public static QualifiedEntity GetQualifiedEntity(string typeName)
         {
-            lock(_lock)
+            _lock.EnterReadLock();
+            try
             {
                 return _metaData.ValueOrDefault(typeName, null);
             }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+        }
+
+        public static QualifiedEntity GetQualifiedEntity(string schemaName, string entityName)
+        {
+            _lock.EnterReadLock();
+            try
+            {
+                foreach(QualifiedEntity qe in _metaData.Values)
+                {
+                    if(qe.SchemaName.ToLower() == schemaName.ToLower() && qe.EntityName.ToLower() == entityName.ToLower())
+                        return qe;
+                }
+            }
+            finally
+            {
+                _lock.ExitReadLock();
+            }
+
+            return null;
         }
     }
 
@@ -1534,21 +1655,23 @@ namespace B1.DataAccess
         private Type _entityType;
         private DataAccessMgr _daMgr;
         private object _objRef;
+        private ObjectContext _entityContext;
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {
             _daMgr = daMgr;
             _objRef = obj;
 
-            EntityContainer cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
-                        entityContext.DefaultContainerName, DataSpace.CSpace);
+            _entityContext = entityContext;
+            EntityContainer cspaceEntityContainer = _entityContext.MetadataWorkspace.GetEntityContainer(
+                    _entityContext.DefaultContainerName, DataSpace.CSpace);
 
-            StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
+            StorageMetaData.EnsureStorageMetaData(_entityContext, cspaceEntityContainer);
 
             _entityType = ObjectContext.GetObjectType(obj.GetType());
 
             EntitySetBase entitySet = cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
-                        es => es.ElementType.Name == _entityType.Name);
+                    es => es.ElementType.Name == _entityType.Name);
 
             _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
 
@@ -1584,14 +1707,14 @@ namespace B1.DataAccess
             foreach(PropertyInfo prop in _entityType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public 
                     | BindingFlags.Instance))
             {
-                string columnName = prop.Name;
+                string columnName = _qualifiedTable.GetColumnName(prop.Name);
 
                 DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName, _qualifiedTable.EntityName, columnName);
 
                 if(!column.IsAutoGenerated && !column.IsComputed)
                 {
                     sbColumns.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
-                            prop.Name);    
+                            columnName);    
 
                     DbPredicateParameter param = new DbPredicateParameter()
                         {
