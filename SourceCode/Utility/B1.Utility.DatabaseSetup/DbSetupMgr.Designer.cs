@@ -29,14 +29,14 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnExit = new System.Windows.Forms.Button();
             this.cmbDbType = new System.Windows.Forms.ComboBox();
             this.btnStart = new System.Windows.Forms.Button();
@@ -179,6 +179,7 @@
             this.label37 = new System.Windows.Forms.Label();
             this.btnStartMemFileLogTest = new System.Windows.Forms.Button();
             this.tabUserSession = new System.Windows.Forms.TabPage();
+            this.btnGenPwdHash = new System.Windows.Forms.Button();
             this.rbInactiveUsers = new System.Windows.Forms.RadioButton();
             this.rbActiveUsers = new System.Windows.Forms.RadioButton();
             this.rbAllUsers = new System.Windows.Forms.RadioButton();
@@ -203,7 +204,11 @@
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnGenPwdHash = new System.Windows.Forms.Button();
+            this.tabTaskProcessing = new System.Windows.Forms.TabPage();
+            this.btnStartTPE = new System.Windows.Forms.Button();
+            this.btnStopTPE = new System.Windows.Forms.Button();
+            this.btnPauseTPE = new System.Windows.Forms.Button();
+            this.btnResumeTPE = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -226,6 +231,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserMaster)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).BeginInit();
+            this.tabTaskProcessing.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnExit
@@ -461,6 +467,7 @@
             this.tabDbSetupControl.Controls.Add(this.tabTestAppSession);
             this.tabDbSetupControl.Controls.Add(this.tabTestLogging);
             this.tabDbSetupControl.Controls.Add(this.tabUserSession);
+            this.tabDbSetupControl.Controls.Add(this.tabTaskProcessing);
             this.tabDbSetupControl.Location = new System.Drawing.Point(12, 6);
             this.tabDbSetupControl.Name = "tabDbSetupControl";
             this.tabDbSetupControl.SelectedIndex = 0;
@@ -1055,23 +1062,23 @@
             this.dgvResults.AllowUserToAddRows = false;
             this.dgvResults.AllowUserToDeleteRows = false;
             this.dgvResults.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle13.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle13.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle13.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle13.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle13;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvResults.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvResults.DefaultCellStyle = dataGridViewCellStyle14;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvResults.DefaultCellStyle = dataGridViewCellStyle10;
             this.dgvResults.GridColor = System.Drawing.SystemColors.ControlText;
             this.dgvResults.Location = new System.Drawing.Point(6, 35);
             this.dgvResults.Name = "dgvResults";
@@ -1405,23 +1412,23 @@
             this.dgvAppSessions.AllowUserToAddRows = false;
             this.dgvAppSessions.AllowUserToDeleteRows = false;
             this.dgvAppSessions.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvAppSessions.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle15;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvAppSessions.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
             this.dgvAppSessions.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle16.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle16.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvAppSessions.DefaultCellStyle = dataGridViewCellStyle16;
+            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle12.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvAppSessions.DefaultCellStyle = dataGridViewCellStyle12;
             this.dgvAppSessions.GridColor = System.Drawing.SystemColors.ControlText;
             this.dgvAppSessions.Location = new System.Drawing.Point(6, 321);
             this.dgvAppSessions.Name = "dgvAppSessions";
@@ -1925,6 +1932,16 @@
             this.tabUserSession.Text = "Test User Session";
             this.tabUserSession.UseVisualStyleBackColor = true;
             // 
+            // btnGenPwdHash
+            // 
+            this.btnGenPwdHash.Location = new System.Drawing.Point(29, 112);
+            this.btnGenPwdHash.Name = "btnGenPwdHash";
+            this.btnGenPwdHash.Size = new System.Drawing.Size(87, 26);
+            this.btnGenPwdHash.TabIndex = 188;
+            this.btnGenPwdHash.Text = "Generate Hash";
+            this.btnGenPwdHash.UseVisualStyleBackColor = true;
+            this.btnGenPwdHash.Click += new System.EventHandler(this.btnGenPwdHash_Click);
+            // 
             // rbInactiveUsers
             // 
             this.rbInactiveUsers.AutoSize = true;
@@ -2001,23 +2018,23 @@
             this.dgvUserMaster.AllowUserToAddRows = false;
             this.dgvUserMaster.AllowUserToDeleteRows = false;
             this.dgvUserMaster.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvUserMaster.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle13.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle13.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle13.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle13.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle13.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvUserMaster.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle13;
             this.dgvUserMaster.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvUserMaster.DefaultCellStyle = dataGridViewCellStyle10;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserMaster.DefaultCellStyle = dataGridViewCellStyle14;
             this.dgvUserMaster.GridColor = System.Drawing.SystemColors.ControlText;
             this.dgvUserMaster.Location = new System.Drawing.Point(6, 192);
             this.dgvUserMaster.MultiSelect = false;
@@ -2159,23 +2176,23 @@
             this.dgvUserSessions.AllowUserToAddRows = false;
             this.dgvUserSessions.AllowUserToDeleteRows = false;
             this.dgvUserSessions.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvUserSessions.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle11;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle15.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvUserSessions.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle15;
             this.dgvUserSessions.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle12.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle12.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle12.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle12.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle12.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle12.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvUserSessions.DefaultCellStyle = dataGridViewCellStyle12;
+            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle16.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle16.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle16.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle16.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle16.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle16.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserSessions.DefaultCellStyle = dataGridViewCellStyle16;
             this.dgvUserSessions.GridColor = System.Drawing.SystemColors.ControlText;
             this.dgvUserSessions.Location = new System.Drawing.Point(6, 340);
             this.dgvUserSessions.Name = "dgvUserSessions";
@@ -2210,15 +2227,62 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnGenPwdHash
+            // tabTaskProcessing
             // 
-            this.btnGenPwdHash.Location = new System.Drawing.Point(29, 112);
-            this.btnGenPwdHash.Name = "btnGenPwdHash";
-            this.btnGenPwdHash.Size = new System.Drawing.Size(87, 26);
-            this.btnGenPwdHash.TabIndex = 188;
-            this.btnGenPwdHash.Text = "Generate Hash";
-            this.btnGenPwdHash.UseVisualStyleBackColor = true;
-            this.btnGenPwdHash.Click += new System.EventHandler(this.btnGenPwdHash_Click);
+            this.tabTaskProcessing.Controls.Add(this.btnResumeTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnPauseTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnStopTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnStartTPE);
+            this.tabTaskProcessing.Location = new System.Drawing.Point(4, 22);
+            this.tabTaskProcessing.Name = "tabTaskProcessing";
+            this.tabTaskProcessing.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTaskProcessing.Size = new System.Drawing.Size(992, 504);
+            this.tabTaskProcessing.TabIndex = 6;
+            this.tabTaskProcessing.Text = "Test Task Processing";
+            this.tabTaskProcessing.UseVisualStyleBackColor = true;
+            // 
+            // btnStartTPE
+            // 
+            this.btnStartTPE.Location = new System.Drawing.Point(40, 333);
+            this.btnStartTPE.Name = "btnStartTPE";
+            this.btnStartTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnStartTPE.TabIndex = 0;
+            this.btnStartTPE.Text = "Start Engine";
+            this.btnStartTPE.UseVisualStyleBackColor = true;
+            this.btnStartTPE.Click += new System.EventHandler(this.btnStartTPE_Click);
+            // 
+            // btnStopTPE
+            // 
+            this.btnStopTPE.Enabled = false;
+            this.btnStopTPE.Location = new System.Drawing.Point(380, 333);
+            this.btnStopTPE.Name = "btnStopTPE";
+            this.btnStopTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnStopTPE.TabIndex = 1;
+            this.btnStopTPE.Text = "Stop Engine";
+            this.btnStopTPE.UseVisualStyleBackColor = true;
+            this.btnStopTPE.Click += new System.EventHandler(this.btnStopTPE_Click);
+            // 
+            // btnPauseTPE
+            // 
+            this.btnPauseTPE.Enabled = false;
+            this.btnPauseTPE.Location = new System.Drawing.Point(157, 333);
+            this.btnPauseTPE.Name = "btnPauseTPE";
+            this.btnPauseTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnPauseTPE.TabIndex = 2;
+            this.btnPauseTPE.Text = "Pause Engine";
+            this.btnPauseTPE.UseVisualStyleBackColor = true;
+            this.btnPauseTPE.Click += new System.EventHandler(this.btnPauseTPE_Click);
+            // 
+            // btnResumeTPE
+            // 
+            this.btnResumeTPE.Enabled = false;
+            this.btnResumeTPE.Location = new System.Drawing.Point(271, 333);
+            this.btnResumeTPE.Name = "btnResumeTPE";
+            this.btnResumeTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnResumeTPE.TabIndex = 3;
+            this.btnResumeTPE.Text = "Resume Engine";
+            this.btnResumeTPE.UseVisualStyleBackColor = true;
+            this.btnResumeTPE.Click += new System.EventHandler(this.btnResumeTPE_Click);
             // 
             // DbSetupMgr
             // 
@@ -2260,6 +2324,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserMaster)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).EndInit();
+            this.tabTaskProcessing.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2433,6 +2498,11 @@
         private System.Windows.Forms.GroupBox groupBox5;
         private System.Windows.Forms.Button btnCleanupInactiveAppSessions;
         private System.Windows.Forms.Button btnGenPwdHash;
+        private System.Windows.Forms.TabPage tabTaskProcessing;
+        private System.Windows.Forms.Button btnResumeTPE;
+        private System.Windows.Forms.Button btnPauseTPE;
+        private System.Windows.Forms.Button btnStopTPE;
+        private System.Windows.Forms.Button btnStartTPE;
     }
 }
 

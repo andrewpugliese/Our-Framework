@@ -90,7 +90,7 @@ namespace B1.Utility.DatabaseSetup
         bool _refreshAppSessions = false;
         Dictionary<Int64, UserSession> _userSessions = null;
         bool _dbSetup = false;
-
+        TaskProcessing.TaskProcessEngine _tpe = null;
 
         /// <summary>
         /// PagingMgr used by GridConrol
@@ -487,6 +487,12 @@ namespace B1.Utility.DatabaseSetup
 
         void ClearDbMgr()
         {
+            if (_tpe != null)
+            {
+                _tpe.Stop();
+                _tpe.Dispose();
+                _tpe = null;
+            }
             if (_daMgr != null)
             {
                 if (_testDaMgr != null)
@@ -1751,6 +1757,37 @@ namespace B1.Utility.DatabaseSetup
                     , salt);
                 new GenerateHash(tbUserSignonPwd.Text, hash, salt).ShowDialog();
             }
+        }
+
+        private void btnStartTPE_Click(object sender, EventArgs e)
+        {
+            btnStopTPE.Enabled = btnPauseTPE.Enabled = true;
+            btnStartTPE.Enabled = false;
+            if (_daMgr == null)
+                CreateDbMgr();
+            _tpe = new TaskProcessing.TaskProcessEngine(_daMgr);
+            _tpe.Start();
+        }
+
+        private void btnStopTPE_Click(object sender, EventArgs e)
+        {
+            btnStopTPE.Enabled = btnPauseTPE.Enabled = btnResumeTPE.Enabled = false;
+            btnStartTPE.Enabled = true;
+            _tpe.Stop();
+        }
+
+        private void btnPauseTPE_Click(object sender, EventArgs e)
+        {
+            btnPauseTPE.Enabled = false;
+            btnResumeTPE.Enabled = true;
+            _tpe.Pause();
+        }
+
+        private void btnResumeTPE_Click(object sender, EventArgs e)
+        {
+            btnPauseTPE.Enabled = true;
+            btnResumeTPE.Enabled = false;
+            _tpe.Resume();
         }
 
     }
