@@ -1056,15 +1056,18 @@ namespace B1.DataAccess
 
             _selectParser = new SelectParser(expression.Arguments[4], _tableMgr, _daMgr);
 
-            int c = 0;
+            int p = 0;
             _join.AppendFormat(" ON");
-            foreach(var col in leftOn._columns)
+
+            QualifiedEntity leftEntity = _tableMgr.GetQualifiedEntityFromAlias(_leftAlias);
+            QualifiedEntity rightEntity = _tableMgr.GetQualifiedEntityFromAlias(_rightAlias);
+            foreach(var prop in leftOn._properties)
             {
                 _join.AppendFormat(" {0}{1}.{2} = {3}.{4}",
-                    c > 0 ? "AND " : " ",
-                        _leftAlias, col,
-                        _rightAlias, rightOn._columns[c]);
-                c++;
+                    p > 0 ? "AND " : " ",
+                        _leftAlias, leftEntity.GetColumnName(prop),
+                        _rightAlias, rightEntity.GetColumnName(rightOn._properties[p]));
+                p++;
             }
 
             _join = prevJoin;
@@ -1112,7 +1115,7 @@ namespace B1.DataAccess
 
     internal class OnParser : ExpressionVisitor
     {
-        internal List<string> _columns = new List<string>();
+        internal List<string> _properties = new List<string>();
         internal string _alias = null;
         private LinqTableMgr _tableMgr;
 
@@ -1136,7 +1139,7 @@ namespace B1.DataAccess
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            _columns.Add(node.Member.Name);
+            _properties.Add(node.Member.Name);
 
             if(node.Expression is MemberExpression)
             {
