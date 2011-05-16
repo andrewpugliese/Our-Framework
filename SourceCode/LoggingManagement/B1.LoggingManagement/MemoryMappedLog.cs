@@ -667,7 +667,8 @@ namespace B1.LoggingManagement
                 }
                 else if(startingOffset != null)
                     NextReadOffset = startingOffset.Value;
-                else if(NextReadOffset >= CurrentWriteOffset) //we are at end
+                
+                if(NextReadOffset >= CurrentWriteOffset) //we are at end
                     return null;
 
                 currentMessageAccessor = _logFile.CreateViewAccessor(NextReadOffset, 

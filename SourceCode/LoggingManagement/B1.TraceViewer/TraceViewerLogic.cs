@@ -284,7 +284,22 @@ namespace B1.TraceViewer
                             currentOffset = MemoryMappedLog.TraceReader.NextReadOffset;
 
                             if(nextMessage == null)
+                            {
+                                BeginInvoke(new Action(() =>
+                                    {
+                                        btnNext.Enabled = true;
+                                        btnLast.Enabled = true;
+
+                                        if(_currentPageTopOffset > 0 &&
+                                                MemoryMappedLog.TraceReader.NextReadOffset > 0)
+                                        {
+                                            btnPrevious.Enabled = true;
+                                            btnTop.Enabled = true;
+                                        }
+                                    }));
+                        
                                 return -1;
+                            }
 
                             TraceMessage traceMessage = TraceLog.GetTraceMessage(nextMessage);
 
@@ -298,7 +313,7 @@ namespace B1.TraceViewer
                                         || traceMessage.MachineName.ToLower().Contains(machineName.ToLower()))
                                     && (string.IsNullOrEmpty(threadId) 
                                         || traceMessage.ThreadId.ToString().ToLower().Contains(threadId.ToLower()))
-                                    && (string.IsNullOrEmpty(threadId) 
+                                    && (string.IsNullOrEmpty(processId) 
                                         || traceMessage.ProcessId.ToString().ToLower().Contains(processId.ToLower())))
                             {
                                 found = true;
