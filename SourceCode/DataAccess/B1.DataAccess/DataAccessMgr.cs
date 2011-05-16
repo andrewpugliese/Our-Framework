@@ -1238,12 +1238,9 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(sqlInsert, dbParams);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="insertObject"></param>
-        /// <returns></returns>
-        public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext
+            , object insertObject
+            , Dictionary<string, object> propertyDbFunctions)
         {
             ObjectParser insertParser = new ObjectParser(entityContext, insertObject, this);
 
@@ -1268,6 +1265,49 @@ namespace B1.DataAccess
 
             // return the new dbCommand
             return BuildNonQueryDbCommand(insertSql, dbParams);
+        }
+
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
+        {
+            return BuildInsertDbCommand(entityContext
+                    , insertObject
+                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+        }
+
+        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
+            , object updateObject
+            , Dictionary<string, object> propertyDbFunctions)
+        {
+            ObjectParser updateParser = new ObjectParser(entityContext, updateObject, this);
+
+            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
+
+            foreach (DbPredicateParameter param in updateParser._parameters)
+            {
+                DbColumnStructure column = DbCatalogGetColumn(updateParser._qualifiedTable.SchemaName,
+                        updateParser._qualifiedTable.EntityName,
+                        param.ColumnName);
+
+                AddNewParameterToCollection(dbParams
+                    , param.ParameterName
+                    , column.DataTypeGenericDb
+                    , column.DataTypeNativeDb
+                    , column.MaxLength
+                    , ParameterDirection.Input
+                    , DBNull.Value);
+            }
+
+            string updateSql = updateParser.GetUpdateSql();
+
+            // return the new dbCommand
+            return BuildNonQueryDbCommand(updateSql, dbParams);
+        }
+
+        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext, object updateObject)
+        {
+            return BuildUpdateDbCommand(entityContext
+                    , updateObject
+                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
         }
 
         private string BuildCaseStatementsForSelect(DbTableDmlMgr dmlSelect)
