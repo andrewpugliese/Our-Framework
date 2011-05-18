@@ -1238,6 +1238,13 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(sqlInsert, dbParams);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="insertObject"></param>
+        /// <param name="propertyDbFunctions"></param>
+        /// <returns></returns>
         public DbCommand BuildInsertDbCommand(ObjectContext entityContext
             , object insertObject
             , Dictionary<string, object> propertyDbFunctions)
