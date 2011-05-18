@@ -1246,7 +1246,9 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            foreach(DbPredicateParameter param in insertParser.Parameters)
+            Tuple<string, List<DbPredicateParameter>> insertSqlAndParams = insertParser.GetInsertSqlAndParams();
+
+            foreach(DbPredicateParameter param in insertSqlAndParams.Item2)
             {
                 DbColumnStructure column = DbCatalogGetColumn(insertParser.QualifiedTable.SchemaName, 
                         insertParser.QualifiedTable.EntityName,
@@ -1261,10 +1263,12 @@ namespace B1.DataAccess
                     , DBNull.Value);
             }
 
-            string insertSql = insertParser.GetInsertSql();
-
             // return the new dbCommand
-            return BuildNonQueryDbCommand(insertSql, dbParams);
+            DbCommand dbCmd = BuildNonQueryDbCommand(insertSqlAndParams.Item1, dbParams);
+
+            dbCmd.Site = new ParameterSite(insertSqlAndParams.Item2);
+
+            return dbCmd;
         }
 
         public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
@@ -1282,7 +1286,9 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            foreach (DbPredicateParameter param in updateParser.Parameters)
+            Tuple<string, List<DbPredicateParameter>> updateSqlandParams = updateParser.GetUpdateSql();
+
+            foreach (DbPredicateParameter param in updateSqlandParams.Item2)
             {
                 DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
                         updateParser.QualifiedTable.EntityName,
@@ -1296,11 +1302,9 @@ namespace B1.DataAccess
                     , ParameterDirection.Input
                     , DBNull.Value);
             }
-
-            string updateSql = updateParser.GetUpdateSql();
-
+            
             // return the new dbCommand
-            DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSql, dbParams);
+            DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSqlandParams.Item1, dbParams);
             cmdUpdate.Site = new ParameterSite(updateParser.Parameters);
             return cmdUpdate;
         }
