@@ -1790,5 +1790,49 @@ namespace B1.Utility.DatabaseSetup
             _tpe.Resume();
         }
 
+        private void btnTestEntity_Click(object sender, EventArgs e)
+        {
+            DbCommand dbCmd;
+            DataTable tbl;
+
+            Models.AppConfigSetting appConfigSetting = new Models.AppConfigSetting()
+            {
+                ConfigDescription = "New Setting",
+                ConfigKey = "New Key",
+                ConfigSetName = "New Set Name",
+                ConfigValue = "New Value"
+            };
+
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            Int64 x = 1111921485685400001;
+            var resultsTop10 = from a in entities.TestSequences where a.AppSequenceId >=  x select a;
+
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            dbCmd = _daMgr.BuildSelectDbCommand(resultsTop10, 10);
+
+            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+            List<Models.TestSequence> ts
+                = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
+                , null
+                , entities
+                , entities.TestSequences.EntitySet.Name
+                , null
+                , null).ToList();
+
+            x = 1111921490106900020;
+            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+            ts  = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
+                , null
+                , entities
+                , entities.TestSequences.EntitySet.Name
+                , null
+                , null).ToList();
+
+        }
+
     }
 }

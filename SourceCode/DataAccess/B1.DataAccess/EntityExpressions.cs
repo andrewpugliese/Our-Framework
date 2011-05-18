@@ -1650,8 +1650,8 @@ namespace B1.DataAccess
 
     internal class ObjectParser
     {
-        internal QualifiedEntity _qualifiedTable;
-        internal List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
+        private QualifiedEntity _qualifiedTable;
+        private List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
 
         private string _columns;
         private string _values;
@@ -1659,6 +1659,9 @@ namespace B1.DataAccess
         private DataAccessMgr _daMgr;
         private object _objRef;
         private ObjectContext _entityContext;
+
+        internal QualifiedEntity QualifiedTable { get { return _qualifiedTable; } }
+        internal List<DbPredicateParameter> Parameters { get { return _parameters; } }
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {

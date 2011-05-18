@@ -201,14 +201,15 @@
             this.label5 = new System.Windows.Forms.Label();
             this.dgvUserSessions = new System.Windows.Forms.DataGridView();
             this.Users = new System.Windows.Forms.GroupBox();
+            this.tabTaskProcessing = new System.Windows.Forms.TabPage();
+            this.btnResumeTPE = new System.Windows.Forms.Button();
+            this.btnPauseTPE = new System.Windows.Forms.Button();
+            this.btnStopTPE = new System.Windows.Forms.Button();
+            this.btnStartTPE = new System.Windows.Forms.Button();
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.tabTaskProcessing = new System.Windows.Forms.TabPage();
-            this.btnStartTPE = new System.Windows.Forms.Button();
-            this.btnStopTPE = new System.Windows.Forms.Button();
-            this.btnPauseTPE = new System.Windows.Forms.Button();
-            this.btnResumeTPE = new System.Windows.Forms.Button();
+            this.btnTestEntity = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -533,6 +534,7 @@
             // tabTestDaMgr
             // 
             this.tabTestDaMgr.BackColor = System.Drawing.Color.Transparent;
+            this.tabTestDaMgr.Controls.Add(this.btnTestEntity);
             this.tabTestDaMgr.Controls.Add(this.tbDbProvClass);
             this.tabTestDaMgr.Controls.Add(this.label46);
             this.tabTestDaMgr.Controls.Add(this.tbDbProvAssembly);
@@ -2209,6 +2211,63 @@
             this.Users.TabStop = false;
             this.Users.Text = "Users";
             // 
+            // tabTaskProcessing
+            // 
+            this.tabTaskProcessing.Controls.Add(this.btnResumeTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnPauseTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnStopTPE);
+            this.tabTaskProcessing.Controls.Add(this.btnStartTPE);
+            this.tabTaskProcessing.Location = new System.Drawing.Point(4, 22);
+            this.tabTaskProcessing.Name = "tabTaskProcessing";
+            this.tabTaskProcessing.Padding = new System.Windows.Forms.Padding(3);
+            this.tabTaskProcessing.Size = new System.Drawing.Size(992, 504);
+            this.tabTaskProcessing.TabIndex = 6;
+            this.tabTaskProcessing.Text = "Test Task Processing";
+            this.tabTaskProcessing.UseVisualStyleBackColor = true;
+            // 
+            // btnResumeTPE
+            // 
+            this.btnResumeTPE.Enabled = false;
+            this.btnResumeTPE.Location = new System.Drawing.Point(271, 333);
+            this.btnResumeTPE.Name = "btnResumeTPE";
+            this.btnResumeTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnResumeTPE.TabIndex = 3;
+            this.btnResumeTPE.Text = "Resume Engine";
+            this.btnResumeTPE.UseVisualStyleBackColor = true;
+            this.btnResumeTPE.Click += new System.EventHandler(this.btnResumeTPE_Click);
+            // 
+            // btnPauseTPE
+            // 
+            this.btnPauseTPE.Enabled = false;
+            this.btnPauseTPE.Location = new System.Drawing.Point(157, 333);
+            this.btnPauseTPE.Name = "btnPauseTPE";
+            this.btnPauseTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnPauseTPE.TabIndex = 2;
+            this.btnPauseTPE.Text = "Pause Engine";
+            this.btnPauseTPE.UseVisualStyleBackColor = true;
+            this.btnPauseTPE.Click += new System.EventHandler(this.btnPauseTPE_Click);
+            // 
+            // btnStopTPE
+            // 
+            this.btnStopTPE.Enabled = false;
+            this.btnStopTPE.Location = new System.Drawing.Point(380, 333);
+            this.btnStopTPE.Name = "btnStopTPE";
+            this.btnStopTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnStopTPE.TabIndex = 1;
+            this.btnStopTPE.Text = "Stop Engine";
+            this.btnStopTPE.UseVisualStyleBackColor = true;
+            this.btnStopTPE.Click += new System.EventHandler(this.btnStopTPE_Click);
+            // 
+            // btnStartTPE
+            // 
+            this.btnStartTPE.Location = new System.Drawing.Point(40, 333);
+            this.btnStartTPE.Name = "btnStartTPE";
+            this.btnStartTPE.Size = new System.Drawing.Size(94, 25);
+            this.btnStartTPE.TabIndex = 0;
+            this.btnStartTPE.Text = "Start Engine";
+            this.btnStartTPE.UseVisualStyleBackColor = true;
+            this.btnStartTPE.Click += new System.EventHandler(this.btnStartTPE_Click);
+            // 
             // btnAbort
             // 
             this.btnAbort.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -2227,62 +2286,17 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // tabTaskProcessing
+            // btnTestEntity
             // 
-            this.tabTaskProcessing.Controls.Add(this.btnResumeTPE);
-            this.tabTaskProcessing.Controls.Add(this.btnPauseTPE);
-            this.tabTaskProcessing.Controls.Add(this.btnStopTPE);
-            this.tabTaskProcessing.Controls.Add(this.btnStartTPE);
-            this.tabTaskProcessing.Location = new System.Drawing.Point(4, 22);
-            this.tabTaskProcessing.Name = "tabTaskProcessing";
-            this.tabTaskProcessing.Padding = new System.Windows.Forms.Padding(3);
-            this.tabTaskProcessing.Size = new System.Drawing.Size(992, 504);
-            this.tabTaskProcessing.TabIndex = 6;
-            this.tabTaskProcessing.Text = "Test Task Processing";
-            this.tabTaskProcessing.UseVisualStyleBackColor = true;
-            // 
-            // btnStartTPE
-            // 
-            this.btnStartTPE.Location = new System.Drawing.Point(40, 333);
-            this.btnStartTPE.Name = "btnStartTPE";
-            this.btnStartTPE.Size = new System.Drawing.Size(94, 25);
-            this.btnStartTPE.TabIndex = 0;
-            this.btnStartTPE.Text = "Start Engine";
-            this.btnStartTPE.UseVisualStyleBackColor = true;
-            this.btnStartTPE.Click += new System.EventHandler(this.btnStartTPE_Click);
-            // 
-            // btnStopTPE
-            // 
-            this.btnStopTPE.Enabled = false;
-            this.btnStopTPE.Location = new System.Drawing.Point(380, 333);
-            this.btnStopTPE.Name = "btnStopTPE";
-            this.btnStopTPE.Size = new System.Drawing.Size(94, 25);
-            this.btnStopTPE.TabIndex = 1;
-            this.btnStopTPE.Text = "Stop Engine";
-            this.btnStopTPE.UseVisualStyleBackColor = true;
-            this.btnStopTPE.Click += new System.EventHandler(this.btnStopTPE_Click);
-            // 
-            // btnPauseTPE
-            // 
-            this.btnPauseTPE.Enabled = false;
-            this.btnPauseTPE.Location = new System.Drawing.Point(157, 333);
-            this.btnPauseTPE.Name = "btnPauseTPE";
-            this.btnPauseTPE.Size = new System.Drawing.Size(94, 25);
-            this.btnPauseTPE.TabIndex = 2;
-            this.btnPauseTPE.Text = "Pause Engine";
-            this.btnPauseTPE.UseVisualStyleBackColor = true;
-            this.btnPauseTPE.Click += new System.EventHandler(this.btnPauseTPE_Click);
-            // 
-            // btnResumeTPE
-            // 
-            this.btnResumeTPE.Enabled = false;
-            this.btnResumeTPE.Location = new System.Drawing.Point(271, 333);
-            this.btnResumeTPE.Name = "btnResumeTPE";
-            this.btnResumeTPE.Size = new System.Drawing.Size(94, 25);
-            this.btnResumeTPE.TabIndex = 3;
-            this.btnResumeTPE.Text = "Resume Engine";
-            this.btnResumeTPE.UseVisualStyleBackColor = true;
-            this.btnResumeTPE.Click += new System.EventHandler(this.btnResumeTPE_Click);
+            this.btnTestEntity.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestEntity.Location = new System.Drawing.Point(544, 301);
+            this.btnTestEntity.Name = "btnTestEntity";
+            this.btnTestEntity.Size = new System.Drawing.Size(66, 29);
+            this.btnTestEntity.TabIndex = 173;
+            this.btnTestEntity.Text = "TestEntity";
+            this.btnTestEntity.UseVisualStyleBackColor = true;
+            this.btnTestEntity.Visible = false;
+            this.btnTestEntity.Click += new System.EventHandler(this.btnTestEntity_Click);
             // 
             // DbSetupMgr
             // 
@@ -2503,6 +2517,7 @@
         private System.Windows.Forms.Button btnPauseTPE;
         private System.Windows.Forms.Button btnStopTPE;
         private System.Windows.Forms.Button btnStartTPE;
+        private System.Windows.Forms.Button btnTestEntity;
     }
 }
 

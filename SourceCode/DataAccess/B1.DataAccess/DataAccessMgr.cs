@@ -1246,10 +1246,10 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            foreach(DbPredicateParameter param in insertParser._parameters)
+            foreach(DbPredicateParameter param in insertParser.Parameters)
             {
-                DbColumnStructure column = DbCatalogGetColumn(insertParser._qualifiedTable.SchemaName, 
-                        insertParser._qualifiedTable.EntityName,
+                DbColumnStructure column = DbCatalogGetColumn(insertParser.QualifiedTable.SchemaName, 
+                        insertParser.QualifiedTable.EntityName,
                         param.ColumnName);
 
                 AddNewParameterToCollection(dbParams
@@ -1282,10 +1282,10 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            foreach (DbPredicateParameter param in updateParser._parameters)
+            foreach (DbPredicateParameter param in updateParser.Parameters)
             {
-                DbColumnStructure column = DbCatalogGetColumn(updateParser._qualifiedTable.SchemaName,
-                        updateParser._qualifiedTable.EntityName,
+                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
+                        updateParser.QualifiedTable.EntityName,
                         param.ColumnName);
 
                 AddNewParameterToCollection(dbParams
@@ -1300,7 +1300,9 @@ namespace B1.DataAccess
             string updateSql = updateParser.GetUpdateSql();
 
             // return the new dbCommand
-            return BuildNonQueryDbCommand(updateSql, dbParams);
+            DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSql, dbParams);
+            cmdUpdate.Site = new ParameterSite(updateParser.Parameters);
+            return cmdUpdate;
         }
 
         public DbCommand BuildUpdateDbCommand(ObjectContext entityContext, object updateObject)
@@ -2607,14 +2609,14 @@ namespace B1.DataAccess
                                 IEnumerable<T>> dataReaderHandler
                         , params object[] parameterNameValues) where T : new()
         {
+            UpdateParameterValues(dbCommand);
+
             // dbCmdDebug will not have any runtime overhead and is used only when you are debugging
             // and there is an exception executing the dbCommand.
             // Then if you would like to see a formatted representation of the SQL with parameter declarataions
             // (except binary objects unfortunately), then right click on the dbCmdDebug object.
             // there is a property that will return a formatted string.  
             DbCommandDebug dbCmdDebug = new DbCommandDebug(dbCommand, _dbProviderLib.GetCommandDebugScript);
-            UpdateParameterValues(dbCommand);
-
             using (IDataReader rdr = ExecuteReader(dbCommand, dbTrans, parameterNameValues))
             {
                 // Loop throught the columns in the resultset and lookup the properties and ordinals 
@@ -2647,6 +2649,83 @@ namespace B1.DataAccess
                 else
                     return dataReaderHandler(rdr, props);
             }
+        }
+
+
+        /// <summary>
+        /// Creates a collection of type T using dataReader.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dbCommand"></param>
+        /// <param name="dbTrans"></param>
+        /// <param name="dataReaderHandler">Optional (can be null). A function that, given a reader, and a dictionary of 
+        /// properties for type T, will populate an IEnumerable of T. 
+        /// If null, an IEnumerable of T will be generated in the order recieved by the datareader</param>
+        /// <param name="parameterNameValues">A set of parameter names and values or null. 
+        /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
+        /// <returns></returns>
+        public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
+                        , DbTransaction dbTrans
+                        , ObjectContext context
+                        , string entitySetName
+                        , Func<IDataReader, List<KeyValuePair<int, System.Reflection.PropertyInfo>>
+                                , ObjectContext
+                                , string 
+                                , IEnumerable<T>> dataReaderHandler
+                        , params object[] parameterNameValues) where T : new()
+        {
+            UpdateParameterValues(dbCommand);
+
+            // dbCmdDebug will not have any runtime overhead and is used only when you are debugging
+            // and there is an exception executing the dbCommand.
+            // Then if you would like to see a formatted representation of the SQL with parameter declarataions
+            // (except binary objects unfortunately), then right click on the dbCmdDebug object.
+            // there is a property that will return a formatted string.  
+            DbCommandDebug dbCmdDebug = new DbCommandDebug(dbCommand, _dbProviderLib.GetCommandDebugScript);
+            using (IDataReader rdr = ExecuteReader(dbCommand, dbTrans, parameterNameValues))
+            {
+                // Loop throught the columns in the resultset and lookup the properties and ordinals 
+                List<KeyValuePair<int, System.Reflection.PropertyInfo>> props =
+                        new List<KeyValuePair<int, System.Reflection.PropertyInfo>>();
+                Type t = typeof(T);
+                for (int i = 0; i < rdr.FieldCount; i++)
+                {
+                    string fieldName = rdr.GetName(i);
+                    // Ignore case of the property name
+                    System.Reflection.PropertyInfo pinfo = t.GetProperties()
+                        .Where(p => p.Name.ToLower() == fieldName.ToLower()).FirstOrDefault();
+                    if (pinfo != null)
+                        props.Add(new KeyValuePair<int, System.Reflection.PropertyInfo>(i, pinfo));
+                }
+
+                if (dataReaderHandler == null)
+                {
+                    List<T> items = new List<T>();
+                    while (rdr.Read())
+                    {
+
+                        T obj = new T();
+                        props.ForEach(kv => kv.Value.SetValue(obj,
+                                GetValueOrNull(Convert.ChangeType(rdr.GetValue(kv.Key), kv.Value.PropertyType)), null));
+                        items.Add(obj);
+                        context.AttachTo(entitySetName, obj);
+                    }
+                    context.AcceptAllChanges();
+                    return items;
+                }
+                else
+                    return dataReaderHandler(rdr, props, context, entitySetName);
+            }
+        }
+
+
+        public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
+                , DbTransaction dbTrans
+                , ObjectContext context
+                , string entitySetName
+                , params object[] parameterNameValues) where T : new()
+        {
+            return ExecuteContext<T>(dbCommand, dbTrans, context, entitySetName, null, parameterNameValues);
         }
 
         /// <summary>
