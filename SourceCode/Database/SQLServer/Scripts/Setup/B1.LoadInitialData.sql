@@ -617,3 +617,15 @@ VALUES
 )
 
 GO
+
+INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (0, 'NotQueued')
+
+INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (32, 'Queued')
+
+INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (64, 'InProcess')
+
+INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (128, 'Failed')
+
+INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (255, 'Succeeded')
+
+GO

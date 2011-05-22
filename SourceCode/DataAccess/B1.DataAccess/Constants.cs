@@ -25,6 +25,11 @@ namespace B1.DataAccess
                                     + " set " + UniqueIdValue + " = {0} where " + UniqueIdKey 
                                     +  " = {1} and " + UniqueIdValue + " = {2}";
 
+        internal const string SQL_Update_UniqueIds_SetMaxAndRolloverId = "update " + SCHEMA_CORE + "." + TABLE_UniqueIds
+                                    + " set " + MaxIdValue + " = {0} "
+                                    + ", " + RolloverIdValue + " = {1} where " + UniqueIdKey
+                                    + " = {2}";
+
         /// <summary>
         /// Returns the schema string which owns the core objects
         /// </summary>
@@ -152,6 +157,7 @@ namespace B1.DataAccess
         internal const string Is_Primary_Key = "Is_Primary_Key";
         internal const string Is_Unique = "Is_Unique";
         internal const string IsUnique = "IsUnique";
+        internal const string MaxIdValue = "MaxIdValue";
         internal const string Name = "name";
         internal const string Numeric_Precision = "Numeric_Precision";
         internal const string NumericPrecision = "NumericPrecision";
@@ -190,6 +196,7 @@ namespace B1.DataAccess
         internal const string Referenced_Column_Id = "Referenced_Column_Id";
         internal const string Referenced_Object_Id = "Referenced_Object_Id";
         internal const string Return_Value = "Return_Value";
+        internal const string RolloverIdValue = "RolloverIdValue";
         internal const string Schema_Id = "Schema_Id";
         internal const string SchemaName = "SchemaName";
         internal const string Schemas = "Schemas";

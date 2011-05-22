@@ -76,6 +76,7 @@ namespace B1.TaskProcessing
         }
 
         public abstract TaskStatusEnum TaskFunctionBody();
+        public abstract string TaskDescription();
 
         public virtual void Stop()
         {

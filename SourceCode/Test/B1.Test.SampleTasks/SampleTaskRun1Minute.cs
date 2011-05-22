@@ -21,7 +21,7 @@ namespace B1.Test.SampleTasks
         {
         }
 
-        override public TaskStatusEnum TaskFunctionBody()
+        public override TaskStatusEnum TaskFunctionBody()
         {
             _taskStatusMsg = this.ToString() + "; Iteration: " + _count.ToString();
 
@@ -29,6 +29,11 @@ namespace B1.Test.SampleTasks
             if (ts.TotalSeconds < 60)
                 return TaskStatusEnum.InProcess;
             else return TaskStatusEnum.Completed;
+        }
+
+        public override string TaskDescription()
+        {
+            return "This is a sample task that will run for 60 seconds before completing.";
         }
     }
 }

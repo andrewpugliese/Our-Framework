@@ -69,6 +69,13 @@ Tables\B1.SignonControl.sql
 Tables\B1.UserSessions.sql
 Tables\B1.AppSessions.sql
 
+// tables for task processing
+Tables\B1.TaskConfigurations.sql
+Tables\B1.TaskRegistrations.sql
+Tables\B1.TaskStatusCodes.sql
+Tables\B1.TaskProcessingQueue.sql
+Tables\B1.TaskDependencies.sql
+
 //
 // create the stored procedures
 //
