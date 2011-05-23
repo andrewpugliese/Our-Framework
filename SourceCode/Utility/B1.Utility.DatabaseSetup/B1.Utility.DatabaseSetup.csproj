@@ -209,6 +209,10 @@
       <Project>{77CD10F5-170A-4E52-80F7-1E8891CD66DF}</Project>
       <Name>B1.TaskProcessingEngine</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj">
+      <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
+      <Name>B1.TaskProcess</Name>
+    </ProjectReference>
     <ProjectReference Include="..\B1.Utility.TestConsoleApp\B1.Utility.TestConsoleApp.csproj">
       <Project>{D4D42AC3-767A-4EBB-B028-0CD46A434D6E}</Project>
       <Name>B1.Utility.TestConsoleApp</Name>

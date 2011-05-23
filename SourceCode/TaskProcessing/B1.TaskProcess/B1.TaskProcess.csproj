@@ -43,10 +43,16 @@
     <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskProcess.cs" />
+    <Compile Include="TaskRegistration.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Core\B1.Core\B1.Core.csproj">
+      <Project>{7A5141B7-4635-4FC4-B040-79669A33F53C}</Project>
+      <Name>B1.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DataAccess\B1.DataAccess\B1.DataAccess.csproj">
       <Project>{DAA8DEAF-7EB8-4E57-92FA-31248AE360E9}</Project>
       <Name>B1.DataAccess</Name>

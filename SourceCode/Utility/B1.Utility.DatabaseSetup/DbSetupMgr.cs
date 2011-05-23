@@ -1806,7 +1806,7 @@ namespace B1.Utility.DatabaseSetup
 
             Models.SampleDbEntities entities = new Models.SampleDbEntities();
 
-            Int64 x = 1111921485685400001;
+            Int64 x = 1114103132800500001;
             var resultsTop10 = from a in entities.TestSequences where a.AppSequenceId >=  x select a;
 
             if (_daMgr == null)
@@ -1823,7 +1823,7 @@ namespace B1.Utility.DatabaseSetup
                 , null
                 , null).ToList();
 
-            x = 1111921490106900020;
+            x = 1114103132820500011;
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
             ts  = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
                 , null
@@ -1831,7 +1831,28 @@ namespace B1.Utility.DatabaseSetup
                 , entities.TestSequences.EntitySet.Name
                 , null
                 , null).ToList();
+            List<Models.TestSequence> tsFull 
+                = _daMgr.ExecuteCollection<Models.TestSequence>(entities, EntityState.Unchanged).ToList();
+            tsFull[0].Remarks = "Updated By EntityFramework";
 
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(tsFull[0].Remarks.ToString(), _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            dbCmd = _daMgr.BuildUpdateDbCommand(entities, tsFull[0], overloads);
+
+        }
+
+        private void btnTaskRegister_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Multiselect = false;
+            ofd.DefaultExt = ".dll";
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == System.Windows.Forms.DialogResult.OK)
+            {
+                if (_daMgr == null)
+                    CreateDbMgr();
+                TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, true, true);
+            }
         }
 
     }

@@ -1293,7 +1293,8 @@ namespace B1.DataAccess
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            Tuple<string, List<DbPredicateParameter>> updateSqlandParams = updateParser.GetUpdateSql();
+            Tuple<string, List<DbPredicateParameter>> updateSqlandParams 
+                    = updateParser.GetUpdateSql(entityContext, updateObject);
 
             foreach (DbPredicateParameter param in updateSqlandParams.Item2)
             {
@@ -1818,18 +1819,44 @@ namespace B1.DataAccess
                                                 , ParameterDirection.Input
                                                 , DBNull.Value);
 
-            // build the dbCommand from the DynamicSQL FormatString
+            // build the dbCommand from the DynamicSQL FormatString for returning cached ids
             dbCmd = BuildNonQueryDbCommand(FormatSQLStringToDynamicSQL(dbParams
                                                                 , Constants.SQL_Update_UniqueIds_SetUniqueId)
                                                             , dbParams);
-            DiscoverParameters(dbCmd, true);
             _internalDbCmdCache.Add(Constants.SQL_Update_UniqueIds_SetUniqueId, dbCmd);
+
+            // build the dbCommand from the DynamicSQL FormatString for setting Max and Rollover Id values
+            dbParams = CreateNewParameterAndCollection(BuildParamName(Constants.MaxIdValue)
+                                                    , DbType.Int64
+                                                    , seqVal.DataTypeNativeDb
+                                                    , seqVal.MaxLength
+                                                    , ParameterDirection.Input
+                                                    , DBNull.Value);
+            AddNewParameterToCollection(dbParams
+                                                , Constants.RolloverIdValue
+                                                , DbType.Int64
+                                                , seqVal.DataTypeNativeDb
+                                                , seqVal.MaxLength
+                                                , ParameterDirection.Input
+                                                , DBNull.Value);
+            AddNewParameterToCollection(dbParams
+                                                , Constants.UniqueIdKey
+                                                , DbType.String
+                                                , seqKey.DataTypeNativeDb
+                                                , seqKey.MaxLength
+                                                , ParameterDirection.Input
+                                                , DBNull.Value);
+
+            dbCmd = BuildNonQueryDbCommand(FormatSQLStringToDynamicSQL(dbParams
+                                                                , Constants.SQL_Update_UniqueIds_SetMaxAndRolloverId)
+                                                            , dbParams);
+
+            _internalDbCmdCache.Add(Constants.SQL_Update_UniqueIds_SetMaxAndRolloverId, dbCmd);
 
             DbTableDmlMgr dmlSelect = DbCatalogGetTableDmlMgr(Constants.SCHEMA_CORE, Constants.TABLE_UniqueIds);
             dmlSelect.SetWhereCondition( (j) => j.Column(Constants.TABLE_UniqueIds, Constants.UniqueIdKey) == 
                     j.Parameter(Constants.TABLE_UniqueIds, Constants.UniqueIdKey, BuildParamName(Constants.UniqueIdKey)));
             dbCmd = BuildSelectDbCommand(dmlSelect, null);
-            DiscoverParameters(dbCmd, true);
             _internalDbCmdCache.Add(dmlSelect.MainTable.FullyQualifiedName, dbCmd);
         }
 
@@ -2344,15 +2371,23 @@ namespace B1.DataAccess
         /// <para>For example:  If current number = 27 and caller asks for blocksize = 50
         /// , then 77 will be returned.  Caller can use 77, 76, 75, ... 29, 28
         /// </para>
+        /// <para>MaxIdValue is used to control the limit of a unique id. When RolloverIdValue 
+        /// is given, that value is returned with MaxIdValue is exceeded; otherwise and exception
+        /// is raised.</para>
         /// </summary>
         /// <param name="uniqueIdKey">The key that will point to the value</param>
         /// <param name="blockSize">The number of values to allocate continguously</param>
+        /// <param name="MaxIdValue">The maximum value that can be returned</param>
+        /// <param name="RolloverIdValue">The value to return once MaxIdValue has been exceeded.</param>
         /// <returns>The high value of the block size</returns>
         /// <remarks>The unique ids are stored in a database table: Core.UniqueIds
         /// <para>Each key is given its own row and can have its own value, cacheBlockSize, maxValue, and rolloverValue</para>
         /// </remarks>
-        public Int64 GetNextUniqueId(string uniqueIdKey, UInt32 blockSize)
-        {
+        public Int64 GetNextUniqueId(string uniqueIdKey
+                , UInt32 blockSize
+                , Int64? MaxIdValue = null
+                , Int64? RolloverIdValue = null)
+       {
             if (string.IsNullOrEmpty(uniqueIdKey))
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter, Constants.UniqueIdKey);
             if (blockSize == 0)
@@ -2374,7 +2409,7 @@ namespace B1.DataAccess
                     // if this is the first time we have seen this key
                     // perform a dummy request to the db (BlockSize = 0)
                     // to find the default CacheBlockSize
-                    Int64 newSeq = GetNextUniqueIdBlock(uniqueIdKey, 0);
+                    Int64 newSeq = GetNextUniqueIdBlock(uniqueIdKey, 0, MaxIdValue, RolloverIdValue);
                     DbCommand dbCmd = _internalDbCmdCache.Get(Constants.SCHEMA_CORE + "." + Constants.TABLE_UniqueIds);
                     dbCmd.Parameters[BuildParamName(Constants.UniqueIdKey)].Value = uniqueIdKey;
                     DbCommandMgr dbCmdMgr = new DbCommandMgr(this);
@@ -2406,7 +2441,7 @@ namespace B1.DataAccess
                                                     uci.CacheBlockSize
                                                 ? blockSize : uci.CacheBlockSize;
                         // get the new id block based upon the greater block size
-                        Int64 newId = GetNextUniqueIdBlock(uniqueIdKey, blockSizeMax);
+                        Int64 newId = GetNextUniqueIdBlock(uniqueIdKey, blockSizeMax, MaxIdValue, RolloverIdValue);
                         
                         // if the new id was a rollover value then we start over
                         // by taking the new id and size
@@ -2438,7 +2473,30 @@ namespace B1.DataAccess
                     return uci.UniqueIdBlockHead;
                 }
             }
-            return GetNextUniqueIdBlock(uniqueIdKey, blockSize);
+            return GetNextUniqueIdBlock(uniqueIdKey, blockSize, MaxIdValue, RolloverIdValue);
+        }
+
+        /// <summary>
+        /// Method to return the Next Unique Number for the given Key
+        /// and a BlockSize.  The block size allows the caller to retrieve
+        /// a contiguous sequence of numbers (in a single operation).  
+        /// <para>The returned value is the high limit of the sequence of numbers.
+        /// The caller can just sequence descending for the given block size of numbers 
+        /// to obtain each unique number.</para>
+        /// <para>For example:  If current number = 27 and caller asks for blocksize = 50
+        /// , then 77 will be returned.  Caller can use 77, 76, 75, ... 29, 28
+        /// </para>
+        /// </summary>
+        /// <param name="uniqueIdKey">The key that will point to the value</param>
+        /// <param name="blockSize">The number of values to allocate continguously</param>
+        /// <returns>The high value of the block size</returns>
+        /// <remarks>The unique ids are stored in a database table: Core.UniqueIds
+        /// <para>Each key is given its own row and can have its own value, cacheBlockSize, maxValue, and rolloverValue</para>
+        /// </remarks>
+        public Int64 GetNextUniqueId(string uniqueIdKey
+                , UInt32 blockSize)
+        {
+            return GetNextUniqueId(uniqueIdKey, blockSize, null, null);
         }
 
         /// <summary>
@@ -2501,14 +2559,58 @@ namespace B1.DataAccess
             }
         }
 
-        Int64 GetNextUniqueIdBlock(string uniqueIdKey, UInt32 blockSize)
+        /// <summary>
+        /// Method to return the Next Unique Number for the given Key
+        /// and a BlockSize.  The block size allows the caller to retrieve
+        /// a contiguous sequence of numbers (in a single operation).  
+        /// <para>The returned value is the high limit of the sequence of numbers.
+        /// The caller can just sequence descending for the given block size of numbers 
+        /// to obtain each unique number.</para>
+        /// <para>For example:  If current number = 27 and caller asks for blocksize = 50
+        /// , then 77 will be returned.  Caller can use 77, 76, 75, ... 29, 28
+        /// </para>
+        /// </summary>
+        /// <param name="uniqueIdKey">The key that will point to the value</param>
+        /// <param name="blockSize">The number of values to allocate continguously</param>
+        /// <returns>The high value of the block size</returns>
+        /// <remarks>The unique ids are stored in a database table: Core.UniqueIds
+        /// <para>Each key is given its own row and can have its own value, cacheBlockSize, maxValue, and rolloverValue</para>
+        /// </remarks>
+        Int64 GetNextUniqueIdBlock(string uniqueIdKey
+                , UInt32 blockSize
+                , Int64? MaxIdValue = null
+                , Int64? RolloverIdValue = null)
         {
+            if (MaxIdValue.HasValue && RolloverIdValue.HasValue && RolloverIdValue.Value > MaxIdValue.Value)
+                throw new ExceptionEvent(enumExceptionEventCodes.InvalidParameterValue
+                    , string.Format("RolloverIdValue: {0} cannot be greater than MaxIdvalue: {1}"
+                        , MaxIdValue.Value
+                        , RolloverIdValue.Value));
+
             DbCommand dbCmd = _internalDbCmdCache.Get(Constants.USP_UniqueIdsGetNextBlock);
             dbCmd.Parameters[BuildParamName(Constants.UniqueIdKey)].Value
                                             = uniqueIdKey;
             dbCmd.Parameters[BuildParamName(Constants.BlockAmount)].Value = blockSize;
             ExecuteNonQuery(dbCmd, null, null);
-            return Convert.ToInt64(GetOutParamValue(dbCmd, Constants.UniqueIdValue));
+            Int64 newId = Convert.ToInt64(GetOutParamValue(dbCmd, Constants.UniqueIdValue));
+            if (MaxIdValue.HasValue)
+            {
+                if (newId > MaxIdValue.Value)
+                {
+                    if (!RolloverIdValue.HasValue)
+                        throw new ExceptionEvent(enumExceptionEventCodes.InvalidParameterValue
+                            , string.Format("MaxIdvalue: {0} exceeded without a RolloverIdValue defined", MaxIdValue.Value));
+
+                    dbCmd = _internalDbCmdCache.Get(Constants.SQL_Update_UniqueIds_SetMaxAndRolloverId);
+                    dbCmd.Parameters[BuildParamName(Constants.UniqueIdKey)].Value
+                                                    = uniqueIdKey;
+                    dbCmd.Parameters[BuildParamName(Constants.MaxIdValue)].Value = MaxIdValue.Value;
+                    dbCmd.Parameters[BuildParamName(Constants.RolloverIdValue)].Value = RolloverIdValue.Value;
+                    ExecuteNonQuery(dbCmd, null, null);
+                    return GetNextUniqueIdBlock(uniqueIdKey, blockSize, MaxIdValue.Value, null);
+                }
+            }
+            return newId;
         }
 
         #endregion
@@ -2586,15 +2688,33 @@ namespace B1.DataAccess
             }
         }
 
-        /// <summary>
-        /// Creates a collection of type T using dataReader.
+
+        /// Returns a collection of type T based upon the results of the given DbCommand query.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dbCommand"></param>
-        /// <param name="dbTrans"></param>
+        /// <typeparam name="T">Type to create</typeparam>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
-        /// <returns></returns>
+        /// <returns>Collection of Type T</returns>
+        public IEnumerable<T> ExecuteCollection<T>(ObjectContext context
+                        , params EntityState[] entityStates) where T : new()
+        {
+            List<T> collection = new List<T>();
+            foreach (EntityState entityState in entityStates)
+                foreach (ObjectStateEntry ose in context.ObjectStateManager.GetObjectStateEntries(entityState))
+                    collection.Add((T)ose.Entity);
+            return collection;
+        }
+
+        /// Returns a collection of type T based upon the results of the given DbCommand query.
+        /// </summary>
+        /// <typeparam name="T">Type to create</typeparam>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
+        /// <param name="parameterNameValues">A set of parameter names and values or null. 
+        /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
+        /// <returns>Collection of Type T</returns>
         public IEnumerable<T> ExecuteCollection<T>(DbCommand dbCommand
                         , DbTransaction dbTrans
                         , params object[] parameterNameValues) where T : new()
@@ -2603,17 +2723,18 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// Creates a collection of type T using dataReader.
+        /// Returns a collection of type T based upon the results of the given DbCommand query.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dbCommand"></param>
-        /// <param name="dbTrans"></param>
-        /// <param name="dataReaderHandler">Optional (can be null). A function that, given a reader, and a dictionary of 
-        /// properties for type T, will populate an IEnumerable of T. 
-        /// If null, an IEnumerable of T will be generated in the order recieved by the datareader</param>
+        /// <typeparam name="T">Type to create</typeparam>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
+        /// <param name="dataReaderHandler">An optional function accepting a datareader, dictionary of 
+        /// properties for type T, an object context and entity set name, will populate an IEnumerable of T.
+        /// To allow programmer to write custom handler.
+        /// <para>If null, a default handler will be used.</para></param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
-        /// <returns></returns>
+        /// <returns>Collection of Type T</returns>
         public IEnumerable<T> ExecuteCollection<T>(DbCommand dbCommand
                         , DbTransaction dbTrans
                         , Func<IDataReader, List<KeyValuePair<int, System.Reflection.PropertyInfo>>,
@@ -2664,17 +2785,22 @@ namespace B1.DataAccess
 
 
         /// <summary>
-        /// Creates a collection of type T using dataReader.
+        /// Returns a collection of type T based upon the results of the given DbCommand query.
+        /// <para>This function will update the given ObjectContext for the given entity set name and 
+        /// will change the state of the context for the entity to unchanged when successful.</para>
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="dbCommand"></param>
-        /// <param name="dbTrans"></param>
-        /// <param name="dataReaderHandler">Optional (can be null). A function that, given a reader, and a dictionary of 
-        /// properties for type T, will populate an IEnumerable of T. 
-        /// If null, an IEnumerable of T will be generated in the order recieved by the datareader</param>
+        /// <typeparam name="T">Type to create</typeparam>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
+        /// <param name="context">An Entity Framework context object that will be affected</param>
+        /// <param name="entitySetName">The entity set name within the context object to affect changes</param>
+        /// <param name="dataReaderHandler">An optional function accepting a datareader, dictionary of 
+        /// properties for type T, an object context and entity set name, will populate an IEnumerable of T and
+        /// update the object context.  To allow programmer to write custom handler.
+        /// <para>If null, a default handler will be used.</para></param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
-        /// <returns></returns>
+        /// <returns>Collection of Type T</returns>
         public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
                         , DbTransaction dbTrans
                         , ObjectContext context
@@ -2720,8 +2846,8 @@ namespace B1.DataAccess
                                 GetValueOrNull(Convert.ChangeType(rdr.GetValue(kv.Key), kv.Value.PropertyType)), null));
                         items.Add(obj);
                         context.AttachTo(entitySetName, obj);
+                        context.ObjectStateManager.ChangeObjectState(obj, EntityState.Unchanged);
                     }
-                    context.AcceptAllChanges();
                     return items;
                 }
                 else
@@ -2730,6 +2856,21 @@ namespace B1.DataAccess
         }
 
 
+        /// <summary>
+        /// Returns a collection of type T based upon the results of the given DbCommand query.
+        /// <para>This function will update the given ObjectContext for the given entity set name and 
+        /// will change the state of the context for the entity to unchanged when successful.</para>
+        /// </summary>
+        /// <typeparam name="T">Type to create</typeparam>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
+        /// <param name="context">An Entity Framework context object that will be affected</param>
+        /// <param name="entitySetName">The entity set name within the context object to affect changes</param>
+        /// properties for type T, will populate an IEnumerable of T. 
+        /// If null, an IEnumerable of T will be generated in the order recieved by the datareader</param>
+        /// <param name="parameterNameValues">A set of parameter names and values or null. 
+        /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
+        /// <returns>Collection of Type T</returns>
         public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
                 , DbTransaction dbTrans
                 , ObjectContext context
