@@ -1791,51 +1791,6 @@ namespace B1.Utility.DatabaseSetup
             _tpe.Resume();
         }
 
-        private void btnTestEntity_Click(object sender, EventArgs e)
-        {
-            DbCommand dbCmd;
-            DataTable tbl;
-
-            Models.AppConfigSetting appConfigSetting = new Models.AppConfigSetting()
-            {
-                ConfigDescription = "New Setting",
-                ConfigKey = "New Key",
-                ConfigSetName = "New Set Name",
-                ConfigValue = "New Value"
-            };
-
-
-            Models.SampleDbEntities entities = new Models.SampleDbEntities();
-
-            Int64 x = 1112918265098717051;
-            var resultsTop10 = from a in entities.TestSequences where a.AppSequenceId >=  x select a;
-
-            if (_daMgr == null)
-                CreateDbMgr();
-
-            dbCmd = _daMgr.BuildSelectDbCommand(resultsTop10, 10);
-
-            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
-            List<Models.TestSequence> ts
-                = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
-                , null
-                , entities).ToList();
-
-            x = 1112918265119317061;
-            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
-            ts  = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
-                , null
-                , entities).ToList();
-            List<Models.TestSequence> tsFull 
-                = _daMgr.ExecuteCollection<Models.TestSequence>(entities, EntityState.Unchanged).ToList();
-            tsFull[0].Remarks = "Updated By EntityFramework";
-
-            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            overloads.Add(tsFull[0].Remarks.ToString(), _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
-            dbCmd = _daMgr.BuildUpdateDbCommand(entities, tsFull[0], overloads);
-
-        }
-
         private void btnTaskRegister_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
@@ -1866,13 +1821,21 @@ namespace B1.Utility.DatabaseSetup
             var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities);
 
             DbCommand dbCmd = null;
-            foreach(Models.TestSequence seq in sequences)
-            {
-                seq.Remarks = "Changed By EF Test Update: " + DateTime.Now.ToString("HH:mm:ss:fff");
 
-                //First time in, dbCmd will be null so a new command will be created. 
-                //Subsequent calls will use the first DbCommand.
-                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, null, dbCmd);
+            // the overloads collection is used for columns that require a database operation and are not known to the EF
+            // for example (getdate()).  So we show example with column DbServerTime
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            foreach (Models.TestSequence seq in sequences)
+            {
+                seq.Remarks = "Updated By EF Test Update; localTime: " + DateTime.Now.ToString("HH:mm:ss:fff");
+                seq.AppLocalTime = DateTime.Now;
+                seq.AppSynchTime = _daMgr.DbSynchTime;
+
+                // First time in, dbCmd will be null so a new command will be created. 
+                // Subsequent calls will use the first DbCommand.
+                // Also, each call to the db will update 
+                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, overloads, null, dbCmd);
                 dbCmd = results.Item2;
             }
 

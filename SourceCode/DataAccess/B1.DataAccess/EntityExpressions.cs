@@ -1788,27 +1788,6 @@ namespace B1.DataAccess
 
             ObjectStateEntry ose = context.ObjectStateManager.GetObjectStateEntry(entity);
 
-            // build where clause
-            StringBuilder where = new StringBuilder();
-            foreach (EntityKeyMember key in ose.EntityKey.EntityKeyValues)
-            {
-                string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
-                where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
-                        , key.Key, parameterName, Environment.NewLine);
-
-                parameters.Add(new DbPredicateParameter()
-                        {
-                            ColumnName = _qualifiedTable.GetColumnName(_qualifiedTable.GetColumnName(key.Key)),
-                            ParameterName = parameterName,
-                            TableName = _qualifiedTable.EntityName,
-                            SchemaName = _qualifiedTable.SchemaName,
-                            MemberPropertyName = key.Key,
-                            MemberAccess = Expression.Lambda(
-                                    Expression.Property(Expression.Constant(_objRef)
-                                    , _entityType.GetProperty(key.Key))).Compile()
-                        });
-            }
-
             foreach (string propName in ose.GetModifiedProperties())
             {
                 string columnName = _qualifiedTable.GetColumnName(propName);
@@ -1818,19 +1797,17 @@ namespace B1.DataAccess
                     , columnName);
 
                 object value = null;
-                if (!propertyDbFunctions.ContainsKey(propName))
+                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(propName))
                 {
-                    bool isNewValueParam = false;
-
-                    if(parameters.Count(p => p.MemberPropertyName == propName) > 0)
-                        isNewValueParam = true;
-
                     DbPredicateParameter param = new DbPredicateParameter()
                     {
                         ColumnName = columnName,
                         TableName = _qualifiedTable.EntityName,
                         SchemaName = _qualifiedTable.SchemaName,
-                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr, isNewValueParam),
+                        ParameterName = LinqTableMgr.BuildParamName(propName
+                                , parameters
+                                , _daMgr
+                                , ose.EntityKey.EntityKeyValues.Where( j => j.Key == propName).Count() > 0 ? true : false),
                         MemberPropertyName = propName,
                         MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
@@ -1850,16 +1827,49 @@ namespace B1.DataAccess
 
             }
 
+            foreach (string property in propertyDbFunctions.Keys)
+                if (ose.GetModifiedProperties().Where(j => j == property).Count() == 0)
+                {
+                    string columnName = _qualifiedTable.GetColumnName(property);
+                    setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
+                             columnName
+                             , propertyDbFunctions[property]
+                             , Environment.NewLine);
+                }                   
+
+            // build where clause
+            StringBuilder where = new StringBuilder();
+            foreach(EntityKeyMember key in ose.EntityKey.EntityKeyValues)
+            {
+                string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
+                where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
+                        , key.Key, parameterName, Environment.NewLine);
+
+                parameters.Add(new DbPredicateParameter()
+                {
+                    ColumnName = _qualifiedTable.GetColumnName(_qualifiedTable.GetColumnName(key.Key)),
+                    ParameterName = parameterName,
+                    TableName = _qualifiedTable.EntityName,
+                    SchemaName = _qualifiedTable.SchemaName,
+                    MemberPropertyName = key.Key,
+                    MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(_objRef)
+                            , _entityType.GetProperty(key.Key))).Compile()
+                });
+            }
+
             sb.Append(setColumns);
-            
+
             sb.AppendFormat(where.ToString());
             return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
         }
 
+
         /// <summary>
         /// Points the ParameterSite(Isite) parameters to the new object.
         /// </summary>
-        /// <param name="dmCmd"></param>
+        /// <param name="dbCmd"></param>
+        /// <param name="obj"></param>
         internal static void RemapDbCommandParameters(DbCommand dbCmd, object obj)
         {
             if(!(dbCmd.Site is ParameterSite))
