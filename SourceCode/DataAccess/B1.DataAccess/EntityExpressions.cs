@@ -1665,14 +1665,13 @@ namespace B1.DataAccess
         private QualifiedEntity _qualifiedTable;
         private List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
 
-        private string _columns;
-        private string _values;
         private Type _entityType;
         private DataAccessMgr _daMgr;
         private object _objRef;
         private ObjectContext _entityContext;
 
         internal QualifiedEntity QualifiedTable { get { return _qualifiedTable; } }
+        internal string EntitySetName { get; set; }
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {
@@ -1689,6 +1688,8 @@ namespace B1.DataAccess
 
             EntitySetBase entitySet = cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
                     es => es.ElementType.Name == _entityType.Name);
+
+            EntitySetName = entitySet.Name;
 
             _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
 
@@ -1786,43 +1787,6 @@ namespace B1.DataAccess
             List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
 
             ObjectStateEntry ose = context.ObjectStateManager.GetObjectStateEntry(entity);
-            foreach (string propName in ose.GetModifiedProperties())
-            {
-                string columnName = _qualifiedTable.GetColumnName(propName);
-
-                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName
-                    , _qualifiedTable.EntityName
-                    , columnName);
-
-                object value = null;
-                if (!propertyDbFunctions.ContainsKey(propName))
-                {
-                    DbPredicateParameter param = new DbPredicateParameter()
-                    {
-                        ColumnName = columnName,
-                        TableName = _qualifiedTable.EntityName,
-                        SchemaName = _qualifiedTable.SchemaName,
-                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr, true),
-                        MemberPropertyName = propName,
-                        MemberAccess = Expression.Lambda(
-                            Expression.Property(Expression.Constant(_objRef)
-                            , _entityType.GetProperty(propName))).Compile()
-                    };
-
-                    value = _daMgr.BuildBindVariableName(param.ParameterName);
-
-                    parameters.Add(param);
-                }
-                else value = propertyDbFunctions[propName];
-
-                setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
-                         columnName
-                         , value
-                         , Environment.NewLine);
-
-            }
-
-            sb.Append(setColumns);
 
             // build where clause
             StringBuilder where = new StringBuilder();
@@ -1844,6 +1808,50 @@ namespace B1.DataAccess
                                     , _entityType.GetProperty(key.Key))).Compile()
                         });
             }
+
+            foreach (string propName in ose.GetModifiedProperties())
+            {
+                string columnName = _qualifiedTable.GetColumnName(propName);
+
+                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName
+                    , _qualifiedTable.EntityName
+                    , columnName);
+
+                object value = null;
+                if (!propertyDbFunctions.ContainsKey(propName))
+                {
+                    bool isNewValueParam = false;
+
+                    if(parameters.Count(p => p.MemberPropertyName == propName) > 0)
+                        isNewValueParam = true;
+
+                    DbPredicateParameter param = new DbPredicateParameter()
+                    {
+                        ColumnName = columnName,
+                        TableName = _qualifiedTable.EntityName,
+                        SchemaName = _qualifiedTable.SchemaName,
+                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr, isNewValueParam),
+                        MemberPropertyName = propName,
+                        MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(_objRef)
+                            , _entityType.GetProperty(propName))).Compile()
+                    };
+
+                    value = _daMgr.BuildBindVariableName(param.ParameterName);
+
+                    parameters.Add(param);
+                }
+                else value = propertyDbFunctions[propName];
+
+                setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
+                         columnName
+                         , value
+                         , Environment.NewLine);
+
+            }
+
+            sb.Append(setColumns);
+            
             sb.AppendFormat(where.ToString());
             return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
         }
@@ -1869,6 +1877,23 @@ namespace B1.DataAccess
                             Expression.Property(Expression.Constant(obj)
                             , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
             }
+        }
+
+        internal static string GetEntitySetName(ObjectContext entityContext, object entity)
+        {
+            Type entityType = ObjectContext.GetObjectType(entity.GetType());
+            return GetEntitySetName(entityContext, entity);
+        }
+
+        internal static string GetEntitySetName(ObjectContext entityContext, Type entityType)
+        {
+            EntityContainer cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
+                    entityContext.DefaultContainerName, DataSpace.CSpace);
+
+            StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
+
+            return cspaceEntityContainer.BaseEntitySets.FirstOrDefault(
+                    es => es.ElementType.Name == entityType.Name).Name;
         }
     }
 }

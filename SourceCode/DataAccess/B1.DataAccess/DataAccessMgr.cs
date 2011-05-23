@@ -1245,7 +1245,7 @@ namespace B1.DataAccess
         /// <param name="insertObject"></param>
         /// <param name="propertyDbFunctions"></param>
         /// <returns></returns>
-        public DbCommand BuildInsertDbCommand(ObjectContext entityContext
+        internal DbCommand BuildInsertDbCommand(ObjectContext entityContext
             , object insertObject
             , Dictionary<string, object> propertyDbFunctions)
         {
@@ -2804,7 +2804,6 @@ namespace B1.DataAccess
         public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
                         , DbTransaction dbTrans
                         , ObjectContext context
-                        , string entitySetName
                         , Func<IDataReader, List<KeyValuePair<int, System.Reflection.PropertyInfo>>
                                 , ObjectContext
                                 , string 
@@ -2835,6 +2834,8 @@ namespace B1.DataAccess
                         props.Add(new KeyValuePair<int, System.Reflection.PropertyInfo>(i, pinfo));
                 }
 
+                string entitySetName = ObjectParser.GetEntitySetName(context, typeof(T));
+
                 if (dataReaderHandler == null)
                 {
                     List<T> items = new List<T>();
@@ -2845,6 +2846,7 @@ namespace B1.DataAccess
                         props.ForEach(kv => kv.Value.SetValue(obj,
                                 GetValueOrNull(Convert.ChangeType(rdr.GetValue(kv.Key), kv.Value.PropertyType)), null));
                         items.Add(obj);
+                        
                         context.AttachTo(entitySetName, obj);
                         context.ObjectStateManager.ChangeObjectState(obj, EntityState.Unchanged);
                     }
@@ -2874,10 +2876,9 @@ namespace B1.DataAccess
         public IEnumerable<T> ExecuteContext<T>(DbCommand dbCommand
                 , DbTransaction dbTrans
                 , ObjectContext context
-                , string entitySetName
                 , params object[] parameterNameValues) where T : new()
         {
-            return ExecuteContext<T>(dbCommand, dbTrans, context, entitySetName, null, parameterNameValues);
+            return ExecuteContext<T>(dbCommand, dbTrans, context, null, parameterNameValues);
         }
 
         /// <summary>
@@ -3443,6 +3444,38 @@ namespace B1.DataAccess
 
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
         }
+
+        //public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+        //         DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        //{
+        //    return InsertEntity(entityContext, insertObject, new Dictionary<string, object>(), dbTransaction, dbCmdIn);
+        //}
+
+        //public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+        //        Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        //{
+        //    DbCommand dbCmdInsert = null;
+
+        //    if(dbCmdIn != null)
+        //    {
+        //        dbCmdInsert = dbCmdIn;
+        //        ObjectParser.RemapDbCommandParameters(dbCmdInsert, insertObject);
+        //    }
+        //    else
+        //    {
+        //        DbCommand insert = BuildInsertDbCommand(entityContext, insertObject, propertyDbFunctions);
+        //        DbCommand select = BuildSelectDbCommand(null, 1);
+                
+        //    }
+
+        //    ExecuteDataSet(dbCmdInsert, dbTransaction, null);
+
+        //    entityContext.AttachTo(ObjectParser.GetEntitySetName(entityContext, insertObject), insertObject);
+
+        //    entityContext.ObjectStateManager.ChangeObjectState(insertObject, EntityState.Unchanged);
+
+        //    return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
+        //}
 
         /// <summary>
         /// Function will attempt to prepare a database specific string for debugging

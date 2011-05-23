@@ -1807,7 +1807,7 @@ namespace B1.Utility.DatabaseSetup
 
             Models.SampleDbEntities entities = new Models.SampleDbEntities();
 
-            Int64 x = 1114103132800500001;
+            Int64 x = 1112918265098717051;
             var resultsTop10 = from a in entities.TestSequences where a.AppSequenceId >=  x select a;
 
             if (_daMgr == null)
@@ -1819,19 +1819,13 @@ namespace B1.Utility.DatabaseSetup
             List<Models.TestSequence> ts
                 = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
                 , null
-                , entities
-                , entities.TestSequences.EntitySet.Name
-                , null
-                , null).ToList();
+                , entities).ToList();
 
-            x = 1114103132820500011;
+            x = 1112918265119317061;
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
             ts  = _daMgr.ExecuteContext<Models.TestSequence>(dbCmd
                 , null
-                , entities
-                , entities.TestSequences.EntitySet.Name
-                , null
-                , null).ToList();
+                , entities).ToList();
             List<Models.TestSequence> tsFull 
                 = _daMgr.ExecuteCollection<Models.TestSequence>(entities, EntityState.Unchanged).ToList();
             tsFull[0].Remarks = "Updated By EntityFramework";
@@ -1869,8 +1863,7 @@ namespace B1.Utility.DatabaseSetup
             DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
                     from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
 
-            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities,
-                    entities.TestSequences.EntitySet.Name, null, null);
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities);
 
             DbCommand dbCmd = null;
             foreach(Models.TestSequence seq in sequences)
