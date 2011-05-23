@@ -1278,7 +1278,7 @@ namespace B1.DataAccess
             return dbCmd;
         }
 
-        public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
+        internal DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
         {
             return BuildInsertDbCommand(entityContext
                     , insertObject
@@ -1313,7 +1313,7 @@ namespace B1.DataAccess
             
             // return the new dbCommand
             DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSqlandParams.Item1, dbParams);
-            cmdUpdate.Site = new ParameterSite(updateParser.Parameters);
+            cmdUpdate.Site = new ParameterSite(updateSqlandParams.Item2);
             return cmdUpdate;
         }
 
@@ -3392,6 +3392,56 @@ namespace B1.DataAccess
             }
             else throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
                     , "tableName cannot be null or empty.");
+        }
+
+        /// <summary>
+        /// Updates the entity in the database, and sets the object to unchanged in the context. 
+        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
+        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
+        /// to the properties of the updateObject instance.
+        /// </summary>
+        /// <param name="entityContext">Context to update</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
+        /// <param name="dbCmdIn">Optional. See summary.</param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
+                DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        {
+            return UpdateEntity(entityContext, updateObject, 
+                    new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), null, dbCmdIn);
+        }
+
+        /// <summary>
+        /// Updates the entity in the database, and sets the object to unchanged in the context. 
+        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
+        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
+        /// to the properties of the updateObject instance.
+        /// </summary>
+        /// <param name="entityContext">Context to update</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <param name="propertyDbFunctions">DB Functions to be evaluated for that particular column</param>
+        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
+        /// <param name="dbCmdIn">Optional. See summary.</param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
+                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        {
+            DbCommand dbCmd = null;
+
+            if(dbCmdIn != null)
+            {
+                dbCmd = dbCmdIn;
+                ObjectParser.RemapDbCommandParameters(dbCmd, updateObject);
+            }
+            else
+                dbCmd = BuildUpdateDbCommand(entityContext, updateObject, propertyDbFunctions);
+
+            ExecuteNonQuery(dbCmd, dbTransaction);
+
+            entityContext.ObjectStateManager.ChangeObjectState(updateObject, EntityState.Unchanged);
+
+            return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
         }
 
         /// <summary>

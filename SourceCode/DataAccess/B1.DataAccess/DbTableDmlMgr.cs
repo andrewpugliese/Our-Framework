@@ -924,6 +924,9 @@ namespace B1.DataAccess
         public string ColumnName { get; set; }
         public DbParameter Paramater { get; set; }
         public object Value { get; set; }
+
+        // Fields used for member access in Linq and Entity Framework DML;
+        public string MemberPropertyName { get; set; }
         public Delegate MemberAccess { get; set; }
     }
 

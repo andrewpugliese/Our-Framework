@@ -1247,7 +1247,7 @@ namespace B1.DataAccess
 
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            if(node.Operand is LambdaExpression)
+            if(node.Operand is LambdaExpression || node.Operand is MemberExpression)
                 return Visit(node.Operand);
             else
                 return node;
@@ -1351,8 +1351,10 @@ namespace B1.DataAccess
             {   
                 if(_currentParameter != null)
                 {
-                    _currentParameter.MemberAccess = Expression.Lambda(node).Compile();
-                    _currentParameter.Value = Expression.Lambda(node).Compile().DynamicInvoke();
+                    Delegate memberAccess = Expression.Lambda(node).Compile();
+                    _currentParameter.MemberPropertyName = node.Member.Name;
+                    _currentParameter.MemberAccess = memberAccess;
+                    _currentParameter.Value = memberAccess.DynamicInvoke();
                     _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
                     _sqlPredicate.Append(_daMgr.BuildBindVariableName(_currentParameter.ParameterName));
                     _tableMgr._parameters.Add(_currentParameter);
@@ -1671,7 +1673,6 @@ namespace B1.DataAccess
         private ObjectContext _entityContext;
 
         internal QualifiedEntity QualifiedTable { get { return _qualifiedTable; } }
-        internal List<DbPredicateParameter> Parameters { get { return _parameters; } }
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {
@@ -1743,6 +1744,7 @@ namespace B1.DataAccess
                             TableName = _qualifiedTable.EntityName,
                             SchemaName = _qualifiedTable.SchemaName,
                             ParameterName = LinqTableMgr.BuildParamName(prop.Name, parameters, _daMgr),
+                            MemberPropertyName = prop.Name,
                             MemberAccess = Expression.Lambda(
                                 Expression.Property(Expression.Constant(_objRef), prop)).Compile()
                         };
@@ -1779,6 +1781,8 @@ namespace B1.DataAccess
                     , _qualifiedTable.EntityName
                     , Environment.NewLine);
 
+            StringBuilder setColumns = new StringBuilder();
+
             List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
 
             ObjectStateEntry ose = context.ObjectStateManager.GetObjectStateEntry(entity);
@@ -1798,7 +1802,8 @@ namespace B1.DataAccess
                         ColumnName = columnName,
                         TableName = _qualifiedTable.EntityName,
                         SchemaName = _qualifiedTable.SchemaName,
-                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr),
+                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr, true),
+                        MemberPropertyName = propName,
                         MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
                             , _entityType.GetProperty(propName))).Compile()
@@ -1810,12 +1815,15 @@ namespace B1.DataAccess
                 }
                 else value = propertyDbFunctions[propName];
 
-                sb.AppendFormat("{0}{1} = {2}{3}", sb.Length == 0 ? "" : ", ",
+                setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                          columnName
                          , value
                          , Environment.NewLine);
 
             }
+
+            sb.Append(setColumns);
+
             // build where clause
             StringBuilder where = new StringBuilder();
             foreach (EntityKeyMember key in ose.EntityKey.EntityKeyValues)
@@ -1823,9 +1831,44 @@ namespace B1.DataAccess
                 string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
                 where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
                         , key.Key, parameterName, Environment.NewLine);
+
+                parameters.Add(new DbPredicateParameter()
+                        {
+                            ColumnName = _qualifiedTable.GetColumnName(_qualifiedTable.GetColumnName(key.Key)),
+                            ParameterName = parameterName,
+                            TableName = _qualifiedTable.EntityName,
+                            SchemaName = _qualifiedTable.SchemaName,
+                            MemberPropertyName = key.Key,
+                            MemberAccess = Expression.Lambda(
+                                    Expression.Property(Expression.Constant(_objRef)
+                                    , _entityType.GetProperty(key.Key))).Compile()
+                        });
             }
             sb.AppendFormat(where.ToString());
             return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
+        }
+
+        /// <summary>
+        /// Points the ParameterSite(Isite) parameters to the new object.
+        /// </summary>
+        /// <param name="dmCmd"></param>
+        internal static void RemapDbCommandParameters(DbCommand dbCmd, object obj)
+        {
+            if(!(dbCmd.Site is ParameterSite))
+                return;
+
+            ParameterSite paramSite = (ParameterSite)dbCmd.Site;
+
+            List<DbPredicateParameter> parameters = (List<DbPredicateParameter>)paramSite.GetService(null);
+
+            foreach(var param in parameters)
+            {
+                PropertyInfo property = obj.GetType().GetProperty(param.MemberPropertyName);
+
+                param.MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(obj)
+                            , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
+            }
         }
     }
 }

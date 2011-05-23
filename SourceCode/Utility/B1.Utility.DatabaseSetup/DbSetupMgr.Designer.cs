@@ -68,6 +68,7 @@
             this.label47 = new System.Windows.Forms.Label();
             this.tbMacroParams = new System.Windows.Forms.TextBox();
             this.tabTestDaMgr = new System.Windows.Forms.TabPage();
+            this.btnTestEntity = new System.Windows.Forms.Button();
             this.tbDbProvClass = new System.Windows.Forms.TextBox();
             this.label46 = new System.Windows.Forms.Label();
             this.tbDbProvAssembly = new System.Windows.Forms.TextBox();
@@ -208,14 +209,15 @@
             this.btnPauseTPE = new System.Windows.Forms.Button();
             this.btnStopTPE = new System.Windows.Forms.Button();
             this.btnStartTPE = new System.Windows.Forms.Button();
+            this.tabTaskRegister = new System.Windows.Forms.TabPage();
+            this.label50 = new System.Windows.Forms.Label();
+            this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
+            this.btnTaskRegister = new System.Windows.Forms.Button();
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnTestEntity = new System.Windows.Forms.Button();
-            this.tabTaskRegister = new System.Windows.Forms.TabPage();
-            this.btnTaskRegister = new System.Windows.Forms.Button();
-            this.label50 = new System.Windows.Forms.Label();
-            this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
+            this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnTestEFUpdate = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -241,6 +243,7 @@
             this.tabTaskProcessing.SuspendLayout();
             this.tabTaskRegister.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).BeginInit();
+            this.tabTestEF.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnExit
@@ -478,6 +481,7 @@
             this.tabDbSetupControl.Controls.Add(this.tabUserSession);
             this.tabDbSetupControl.Controls.Add(this.tabTaskProcessing);
             this.tabDbSetupControl.Controls.Add(this.tabTaskRegister);
+            this.tabDbSetupControl.Controls.Add(this.tabTestEF);
             this.tabDbSetupControl.Location = new System.Drawing.Point(12, 6);
             this.tabDbSetupControl.Name = "tabDbSetupControl";
             this.tabDbSetupControl.SelectedIndex = 0;
@@ -599,6 +603,17 @@
             this.tabTestDaMgr.TabIndex = 1;
             this.tabTestDaMgr.Text = "Test DataAccessMgr";
             this.tabTestDaMgr.UseVisualStyleBackColor = true;
+            // 
+            // btnTestEntity
+            // 
+            this.btnTestEntity.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestEntity.Location = new System.Drawing.Point(544, 301);
+            this.btnTestEntity.Name = "btnTestEntity";
+            this.btnTestEntity.Size = new System.Drawing.Size(66, 29);
+            this.btnTestEntity.TabIndex = 173;
+            this.btnTestEntity.Text = "TestEntity";
+            this.btnTestEntity.UseVisualStyleBackColor = true;
+            this.btnTestEntity.Click += new System.EventHandler(this.btnTestEntity_Click);
             // 
             // tbDbProvClass
             // 
@@ -2277,35 +2292,6 @@
             this.btnStartTPE.UseVisualStyleBackColor = true;
             this.btnStartTPE.Click += new System.EventHandler(this.btnStartTPE_Click);
             // 
-            // btnAbort
-            // 
-            this.btnAbort.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnAbort.Location = new System.Drawing.Point(921, 554);
-            this.btnAbort.Name = "btnAbort";
-            this.btnAbort.Size = new System.Drawing.Size(90, 29);
-            this.btnAbort.TabIndex = 120;
-            this.btnAbort.Text = "Abort";
-            this.btnAbort.UseVisualStyleBackColor = true;
-            this.btnAbort.Click += new System.EventHandler(this.btnAbort_Click);
-            // 
-            // ttPaging
-            // 
-            this.ttPaging.AutomaticDelay = 100;
-            this.ttPaging.AutoPopDelay = 10000;
-            this.ttPaging.InitialDelay = 100;
-            this.ttPaging.ReshowDelay = 20;
-            // 
-            // btnTestEntity
-            // 
-            this.btnTestEntity.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnTestEntity.Location = new System.Drawing.Point(544, 301);
-            this.btnTestEntity.Name = "btnTestEntity";
-            this.btnTestEntity.Size = new System.Drawing.Size(66, 29);
-            this.btnTestEntity.TabIndex = 173;
-            this.btnTestEntity.Text = "TestEntity";
-            this.btnTestEntity.UseVisualStyleBackColor = true;
-            this.btnTestEntity.Click += new System.EventHandler(this.btnTestEntity_Click);
-            // 
             // tabTaskRegister
             // 
             this.tabTaskRegister.Controls.Add(this.label50);
@@ -2318,16 +2304,6 @@
             this.tabTaskRegister.TabIndex = 7;
             this.tabTaskRegister.Text = "Test Task Registration";
             this.tabTaskRegister.UseVisualStyleBackColor = true;
-            // 
-            // btnTaskRegister
-            // 
-            this.btnTaskRegister.Location = new System.Drawing.Point(25, 422);
-            this.btnTaskRegister.Name = "btnTaskRegister";
-            this.btnTaskRegister.Size = new System.Drawing.Size(94, 25);
-            this.btnTaskRegister.TabIndex = 5;
-            this.btnTaskRegister.Text = "Register Tasks";
-            this.btnTaskRegister.UseVisualStyleBackColor = true;
-            this.btnTaskRegister.Click += new System.EventHandler(this.btnTaskRegister_Click);
             // 
             // label50
             // 
@@ -2369,6 +2345,54 @@
             this.dgvRegisteredTasks.ReadOnly = true;
             this.dgvRegisteredTasks.Size = new System.Drawing.Size(969, 119);
             this.dgvRegisteredTasks.TabIndex = 182;
+            // 
+            // btnTaskRegister
+            // 
+            this.btnTaskRegister.Location = new System.Drawing.Point(25, 422);
+            this.btnTaskRegister.Name = "btnTaskRegister";
+            this.btnTaskRegister.Size = new System.Drawing.Size(94, 25);
+            this.btnTaskRegister.TabIndex = 5;
+            this.btnTaskRegister.Text = "Register Tasks";
+            this.btnTaskRegister.UseVisualStyleBackColor = true;
+            this.btnTaskRegister.Click += new System.EventHandler(this.btnTaskRegister_Click);
+            // 
+            // btnAbort
+            // 
+            this.btnAbort.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnAbort.Location = new System.Drawing.Point(921, 554);
+            this.btnAbort.Name = "btnAbort";
+            this.btnAbort.Size = new System.Drawing.Size(90, 29);
+            this.btnAbort.TabIndex = 120;
+            this.btnAbort.Text = "Abort";
+            this.btnAbort.UseVisualStyleBackColor = true;
+            this.btnAbort.Click += new System.EventHandler(this.btnAbort_Click);
+            // 
+            // ttPaging
+            // 
+            this.ttPaging.AutomaticDelay = 100;
+            this.ttPaging.AutoPopDelay = 10000;
+            this.ttPaging.InitialDelay = 100;
+            this.ttPaging.ReshowDelay = 20;
+            // 
+            // tabTestEF
+            // 
+            this.tabTestEF.Controls.Add(this.btnTestEFUpdate);
+            this.tabTestEF.Location = new System.Drawing.Point(4, 22);
+            this.tabTestEF.Name = "tabTestEF";
+            this.tabTestEF.Size = new System.Drawing.Size(992, 504);
+            this.tabTestEF.TabIndex = 8;
+            this.tabTestEF.Text = "Test Entity Framework";
+            this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnTestEFUpdate
+            // 
+            this.btnTestEFUpdate.Location = new System.Drawing.Point(39, 25);
+            this.btnTestEFUpdate.Name = "btnTestEFUpdate";
+            this.btnTestEFUpdate.Size = new System.Drawing.Size(75, 23);
+            this.btnTestEFUpdate.TabIndex = 0;
+            this.btnTestEFUpdate.Text = "Test Update";
+            this.btnTestEFUpdate.UseVisualStyleBackColor = true;
+            this.btnTestEFUpdate.Click += new System.EventHandler(this.btnTestEFUpdate_Click);
             // 
             // DbSetupMgr
             // 
@@ -2414,6 +2438,7 @@
             this.tabTaskRegister.ResumeLayout(false);
             this.tabTaskRegister.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).EndInit();
+            this.tabTestEF.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -2597,6 +2622,8 @@
         private System.Windows.Forms.Button btnTaskRegister;
         private System.Windows.Forms.Label label50;
         private System.Windows.Forms.DataGridView dgvRegisteredTasks;
+        private System.Windows.Forms.TabPage tabTestEF;
+        private System.Windows.Forms.Button btnTestEFUpdate;
     }
 }
 

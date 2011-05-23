@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Configuration;
 using System.Data.Common;
+using System.Data.Objects;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1853,6 +1854,35 @@ namespace B1.Utility.DatabaseSetup
                     CreateDbMgr();
                 TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, true, true);
             }
+        }
+
+        private void btnTestEFUpdate_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            int seqParam = 0;
+
+            //Select top 10 entities ordered by appsequenceid
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
+
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities,
+                    entities.TestSequences.EntitySet.Name, null, null);
+
+            DbCommand dbCmd = null;
+            foreach(Models.TestSequence seq in sequences)
+            {
+                seq.Remarks = "Changed By EF Test Update: " + DateTime.Now.ToString("HH:mm:ss:fff");
+
+                //First time in, dbCmd will be null so a new command will be created. 
+                //Subsequent calls will use the first DbCommand.
+                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, null, dbCmd);
+                dbCmd = results.Item2;
+            }
+
         }
 
     }
