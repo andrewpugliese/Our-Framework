@@ -1294,7 +1294,7 @@ namespace B1.DataAccess
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
             Tuple<string, List<DbPredicateParameter>> updateSqlandParams 
-                    = updateParser.GetUpdateSql(entityContext, updateObject);
+                    = updateParser.GetUpdateSql(entityContext, updateObject, propertyDbFunctions);
 
             foreach (DbPredicateParameter param in updateSqlandParams.Item2)
             {
@@ -3406,10 +3406,10 @@ namespace B1.DataAccess
         /// <param name="dbCmdIn">Optional. See summary.</param>
         /// <returns></returns>
         public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
-                DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+                DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
-            return UpdateEntity(entityContext, updateObject, 
-                    new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), null, dbCmdIn);
+            return UpdateEntity(entityContext, updateObject,
+                    new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), dbTransaction, dbCmdIn);
         }
 
         /// <summary>
@@ -3425,7 +3425,7 @@ namespace B1.DataAccess
         /// <param name="dbCmdIn">Optional. See summary.</param>
         /// <returns></returns>
         public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
-                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
             DbCommand dbCmd = null;
 

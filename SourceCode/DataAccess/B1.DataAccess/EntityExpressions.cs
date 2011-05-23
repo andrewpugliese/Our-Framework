@@ -1795,14 +1795,17 @@ namespace B1.DataAccess
                     , columnName);
 
                 object value = null;
-                if (!propertyDbFunctions.ContainsKey(propName))
+                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(propName))
                 {
                     DbPredicateParameter param = new DbPredicateParameter()
                     {
                         ColumnName = columnName,
                         TableName = _qualifiedTable.EntityName,
                         SchemaName = _qualifiedTable.SchemaName,
-                        ParameterName = LinqTableMgr.BuildParamName(propName, parameters, _daMgr, true),
+                        ParameterName = LinqTableMgr.BuildParamName(propName
+                                , parameters
+                                , _daMgr
+                                , ose.EntityKey.EntityKeyValues.Where( j => j.Key == propName).Count() > 0 ? true : false),
                         MemberPropertyName = propName,
                         MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
@@ -1821,6 +1824,16 @@ namespace B1.DataAccess
                          , Environment.NewLine);
 
             }
+
+            foreach (string property in propertyDbFunctions.Keys)
+                if (ose.GetModifiedProperties().Where(j => j == property).Count() == 0)
+                {
+                    string columnName = _qualifiedTable.GetColumnName(property);
+                    setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
+                             columnName
+                             , propertyDbFunctions[property]
+                             , Environment.NewLine);
+                }                   
 
             sb.Append(setColumns);
 
