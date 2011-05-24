@@ -3447,17 +3447,25 @@ namespace B1.DataAccess
                 DbTableDmlMgr dmlMgr = DbCatalogGetTableDmlMgr(entity.QualifiedTable.SchemaName + "."
                         + entity.QualifiedTable.EntityName
                         , columns);
-                foreach (PropertyInfo pi in propertyDbFunctions.Keys)
+                foreach (EntityKeyMember ek in 
+                        entityContext.ObjectStateManager.GetObjectStateEntry(updateObject).EntityKey.EntityKeyValues)
                 {
-                    string columnName = entity.QualifiedTable.GetColumnName(pi.Name);
+                    string columnName = entity.QualifiedTable.GetColumnName(ek.Key);
 
-                    string paramName = BuildBindVariableName(LinqTableMgr.BuildParamName(pi.Name, new List<DbPredicateParameter>(), this));
+                    string paramName = BuildBindVariableName(LinqTableMgr.BuildParamName(ek.Key
+                            , new List<DbPredicateParameter>(), this));
 
                     Expression exp = DbPredicate.CreatePredicatePart(t => t.Column(columnName) ==
                             t.Function(paramName));
-                    //dmlMgr.setor(ExpressionType.AndAlso, exp);
+                    if (dmlMgr._whereCondition == null)
+                        dmlMgr.SetWhereCondition(exp);
+                    else dmlMgr.AddToWhereCondition(ExpressionType.AndAlso, exp);
                 }
                 dbCmd = BuildSelectDbCommand(dmlMgr, null);
+                foreach (EntityKeyMember ek in
+                        entityContext.ObjectStateManager.GetObjectStateEntry(updateObject).EntityKey.EntityKeyValues)
+                    dbCmd.Parameters[LinqTableMgr.BuildParamName(ek.Key
+                        , new List<DbPredicateParameter>(), this)].Value = ek.Value;
                 cmdMgr.AddDbCommand(dbCmd);
                 dbCmd = cmdMgr.DbCommandBlock;
             }
