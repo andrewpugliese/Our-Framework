@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Configuration;
 using System.Data.Common;
+using System.Data.Objects;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -90,7 +91,7 @@ namespace B1.Utility.DatabaseSetup
         bool _refreshAppSessions = false;
         Dictionary<Int64, UserSession> _userSessions = null;
         bool _dbSetup = false;
-
+        TaskProcessing.TaskProcessEngine _tpe = null;
 
         /// <summary>
         /// PagingMgr used by GridConrol
@@ -487,6 +488,12 @@ namespace B1.Utility.DatabaseSetup
 
         void ClearDbMgr()
         {
+            if (_tpe != null)
+            {
+                _tpe.Stop();
+                _tpe.Dispose();
+                _tpe = null;
+            }
             if (_daMgr != null)
             {
                 if (_testDaMgr != null)
@@ -1751,6 +1758,87 @@ namespace B1.Utility.DatabaseSetup
                     , salt);
                 new GenerateHash(tbUserSignonPwd.Text, hash, salt).ShowDialog();
             }
+        }
+
+        private void btnStartTPE_Click(object sender, EventArgs e)
+        {
+            btnStopTPE.Enabled = btnPauseTPE.Enabled = true;
+            btnStartTPE.Enabled = false;
+            if (_daMgr == null)
+                CreateDbMgr();
+            _tpe = new TaskProcessing.TaskProcessEngine(_daMgr);
+            _tpe.Start();
+        }
+
+        private void btnStopTPE_Click(object sender, EventArgs e)
+        {
+            btnStopTPE.Enabled = btnPauseTPE.Enabled = btnResumeTPE.Enabled = false;
+            btnStartTPE.Enabled = true;
+            _tpe.Stop();
+        }
+
+        private void btnPauseTPE_Click(object sender, EventArgs e)
+        {
+            btnPauseTPE.Enabled = false;
+            btnResumeTPE.Enabled = true;
+            _tpe.Pause();
+        }
+
+        private void btnResumeTPE_Click(object sender, EventArgs e)
+        {
+            btnPauseTPE.Enabled = true;
+            btnResumeTPE.Enabled = false;
+            _tpe.Resume();
+        }
+
+        private void btnTaskRegister_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Multiselect = false;
+            ofd.DefaultExt = ".dll";
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == System.Windows.Forms.DialogResult.OK)
+            {
+                if (_daMgr == null)
+                    CreateDbMgr();
+                TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, true, true);
+            }
+        }
+
+        private void btnTestEFUpdate_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            int seqParam = 0;
+
+            //Select top 10 entities ordered by appsequenceid
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
+
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities);
+
+            DbCommand dbCmd = null;
+
+            // the overloads collection is used for columns that require a database operation and are not known to the EF
+            // for example (getdate()).  So we show example with column DbServerTime
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            foreach (Models.TestSequence seq in sequences)
+            {
+                seq.Remarks = "Updated By EF Test Update; localTime: " + DateTime.Now.ToString("HH:mm:ss:fff");
+                seq.AppLocalTime = DateTime.Now;
+                seq.AppSynchTime = _daMgr.DbSynchTime;
+
+                // First time in, dbCmd will be null so a new command will be created. 
+                // Subsequent calls will use the first DbCommand.
+                // Also, each call to the db will update 
+                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, overloads, null, dbCmd);
+                dbCmd = results.Item2;
+            }
+
         }
 
     }

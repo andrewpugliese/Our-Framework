@@ -263,9 +263,19 @@ namespace B1.DataAccess
             }
         }
 
-        internal static string BuildParamName(string paramName,  List<DbPredicateParameter> parameters, DataAccessMgr daMgr)
+        internal static string BuildParamName(string paramName
+                , List<DbPredicateParameter> parameters
+                , DataAccessMgr daMgr)
         {
-            return daMgr.BuildParamName(AdjustParamNameLength(paramName, parameters, daMgr));
+            return daMgr.BuildParamName(AdjustParamNameLength(paramName, parameters, daMgr), false);
+        }
+
+        internal static string BuildParamName(string paramName
+                , List<DbPredicateParameter> parameters
+                , DataAccessMgr daMgr
+                , bool isNewValueParam)
+        {
+            return daMgr.BuildParamName(AdjustParamNameLength(paramName, parameters, daMgr), isNewValueParam);
         }
 
     }
@@ -1237,7 +1247,7 @@ namespace B1.DataAccess
 
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            if(node.Operand is LambdaExpression)
+            if(node.Operand is LambdaExpression || node.Operand is MemberExpression)
                 return Visit(node.Operand);
             else
                 return node;
@@ -1341,8 +1351,10 @@ namespace B1.DataAccess
             {   
                 if(_currentParameter != null)
                 {
-                    _currentParameter.MemberAccess = Expression.Lambda(node).Compile();
-                    _currentParameter.Value = Expression.Lambda(node).Compile().DynamicInvoke();
+                    Delegate memberAccess = Expression.Lambda(node).Compile();
+                    _currentParameter.MemberPropertyName = node.Member.Name;
+                    _currentParameter.MemberAccess = memberAccess;
+                    _currentParameter.Value = memberAccess.DynamicInvoke();
                     _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
                     _sqlPredicate.Append(_daMgr.BuildBindVariableName(_currentParameter.ParameterName));
                     _tableMgr._parameters.Add(_currentParameter);
@@ -1650,15 +1662,16 @@ namespace B1.DataAccess
 
     internal class ObjectParser
     {
-        internal QualifiedEntity _qualifiedTable;
-        internal List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
+        private QualifiedEntity _qualifiedTable;
+        private List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
 
-        private string _columns;
-        private string _values;
         private Type _entityType;
         private DataAccessMgr _daMgr;
         private object _objRef;
         private ObjectContext _entityContext;
+
+        internal QualifiedEntity QualifiedTable { get { return _qualifiedTable; } }
+        internal string EntitySetName { get; set; }
 
         internal ObjectParser(ObjectContext entityContext, object obj, DataAccessMgr daMgr)
         {
@@ -1676,9 +1689,9 @@ namespace B1.DataAccess
             EntitySetBase entitySet = cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
                     es => es.ElementType.Name == _entityType.Name);
 
-            _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            EntitySetName = entitySet.Name;
 
-            Parse();
+            _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
 
         }
 
@@ -1689,56 +1702,208 @@ namespace B1.DataAccess
         
             _qualifiedTable = new QualifiedEntity() { EntityName = type.Name, SchemaName = schemaName };
             _entityType = type;
-
-            Parse();
         }
 
-        internal string GetInsertSql()
+
+        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams()
+        {
+            return GetInsertSqlAndParams(new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+        }
+
+        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams(Dictionary<string, object> propertyDbFunctions)
         {
             StringBuilder sb = new StringBuilder("INSERT INTO");
 
-            sb.AppendFormat(" {0}.{1}", _qualifiedTable.SchemaName, _qualifiedTable.EntityName);
+            sb.AppendFormat(" {0}.{1}{2}", _qualifiedTable.SchemaName
+                    , _qualifiedTable.EntityName
+                    , Environment.NewLine);
 
-            return sb.ToString();
-        }
-
-        internal void Parse()
-        {
             StringBuilder sbColumns = new StringBuilder("");
             StringBuilder sbValues = new StringBuilder("");
 
-            foreach(PropertyInfo prop in _entityType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public 
+            List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
+            foreach (PropertyInfo prop in _entityType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public
                     | BindingFlags.Instance))
             {
                 string columnName = _qualifiedTable.GetColumnName(prop.Name);
 
-                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName, _qualifiedTable.EntityName, columnName);
+                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName
+                        , _qualifiedTable.EntityName
+                        , columnName);
 
-                if(!column.IsAutoGenerated && !column.IsComputed)
+                if (!column.IsAutoGenerated && !column.IsComputed)
                 {
                     sbColumns.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
-                            columnName);    
+                            columnName);
 
-                    DbPredicateParameter param = new DbPredicateParameter()
+                    object value = null;
+                    if (!propertyDbFunctions.ContainsKey(prop.Name))
+                    {
+                        DbPredicateParameter param = new DbPredicateParameter()
                         {
                             ColumnName = columnName,
                             TableName = _qualifiedTable.EntityName,
                             SchemaName = _qualifiedTable.SchemaName,
-                            ParameterName = LinqTableMgr.BuildParamName(columnName, _parameters, _daMgr),
+                            ParameterName = LinqTableMgr.BuildParamName(prop.Name, parameters, _daMgr),
+                            MemberPropertyName = prop.Name,
                             MemberAccess = Expression.Lambda(
-                                Expression.Property(Expression.Constant(_objRef), prop)).Compile() 
+                                Expression.Property(Expression.Constant(_objRef), prop)).Compile()
                         };
 
-                    _parameters.Add(param);
+                        parameters.Add(param);
+                        value = _daMgr.BuildBindVariableName(param.ParameterName);
+                    }
+                    else value = propertyDbFunctions[prop.Name];
 
-                     sbValues.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
-                            _daMgr.BuildBindVariableName(param.ParameterName)); 
+                    sbValues.AppendFormat("{0}{1}", sbValues.Length == 0 ? "" : ", ", value);
 
                 }
-                   
+
             }
-            _columns = string.Format("({0})", sbColumns);
-            _values = string.Format("VALUES ({0})", sbValues);
+
+            sb.AppendFormat("({0}) {2}VALUES ({1}){2}", sbColumns, sbValues, Environment.NewLine);
+            return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
+        }
+
+        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(ObjectContext context, object entity)
+        {
+            return GetUpdateSql(context
+                    , entity
+                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+        }
+
+        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(
+            ObjectContext context, object entity, Dictionary<string, object> propertyDbFunctions)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendFormat("UPDATE {0}.{1}{2} SET "
+                    , _qualifiedTable.SchemaName
+                    , _qualifiedTable.EntityName
+                    , Environment.NewLine);
+
+            StringBuilder setColumns = new StringBuilder();
+
+            List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
+
+            ObjectStateEntry ose = context.ObjectStateManager.GetObjectStateEntry(entity);
+
+            foreach (string propName in ose.GetModifiedProperties())
+            {
+                string columnName = _qualifiedTable.GetColumnName(propName);
+
+                DbColumnStructure column = _daMgr.DbCatalogGetColumn(_qualifiedTable.SchemaName
+                    , _qualifiedTable.EntityName
+                    , columnName);
+
+                object value = null;
+                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(propName))
+                {
+                    DbPredicateParameter param = new DbPredicateParameter()
+                    {
+                        ColumnName = columnName,
+                        TableName = _qualifiedTable.EntityName,
+                        SchemaName = _qualifiedTable.SchemaName,
+                        ParameterName = LinqTableMgr.BuildParamName(propName
+                                , parameters
+                                , _daMgr
+                                , ose.EntityKey.EntityKeyValues.Where( j => j.Key == propName).Count() > 0 ? true : false),
+                        MemberPropertyName = propName,
+                        MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(_objRef)
+                            , _entityType.GetProperty(propName))).Compile()
+                    };
+
+                    value = _daMgr.BuildBindVariableName(param.ParameterName);
+
+                    parameters.Add(param);
+                }
+                else value = propertyDbFunctions[propName];
+
+                setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
+                         columnName
+                         , value
+                         , Environment.NewLine);
+
+            }
+
+            foreach (string property in propertyDbFunctions.Keys)
+                if (ose.GetModifiedProperties().Where(j => j == property).Count() == 0)
+                {
+                    string columnName = _qualifiedTable.GetColumnName(property);
+                    setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
+                             columnName
+                             , propertyDbFunctions[property]
+                             , Environment.NewLine);
+                }                   
+
+            // build where clause
+            StringBuilder where = new StringBuilder();
+            foreach(EntityKeyMember key in ose.EntityKey.EntityKeyValues)
+            {
+                string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
+                where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
+                        , key.Key, parameterName, Environment.NewLine);
+
+                parameters.Add(new DbPredicateParameter()
+                {
+                    ColumnName = _qualifiedTable.GetColumnName(_qualifiedTable.GetColumnName(key.Key)),
+                    ParameterName = parameterName,
+                    TableName = _qualifiedTable.EntityName,
+                    SchemaName = _qualifiedTable.SchemaName,
+                    MemberPropertyName = key.Key,
+                    MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(_objRef)
+                            , _entityType.GetProperty(key.Key))).Compile()
+                });
+            }
+
+            sb.Append(setColumns);
+
+            sb.AppendFormat(where.ToString());
+            return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
+        }
+
+
+        /// <summary>
+        /// Points the ParameterSite(Isite) parameters to the new object.
+        /// </summary>
+        /// <param name="dbCmd"></param>
+        /// <param name="obj"></param>
+        internal static void RemapDbCommandParameters(DbCommand dbCmd, object obj)
+        {
+            if(!(dbCmd.Site is ParameterSite))
+                return;
+
+            ParameterSite paramSite = (ParameterSite)dbCmd.Site;
+
+            List<DbPredicateParameter> parameters = (List<DbPredicateParameter>)paramSite.GetService(null);
+
+            foreach(var param in parameters)
+            {
+                PropertyInfo property = obj.GetType().GetProperty(param.MemberPropertyName);
+
+                param.MemberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(obj)
+                            , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
+            }
+        }
+
+        internal static string GetEntitySetName(ObjectContext entityContext, object entity)
+        {
+            Type entityType = ObjectContext.GetObjectType(entity.GetType());
+            return GetEntitySetName(entityContext, entity);
+        }
+
+        internal static string GetEntitySetName(ObjectContext entityContext, Type entityType)
+        {
+            EntityContainer cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
+                    entityContext.DefaultContainerName, DataSpace.CSpace);
+
+            StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
+
+            return cspaceEntityContainer.BaseEntitySets.FirstOrDefault(
+                    es => es.ElementType.Name == entityType.Name).Name;
         }
     }
 }

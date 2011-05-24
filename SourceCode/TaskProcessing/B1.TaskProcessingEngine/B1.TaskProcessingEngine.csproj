@@ -8,8 +8,8 @@
     <ProjectGuid>{77CD10F5-170A-4E52-80F7-1E8891CD66DF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>B1.TaskProcessing</RootNamespace>
-    <AssemblyName>B1.TaskProcessing</AssemblyName>
+    <RootNamespace>B1.TaskProcessingEngine</RootNamespace>
+    <AssemblyName>B1.TaskProcessingEngine</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,11 +40,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ITaskHandler.cs" />
+    <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
+      <Link>SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskProcessEngine.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CacheManagement\B1.CacheManagement\B1.CacheManagement.csproj">
+      <Project>{55FAB014-4936-429A-A20C-372AF8038BC8}</Project>
+      <Name>B1.CacheManagement</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Core\B1.Core\B1.Core.csproj">
       <Project>{7A5141B7-4635-4FC4-B040-79669A33F53C}</Project>
       <Name>B1.Core</Name>
@@ -52,6 +58,14 @@
     <ProjectReference Include="..\..\DataAccess\B1.DataAccess\B1.DataAccess.csproj">
       <Project>{DAA8DEAF-7EB8-4E57-92FA-31248AE360E9}</Project>
       <Name>B1.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LoggingManagement\B1.ILoggingManagement\B1.ILoggingManagement.csproj">
+      <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
+      <Name>B1.ILoggingManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\B1.TaskProcess\B1.TaskProcess.csproj">
+      <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
+      <Name>B1.TaskProcessing</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

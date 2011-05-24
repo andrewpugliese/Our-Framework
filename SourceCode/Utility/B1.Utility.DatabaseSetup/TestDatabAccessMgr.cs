@@ -827,17 +827,6 @@ namespace B1.Utility.DatabaseSetup
             DbCommand dbCmd;
             DataTable tbl;
 
-            Models.AppConfigSetting appConfigSetting = new Models.AppConfigSetting()
-                    {
-                         ConfigDescription = "New Setting",
-                         ConfigKey = "New Key",
-                         ConfigSetName = "New Set Name",
-                         ConfigValue = "New Value"
-                    };
-
-            
-            dbCmd = _daMgr.BuildInsertDbCommand(entities, appConfigSetting);
-
             dbCmd = _daMgr.BuildSelectDbCommand(resultsGroupBy1, null);
 
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];

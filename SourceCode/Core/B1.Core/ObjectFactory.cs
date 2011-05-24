@@ -90,5 +90,23 @@ namespace B1.Core
                     && !type.IsAbstract
                     && type.GetConstructor(Type.EmptyTypes) != null);
         }
+
+        ///<summary>
+        ///   Search the given assembly for a type which is public non-abstract class
+        ///   and can be safely type casted to the templated type.
+        ///</summary>
+        public static List<Type> SearchTypes<T>(Assembly assembly)
+        {
+            List<Type> types = new List<Type>();
+            Type desiredType = typeof(T);
+            foreach (Type t in assembly.GetTypes())
+                if (t.IsClass
+                    && desiredType.IsAssignableFrom(t)
+                    && t.IsPublic
+                    && !t.IsAbstract)
+                    types.Add(t);
+            return types;
+        }
+
     }
 }

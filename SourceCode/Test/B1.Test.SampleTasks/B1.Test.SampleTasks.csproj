@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{169CABA1-C9B6-49D4-A717-6C65E8633AC3}</ProjectGuid>
+    <ProjectGuid>{F97F487A-941F-41A8-9B0D-86ECDE809D88}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>B1.DataAccess.SqlServer</RootNamespace>
-    <AssemblyName>B1.DataAccess.SqlServer</AssemblyName>
+    <RootNamespace>B1.Test.SampleTasks</RootNamespace>
+    <AssemblyName>B1.Test.SampleTasks</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,8 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Common, Version=5.0.414.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="Microsoft.Practices.EnterpriseLibrary.Data, Version=5.0.414.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,11 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
-      <Link>Properties\SharedAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="Constants.cs" />
-    <Compile Include="SqlServerHelper.cs" />
+    <Compile Include="SampleTaskRun1Minute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -54,20 +48,20 @@
       <Project>{7A5141B7-4635-4FC4-B040-79669A33F53C}</Project>
       <Name>B1.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\DataAccess\B1.DataAccess\B1.DataAccess.csproj">
+      <Project>{DAA8DEAF-7EB8-4E57-92FA-31248AE360E9}</Project>
+      <Name>B1.DataAccess</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\LoggingManagement\B1.ILoggingManagement\B1.ILoggingManagement.csproj">
       <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
       <Name>B1.ILoggingManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\B1.IDataAccessProvider\B1.IDataAccessProvider.csproj">
-      <Project>{7C5452DF-532E-4B8A-BE47-93042D684342}</Project>
-      <Name>B1.IDataAccessProvider</Name>
+    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj">
+      <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
+      <Name>B1.TaskProcessing</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
