@@ -599,7 +599,7 @@ namespace B1.DataAccess.OracleDb
             cloneParam.ParameterName = oracleParam.ParameterName;
             cloneParam.IsNullable = oracleParam.IsNullable;
 
-            return ValidateParam(cloneParam, cloneParam.Size, dbParam.DbType, oracleParam.OracleDbType);
+            return ValidateParam(cloneParam, dbParam.Size, dbParam.DbType, oracleParam.OracleDbType);
         }
 
         /// <summary>

@@ -1245,15 +1245,15 @@ namespace B1.DataAccess
         /// <param name="insertObject"></param>
         /// <param name="propertyDbFunctions"></param>
         /// <returns></returns>
-        internal DbCommand BuildInsertDbCommand(ObjectContext entityContext
+        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext
             , object insertObject
-            , Dictionary<string, object> propertyDbFunctions)
+            , Dictionary<string, object> propertyDbFunctions, bool getRowId = false)
         {
             ObjectParser insertParser = new ObjectParser(entityContext, insertObject, this);
 
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
-            Tuple<string, List<DbPredicateParameter>> insertSqlAndParams = insertParser.GetInsertSqlAndParams();
+            Tuple<string, List<DbPredicateParameter>> insertSqlAndParams = insertParser.GetInsertSqlAndParams(propertyDbFunctions, getRowId);
 
             foreach(DbPredicateParameter param in insertSqlAndParams.Item2)
             {
@@ -1270,19 +1270,30 @@ namespace B1.DataAccess
                     , DBNull.Value);
             }
 
+            string insertSql = insertSqlAndParams.Item1;
+
+            if(getRowId && DatabaseType == EnumDbType.Oracle)
+            {
+                insertSql += string.Format(" {1}returning rowidtochar(rowid) into {0};",
+                        BuildBindVariableName(Constants.ParamNewId), Environment.NewLine);
+
+                DbParameter param = AddNewParameterToCollection(dbParams, Constants.ParamNewId, DbType.String,
+                        "varchar2", 40, ParameterDirection.Output, DBNull.Value);
+            }
+
             // return the new dbCommand
-            DbCommand dbCmd = BuildNonQueryDbCommand(insertSqlAndParams.Item1, dbParams);
+            DbCommand dbCmd = BuildNonQueryDbCommand(insertSql, dbParams);
 
             dbCmd.Site = new ParameterSite(insertSqlAndParams.Item2);
 
-            return dbCmd;
+            return new Tuple<DbCommand,QualifiedEntity>(dbCmd, insertParser.QualifiedTable);
         }
 
-        internal DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject)
+        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext, object insertObject, bool getRowId)
         {
             return BuildInsertDbCommand(entityContext
                     , insertObject
-                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), getRowId);
         }
 
         public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
@@ -3108,6 +3119,8 @@ namespace B1.DataAccess
         {
             try
             {
+                UpdateParameterValues(dbCommand);
+
                 SetParameterValues(dbCommand, parameterNameValues);
 
                 // dbCmdDebug will not have any runtime overhead and is used only when you are debugging
@@ -3477,37 +3490,229 @@ namespace B1.DataAccess
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
         }
 
-        //public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
-        //         DbTransaction dbTransaction, DbCommand dbCmdIn = null)
-        //{
-        //    return InsertEntity(entityContext, insertObject, new Dictionary<string, object>(), dbTransaction, dbCmdIn);
-        //}
+       
 
-        //public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
-        //        Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
-        //{
-        //    DbCommand dbCmdInsert = null;
+        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+                 DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        {
+            return InsertEntity(entityContext, insertObject, new Dictionary<string, object>(), dbTransaction, dbCmdIn);
+        }
 
-        //    if(dbCmdIn != null)
-        //    {
-        //        dbCmdInsert = dbCmdIn;
-        //        ObjectParser.RemapDbCommandParameters(dbCmdInsert, insertObject);
-        //    }
-        //    else
-        //    {
-        //        DbCommand insert = BuildInsertDbCommand(entityContext, insertObject, propertyDbFunctions);
-        //        DbCommand select = BuildSelectDbCommand(null, 1);
-                
-        //    }
+        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        {
+            DbCommand dbCmdInsert = null;
 
-        //    ExecuteDataSet(dbCmdInsert, dbTransaction, null);
+            if(dbCmdIn != null)
+            {
+                dbCmdInsert = dbCmdIn;
+                ObjectParser.RemapDbCommandParameters(dbCmdInsert, insertObject);
+            }
+            else
+            {
+                // Find better way to do this.
+                QualifiedEntity qualifiedEntity = new ObjectParser(entityContext, insertObject, this).QualifiedTable;
 
-        //    entityContext.AttachTo(ObjectParser.GetEntitySetName(entityContext, insertObject), insertObject);
+                DbTableStructure table = DbCatalogGetTable(qualifiedEntity.SchemaName, qualifiedEntity.EntityName);
+          
+                bool bGetRowFromId = false;
+                List<string> autoGeneratedColumns = new List<string>();
+                List<string> selectColumns = new List<string>();
+                List<string> functionColumns = propertyDbFunctions.Select(kvp => qualifiedEntity.GetColumnName(kvp.Key)).ToList();
+                foreach(var propColumnName in qualifiedEntity._propertyToColumnMap)
+                {
+                    string columnName = propColumnName.Value;
+                    string propertyName = propColumnName.Key;
 
-        //    entityContext.ObjectStateManager.ChangeObjectState(insertObject, EntityState.Unchanged);
+                    DbColumnStructure column = DbCatalogGetColumn(qualifiedEntity.SchemaName, qualifiedEntity.EntityName, 
+                            columnName);
 
-        //    return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
-        //}
+                    if(table.PrimaryKeyColumns.ContainsKey(columnName) && (column.IsAutoGenerated || column.IsComputed || 
+                            propertyDbFunctions.ContainsKey(propertyName)))
+                    {
+                        bGetRowFromId = true;
+                    }
+
+                    if(column.IsAutoGenerated || column.IsComputed || 
+                            functionColumns.Contains(columnName, StringComparer.CurrentCultureIgnoreCase))
+                        selectColumns.Add(columnName);
+
+                    if(column.IsAutoGenerated)
+                        autoGeneratedColumns.Add(columnName);
+                }
+
+
+                bool getRowId = DatabaseType == EnumDbType.Oracle && bGetRowFromId;
+
+
+                Tuple<DbCommand, QualifiedEntity> insertResult = BuildInsertDbCommand(entityContext, insertObject,
+                    propertyDbFunctions, getRowId);
+
+                dbCmdInsert = insertResult.Item1;
+
+                // If we already have all the data, and there is nothing to select, skip select creation.
+                if(selectColumns.Count > 0)
+                {
+                    List<DbPredicateParameter> whereParams = new List<DbPredicateParameter>();
+                    DbTableDmlMgr dmlSelect = new DbTableDmlMgr(table, selectColumns.ToArray());
+                    DbCommand dbCmdSelect = null;
+
+                    if(bGetRowFromId)
+                    {
+                        if(DatabaseType == EnumDbType.Oracle)
+                        {
+                            dmlSelect.SetWhereCondition(t => t.Function("rowid") == t.Function(BuildBindVariableName(Constants.ParamNewId)));
+                        }
+                        else if(DatabaseType == EnumDbType.SqlServer)
+                        {
+                            dbCmdInsert.CommandText += string.Format(" {1}set @{0} = SCOPE_IDENTITY();", 
+                                    Constants.ParamNewId, Environment.NewLine);
+
+                            DbParameter param = AddNewParameterToCollection(dbCmdInsert.Parameters, Constants.ParamNewId, DbType.Int64, 
+                                    "numeric(18,0)", 18, ParameterDirection.Input, DBNull.Value);
+
+                            foreach(string columnName in table.PrimaryKeyColumns.Keys)
+                            {
+                                string propertyName = qualifiedEntity._propertyToColumnMap.Where(kvp => kvp.Value.ToLower() == columnName.ToLower()).First().Key;
+
+                                string paramName = null;
+                                Expression exp = null;
+                                if(autoGeneratedColumns.Count( c => c.ToLower() == columnName.ToLower()) > 0)
+                                {
+                                    paramName = Constants.ParamNewId;
+                                    exp = DbPredicate.CreatePredicatePart( t => t.Column(columnName) == 
+                                            t.Parameter(qualifiedEntity.EntityName, columnName, paramName));
+                                }
+                                else
+                                {
+                                    paramName = LinqTableMgr.BuildParamName(propertyName, whereParams, this);
+
+                                    exp = DbPredicate.CreatePredicatePart( t => t.Column(columnName) == 
+                                            t.Function(BuildBindVariableName(paramName)));
+                             
+                                    whereParams.Add(
+                                            new DbPredicateParameter
+                                            {
+                                                ColumnName = columnName,
+                                                ParameterName = paramName,
+                                                SchemaName = qualifiedEntity.SchemaName,
+                                                TableName = qualifiedEntity.EntityName,
+                                                MemberPropertyName = propertyName,
+                                                MemberAccess = Expression.Lambda(
+                                                        Expression.Property(Expression.Constant(insertObject)
+                                                        , insertObject.GetType().GetProperty(propertyName))).Compile()
+                                            });
+                                 }
+
+                                 dmlSelect.SetOrAddWhereCondition(ExpressionType.AndAlso, exp);
+                            }
+                        }
+                        else if(DatabaseType == EnumDbType.Db2)
+                        {
+                            dbCmdInsert.CommandText += string.Format(" {1}set {0} = SCOPE_IDENTITY();",
+                                   Constants.ParamNewId, Environment.NewLine);
+
+                            DbParameter param = AddNewParameterToCollection(dbCmdInsert.Parameters, Constants.ParamNewId, DbType.Int64,
+                                    "numeric(18,0)", 18, ParameterDirection.Output, DBNull.Value);
+
+                        }
+                    }
+                    else // select by primary key
+                    {
+                        foreach(string columnName in table.PrimaryKeyColumns.Keys)
+                        {
+                            string propertyName = qualifiedEntity._propertyToColumnMap.Where(kvp => kvp.Value.ToLower() == columnName.ToLower()).First().Key;
+
+                            string paramName = BuildBindVariableName(LinqTableMgr.BuildParamName(propertyName, new List<DbPredicateParameter>(), this));
+                          
+                            Expression exp = DbPredicate.CreatePredicatePart( t => t.Column(columnName) ==
+                                    t.Function(paramName));
+
+                            dmlSelect.SetOrAddWhereCondition(ExpressionType.AndAlso, exp);
+                        }
+                    }
+
+                    dbCmdSelect = BuildSelectDbCommand(dmlSelect, null);
+                    BuildWhereClauseParams(whereParams, dbCmdSelect.Parameters);
+
+                    dbCmdSelect.Site = new ParameterSite(whereParams);
+
+                    DbCommandMgr cmdMgr = new DbCommandMgr(this);
+                    cmdMgr.AddDbCommand(dbCmdInsert);
+                    cmdMgr.AddDbCommand(dbCmdSelect);
+                    dbCmdInsert = cmdMgr.DbCommandBlock;
+                }
+            }
+            
+            UpdateEntitiesFromReader(insertObject, ExecuteReader(dbCmdInsert, dbTransaction));
+
+            entityContext.AttachTo(ObjectParser.GetEntitySetName(entityContext, insertObject), insertObject);
+
+            entityContext.ObjectStateManager.ChangeObjectState(insertObject, EntityState.Unchanged);
+
+            return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmdInsert);
+        }
+
+
+        
+        /// <summary>
+        /// Updates the entity object with FIRST ROW of data from the data reader.
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        internal object UpdateEntitiesFromReader(object entity, IDataReader reader)
+        {
+            return UpdateEntitiesFromReader(new List<object> { entity }, reader);
+        }
+
+        /// <summary>
+        /// Updates the entity objects with data from the data reader.
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        internal List<object> UpdateEntitiesFromReader(List<object> entities, IDataReader reader)
+        {
+            if(entities.Count == 0)
+                return entities;
+
+            Dictionary<Type, List<KeyValuePair<int, System.Reflection.PropertyInfo>>> typeProps = 
+                    new Dictionary<Type, List<KeyValuePair<int, PropertyInfo>>>();
+
+            foreach(object entity in entities)
+            {
+                Type t = entity.GetType();
+
+                List<KeyValuePair<int, System.Reflection.PropertyInfo>> props;
+
+                if(typeProps.ContainsKey(t))
+                    props = typeProps[t];
+                else
+                {
+                    // Loop throught the columns in the resultset and lookup the properties and ordinals 
+                    props = new List<KeyValuePair<int, System.Reflection.PropertyInfo>>();
+
+                    for(int i = 0; i < reader.FieldCount; i++)
+                    {
+                        string fieldName = reader.GetName(i);
+                        // Ignore case of the property name
+                        System.Reflection.PropertyInfo pinfo = t.GetProperties()
+                                .Where(p => p.Name.ToLower() == fieldName.ToLower()).FirstOrDefault();
+                        if(pinfo != null)
+                            props.Add(new KeyValuePair<int, System.Reflection.PropertyInfo>(i, pinfo));
+                    }
+                }
+
+                if(reader.Read())
+                {
+                    props.ForEach(kv => kv.Value.SetValue(entity,
+                            GetValueOrNull(Convert.ChangeType(reader.GetValue(kv.Key), kv.Value.PropertyType)), null));
+                }
+            }
+
+            return entities;
+        }
 
         /// <summary>
         /// Function will attempt to prepare a database specific string for debugging
