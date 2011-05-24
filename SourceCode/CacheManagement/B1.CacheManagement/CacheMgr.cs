@@ -55,7 +55,6 @@ namespace B1.CacheManagement
         {
             // Multiple threads can enter the read mode at the same time.
             // If one or more threads are waiting to enter write mode than this function calls blocks till those threads are done.
-
             _cacheReadWriteLock.EnterReadLock();
             try
             {
@@ -63,6 +62,41 @@ namespace B1.CacheManagement
                     return _cache[cacheKey];
                 else throw new ExceptionEvent(enumExceptionEventCodes.InvalidParameterValue
                         , string.Format("Cachekey: {0} not found in cache", cacheKey));
+            }
+            finally
+            {
+                _cacheReadWriteLock.ExitReadLock();
+            }
+        }
+
+        public TValue FirstOrDefault(Func<TValue, bool> predicate, TValue defaultValue)
+        {
+            _cacheReadWriteLock.EnterReadLock();
+            try
+            {
+                var entryFound = _cache.FirstOrDefault(kv => predicate(kv.Value));
+                return entryFound.Key != null ? entryFound.Value : defaultValue;
+            }
+            finally
+            {
+                _cacheReadWriteLock.ExitReadLock();
+            }
+        }
+
+        /// <summary>
+        /// Lookup a cache value given a cacheKey or return the default.
+        /// </summary>
+        /// <param name="cacheKey">Cache key to lookup</param>
+        /// <param name="defaultValue">Default value which is returned if key NOT found in the cache</param>
+        /// <returns>Value for the given cache key or default if NOT found</returns>
+        public TValue GetOrDefault(string cacheKey, TValue defaultValue)
+        {
+            // Multiple threads can enter the read mode at the same time.
+            // If one or more threads are waiting to enter write mode than this function calls blocks till those threads are done.
+            _cacheReadWriteLock.EnterReadLock();
+            try
+            {
+                return _cache.ContainsKey(cacheKey) ? _cache[cacheKey] : defaultValue;
             }
             finally
             {

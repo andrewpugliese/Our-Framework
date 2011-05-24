@@ -1,19 +1,30 @@
 ﻿@model IEnumerable<B1.Data.Models.UserMaster>
 
-<table id="idVersionList" width="100%">
+<table id="userTable" width="100%">
     <thead>
         <tr>
-            <th class="checkbox"></th>
+            <th class="checkbox" width="1%"></th>
             <th class="key" width="50px">User Code</th>
             <th width="100px">User ID</th>
             <th width="100px">First Name</th>
         </tr>
     </thead>
+    <tfoot>
+        <tr>
+            <td colspan="5"><a class="add-item"><img src='@Url.Content("~/Content/plus.gif")' />Add new setting</a></td>
+        </tr>
+    </tfoot>
     <tbody>
+        <tr class="row-template" style="display: none">
+            <td class="key" style="height: 20px">&nbsp;</td>
+            <td class="key" style="height: 20px">(Auto)</td>
+            <td class="editable" style="width: 400px; height: 20px;">&nbsp;</td>
+            <td class="editable" style="width: 400px; height: 20px;">&nbsp;</td>
+        </tr>
     @foreach (var item in Model) {
         <tr>
             <td class="checkbox"></td>
-            <td class="editable key">@item.UserCode</td>
+            <td class="key">@item.UserCode</td>
             <td class="editable">@item.UserId</td>
             <td class="editable">@item.FirstName</td>
         </tr>
@@ -21,5 +32,17 @@
     </tbody>
 </table>
 
+
+<script language="javascript">
+    var _userTable = new B1List("userTable", { showCheckBox: true, editable: true, onselected: userSelected });
+
+    function userSelected() {
+        // Load the user edit screen - display with overlay effect
+        // Load the data for the selected row
+        // Populate the user edit screen with selected row data for editing
+        // Save the user
+        // Edit Next/previous - Add new button
+    }
+</script>
 
 

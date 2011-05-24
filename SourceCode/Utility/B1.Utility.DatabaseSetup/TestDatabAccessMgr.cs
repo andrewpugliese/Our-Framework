@@ -742,7 +742,7 @@ namespace B1.Utility.DatabaseSetup
             int nNumRows = _daMgr.ExecuteNonQuery(dbCmd, null);
         }
 
-        private void testEntities()
+        public void testEntities()
         {
             B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
 
@@ -894,6 +894,24 @@ namespace B1.Utility.DatabaseSetup
             dbCmd = _daMgr.BuildSelectDbCommand(results8, null);
 
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+        }
+
+        public static void TestDbMultiContext(DataAccessMgr daMgr)
+        {
+            B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
+            B1.Utility.DatabaseSetup.ModelsSecond.SampleDbSecondContainer entitiesSecond
+                = new ModelsSecond.SampleDbSecondContainer();
+
+            var resultsJoin = from a in entities.AppConfigSettings
+                              from b in entitiesSecond.AppConfigParameters
+                              from c in entities.AppMasters
+                              from d in entitiesSecond.AppConfigParameters
+                              where a.ConfigValue == b.ParameterName
+                              select new { a.ConfigKey, a.ConfigValue };
+
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(resultsJoin, null);
+
+            DataTable tbl = daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
     }
 }

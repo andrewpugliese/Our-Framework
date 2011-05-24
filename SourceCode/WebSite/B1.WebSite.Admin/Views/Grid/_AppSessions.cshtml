@@ -1,9 +1,9 @@
 ﻿@model IEnumerable<B1.Data.Models.AppSession>
 
-<table id="idVersionList" width="100%">
+<table id="appSessionTable" width="100%">
     <thead>
         <tr>
-            <th class="checkbox"></th>
+            <th class="checkbox" width="1%"></th>
             <th class="key" width="50px">App Code</th>
             <th width="100px">App ID</th>
         </tr>
@@ -14,10 +14,18 @@
             <td class="checkbox"></td>
             <td class="editable key">@item.AppCode</td>
             <td class="editable">@item.AppId</td>
+            <td><input type="button" value="Edit" onclick="javascript: CopyVersionForm('@item.AppCode');" />
+                &nbsp;<input type="button" value="Delete" onclick="javascript: viewVersion('@item.AppCode');" /></td>
         </tr>
     }
     </tbody>
 </table>
 
+<script language="javascript">
+var _appSessionList = new B1List("appSessionTable", { showCheckBox: true, editable: false, onselected: appSessionSelected });
+
+function appSessionSelected() {
+}
+</script>
 
 

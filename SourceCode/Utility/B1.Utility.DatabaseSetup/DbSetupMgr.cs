@@ -1841,5 +1841,16 @@ namespace B1.Utility.DatabaseSetup
 
         }
 
+        private void btnTestMultiContextSingleLINQ_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            TestDataAccessMgr aa = new TestDataAccessMgr(_daMgr, 1, null);
+            aa.testEntities();
+
+            //?? TestDataAccessMgr.TestDbMultiContext(_daMgr);
+        }
+
     }
 }

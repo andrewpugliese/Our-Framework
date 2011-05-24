@@ -16,14 +16,14 @@ using System.Xml;
 using System.Xml.Linq;
 
 using B1.Core;
+using B1.CacheManagement;
 
 #pragma warning disable 1591 // disable the xmlComments warning   
 namespace B1.DataAccess
 {
     internal class LinqTableMgr
     {
-        private ObjectContext _entityContext;
-        private EntityContainer _cspaceEntityContainer;
+        //?? private ContextCache _contextCache;
         private string _defaultSchema;
 
         internal TypeVisitor _knownTypes = new TypeVisitor();
@@ -43,16 +43,16 @@ namespace B1.DataAccess
         internal Dictionary<string, Dictionary<string, string>> _schemaTables =
                 new Dictionary<string, Dictionary<string, string>>();
 
-        internal LinqTableMgr(ObjectContext entityContext, EntityContainer cspaceEntityContainer, 
-                string defaultSchema = null)
+        internal LinqTableMgr(ContextVisitor contextCache, string defaultSchema = null)
         {
-            _entityContext = entityContext;
-            _cspaceEntityContainer = cspaceEntityContainer;
+            this.ContextCache = contextCache;
             _defaultSchema = defaultSchema;
 
             if(_defaultSchema != null)
                 _schemaTables.Add(_defaultSchema, new Dictionary<string, string>());
         }
+
+        public ContextVisitor ContextCache { get; private set; }
 
         public int TableCount
         {
@@ -64,57 +64,60 @@ namespace B1.DataAccess
 
         public string GetTableName(Type type)
         {
-            Type entityType = ObjectContext.GetObjectType(type);
+            return this.ContextCache.GetTableName(type);
+            //Type entityType = ObjectContext.GetObjectType(type);
 
-            if(_cspaceEntityContainer != null && entityType != null)
-            {
-                EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.First(es => es.ElementType.Name == entityType.Name);
-                QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-                return entity.EntityName;
-            }
-            else
-                return entityType.Name;
+            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
+            //{
+            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.First(es => es.ElementType.Name == entityType.Name);
+            //    QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            //    return entity.EntityName;
+            //}
+            //else
+            //    return entityType.Name;
 
         }
 
         public string GetSchemaQualifiedTableName(Type type)
         {
-            Type entityType = ObjectContext.GetObjectType(type);
+            return this.ContextCache.GetSchemaQualifiedTableName(type);
+            //Type entityType = ObjectContext.GetObjectType(type);
 
-            string schemaName = _defaultSchema;
-            string tableName = entityType.Name;
+            //string schemaName = _defaultSchema;
+            //string tableName = entityType.Name;
 
-            if(_cspaceEntityContainer != null && entityType != null)
-            {
-                EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.FirstOrDefault(
-                        es => es.ElementType.Name == entityType.Name);
+            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
+            //{
+            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault(
+            //            es => es.ElementType.Name == entityType.Name);
                 
-                if(entitySet != null)
-                {
-                    QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-                    if (entity != null)
-                    {
-                        schemaName = entity.SchemaName;
-                        tableName = entity.EntityName;
-                    }
-                    else
-                    {
-                        tableName = entitySet.Name;
-                    }
-                }
-            }
+            //    if(entitySet != null)
+            //    {
+            //        QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            //        if (entity != null)
+            //        {
+            //            schemaName = entity.SchemaName;
+            //            tableName = entity.EntityName;
+            //        }
+            //        else
+            //        {
+            //            tableName = entitySet.Name;
+            //        }
+            //    }
+            //}
             
-            return string.Format("{0}.{1}", schemaName, tableName);
+            //return string.Format("{0}.{1}", schemaName, tableName);
         }
 
         public QualifiedEntity GetQualifiedEntity(Type type)
         {
-            Type entityType = ObjectContext.GetObjectType(type);
+            return this.ContextCache.GetQualifiedEntity(type);
+            //Type entityType = ObjectContext.GetObjectType(type);
 
-            EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
-                        es => es.ElementType.Name == entityType.Name);
+            //EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault(
+            //            es => es.ElementType.Name == entityType.Name);
 
-            return StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            //return StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
         }
 
         public QualifiedEntity GetQualifiedEntityFromAlias(string alias)
@@ -132,29 +135,30 @@ namespace B1.DataAccess
                 }
             }
 
-            return StorageMetaData.GetQualifiedEntity(schemaName, tableName);
+            return EntityContextCache.GetQualifiedEntity(schemaName, tableName);
         }
 
         public string GetSchema(Type type)
         {
-            Type entityType = ObjectContext.GetObjectType(type);
+            return this.ContextCache.GetSchemaName(type);
+            //Type entityType = ObjectContext.GetObjectType(type);
 
-            string schemaName = _defaultSchema;
+            //string schemaName = _defaultSchema;
 
-            if(_cspaceEntityContainer != null && entityType != null)
-            {
-                EntitySetBase entitySet = _cspaceEntityContainer.BaseEntitySets.FirstOrDefault( 
-                        es => es.ElementType.Name == entityType.Name);
+            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
+            //{
+            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault( 
+            //            es => es.ElementType.Name == entityType.Name);
 
-                if(entitySet != null)
-                {
-                    QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-                    if(entity != null)
-                        return entity.SchemaName;
-                }
-            }
+            //    if(entitySet != null)
+            //    {
+            //        QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            //        if(entity != null)
+            //            return entity.SchemaName;
+            //    }
+            //}
 
-            return schemaName;
+            //return schemaName;
         }
 
         public string Add(Type type)
@@ -198,7 +202,7 @@ namespace B1.DataAccess
 
         internal Dictionary<string, string> GetColumnDictionary(Type type, string alias)
         {
-            QualifiedEntity entity = GetQualifiedEntity(type);
+            QualifiedEntity entity = this.ContextCache.GetQualifiedEntity(type);
 
             Dictionary<string, string> columns = new Dictionary<string,string>();
 
@@ -216,7 +220,7 @@ namespace B1.DataAccess
 
         internal string GetColumnList(Type type, string alias)
         {
-            QualifiedEntity entity = GetQualifiedEntity(type);
+            QualifiedEntity entity = this.ContextCache.GetQualifiedEntity(type);
 
             StringBuilder sb = new StringBuilder();
 
@@ -318,25 +322,31 @@ namespace B1.DataAccess
 
         private void InitTableMgr(IQueryable queryable, string defaultSchemaName = null)
         {
-            ObjectContext entityContext = null;
-            EntityContainer cspaceEntityContainer = null;
+            ContextVisitor visitor = new ContextVisitor(queryable);
+            _tableMgr = new LinqTableMgr(visitor, defaultSchemaName);
+            ////?? TypeVisitor visitor = new TypeVisitor(queryable.Expression);
 
-            if(!(queryable.Expression is MethodCallExpression))
-                throw new Exception("Invalid linq expression.");
+            //ObjectContext entityContext = null;
+            //EntityContainer cspaceEntityContainer = null;
 
-            if(queryable.GetType().IsGenericType && (queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectQuery<>)
-                    || queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectSet<>)))
-            {
+            //if(!(queryable.Expression is MethodCallExpression))
+            //    throw new Exception("Invalid linq expression.");
 
-                entityContext = ((ObjectQuery)queryable).Context;
+            //if(queryable.GetType().IsGenericType && (queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectQuery<>)
+            //        || queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectSet<>)))
+            //{
 
-                cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
-                        entityContext.DefaultContainerName, DataSpace.CSpace);
+            //    entityContext = ((ObjectQuery)queryable).Context;
 
-                StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
-            }
+            //    cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
+            //            entityContext.DefaultContainerName, DataSpace.CSpace);
 
-            _tableMgr = new LinqTableMgr(entityContext, cspaceEntityContainer, defaultSchemaName);
+            //    //?? Loading all storage meta data from the assembly of this context.
+            //    //?? We have to load the storage meta data for every context we encounter
+            //    StorageMetaData.EnsureStorageMetaData(entityContext/*, cspaceEntityContainer*/);
+            //}
+
+            //_tableMgr = new LinqTableMgr(entityContext, cspaceEntityContainer, defaultSchemaName);
         }
 
         private void Parse(MethodCallExpression expression, DataAccessMgr daMgr)
@@ -1419,6 +1429,22 @@ namespace B1.DataAccess
             return node;
         }
 
+        // This function is called whenever member of a entity is accessed.
+        protected override Expression VisitMember(MemberExpression node)
+        {
+            if (node.Type.IsGenericType && (node.Type.GetGenericTypeDefinition() == typeof(ObjectQuery<>)
+                    || node.Type.GetGenericTypeDefinition() == typeof(ObjectSet<>)))
+            {
+                // Expression.Lambda is wrapping up "node" into a new expression tree inside an anonymous function
+                // which can be compiled and run to get the object out of it.
+                ObjectContext entityContext = ((ObjectQuery)Expression.Lambda(node).Compile().DynamicInvoke()).Context;
+
+            }
+
+            //?? return base.VisitMember(node);
+            return node;
+        }
+
         public static List<Type> GetNonGenericTypes(Type type, List<Type> nonGenericTypes = null)
         {
             if(type.IsGenericType)
@@ -1504,144 +1530,6 @@ namespace B1.DataAccess
 
     }
 
-    internal class QualifiedEntity
-    {
-        public string SchemaName {get; set;}
-        public string EntityName {get; set;}
-
-        public Dictionary<string, string> _propertyToColumnMap = new Dictionary<string,string>();
-
-        public QualifiedEntity() { }
-        public QualifiedEntity(string schemaName, string entityName)
-        {
-            SchemaName = schemaName;
-            EntityName = entityName;
-        }
-
-        public string GetColumnName(string propertyName)
-        {
-            return _propertyToColumnMap.ContainsKey(propertyName) ? _propertyToColumnMap[propertyName]
-                : null;
-        }
-
-    }
-
-    internal class StorageMetaData
-    {
-        private readonly static ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
-
-        //Key is fully qualified .NET type name
-        private static Dictionary<string, QualifiedEntity> _metaData = 
-                new Dictionary<string, QualifiedEntity>();
-
-        //To keep track of assemblies that have had their meta data loaded
-        private static SortedSet<Assembly> _assembliesLoaded = new SortedSet<Assembly>();
-
-        public static void EnsureStorageMetaData(ObjectContext context, EntityContainer cspace)
-        {
-            _lock.EnterUpgradeableReadLock();
-            try
-            {
-                Assembly assembly = Assembly.GetAssembly(context.GetType());
-
-                if(_assembliesLoaded.Contains(assembly))
-                    return;
-
-                _lock.EnterWriteLock();
-
-                try
-                {
-                    Assembly contextAssembly = Assembly.GetAssembly(context.GetType());
-                    foreach(string ssdlResourceName in contextAssembly.GetManifestResourceNames().Where(
-                            r => r.EndsWith(".ssdl", StringComparison.CurrentCultureIgnoreCase)))
-                    {
-                        XDocument ssdlDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
-                                ssdlResourceName));
-
-                        //Find correct way to do this.
-                        string mslResourceName = ssdlResourceName.Replace(".ssdl", ".msl");
-                        XDocument mslDoc = XDocument.Load(contextAssembly.GetManifestResourceStream(
-                                mslResourceName));
-
-                        XNamespace ns = mslDoc.Elements().First().GetDefaultNamespace();
-
-                        //mapping for storage name to entitysetname
-                        Dictionary<string, XElement> storageNameToMappingFragment = 
-                                mslDoc.Descendants(ns + "EntityTypeMapping").ToDictionary(
-                                    e => e.Element(ns + "MappingFragment").Attribute("StoreEntitySet").Value,
-                                    e => e);
-
-                        ns = ssdlDoc.Elements().First().GetDefaultNamespace();
-
-                        foreach(XElement set in ssdlDoc.Descendants(ns + "EntityContainer")
-                                    .First().Elements(ns + "EntitySet"))
-                        {
-                            string name = set.Attribute("Name").Value;
-                            string schema = set.Attribute("Schema").Value;
-
-                            string typeName = storageNameToMappingFragment[name].Attribute("TypeName").Value;
-
-                        
-                            string type = cspace.BaseEntitySets.First( 
-                                    b => b.ElementType.FullName == typeName).ElementType.FullName;
-
-                            QualifiedEntity entity = new QualifiedEntity(schema, name);
-
-                            foreach(XElement prop in storageNameToMappingFragment[name].Descendants().Where(e => e.Name.LocalName == "ScalarProperty"))
-                            {
-                                entity._propertyToColumnMap.Add(prop.Attribute("Name").Value, prop.Attribute("ColumnName").Value);
-                            }
-
-                            _metaData.Add(type, entity);
-                        }
-                    }       
-
-                    _assembliesLoaded.Add(assembly);
-                }
-                finally
-                {
-                    _lock.ExitWriteLock();
-                }
-            }
-            finally
-            {
-               _lock.ExitUpgradeableReadLock();
-            }
-        }
-
-        public static QualifiedEntity GetQualifiedEntity(string typeName)
-        {
-            _lock.EnterReadLock();
-            try
-            {
-                return _metaData.ValueOrDefault(typeName, null);
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
-        }
-
-        public static QualifiedEntity GetQualifiedEntity(string schemaName, string entityName)
-        {
-            _lock.EnterReadLock();
-            try
-            {
-                foreach(QualifiedEntity qe in _metaData.Values)
-                {
-                    if(qe.SchemaName.ToLower() == schemaName.ToLower() && qe.EntityName.ToLower() == entityName.ToLower())
-                        return qe;
-                }
-            }
-            finally
-            {
-                _lock.ExitReadLock();
-            }
-
-            return null;
-        }
-    }
-
     internal class MemberVisitor : ExpressionVisitor
     {
         internal string _lastMember;
@@ -1682,7 +1570,8 @@ namespace B1.DataAccess
             EntityContainer cspaceEntityContainer = _entityContext.MetadataWorkspace.GetEntityContainer(
                     _entityContext.DefaultContainerName, DataSpace.CSpace);
 
-            StorageMetaData.EnsureStorageMetaData(_entityContext, cspaceEntityContainer);
+            //?? 
+            EntityContextCache.EnsureStorageMetaData(_entityContext);
 
             _entityType = ObjectContext.GetObjectType(obj.GetType());
 
@@ -1690,8 +1579,10 @@ namespace B1.DataAccess
                     es => es.ElementType.Name == _entityType.Name);
 
             EntitySetName = entitySet.Name;
+            _qualifiedTable = EntityContextCache.StorageMetaData.Get(entitySet.ElementType.FullName);
 
-            _qualifiedTable = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
+            //?? _qualifiedTable = EntityContextCache.GetQualifiedEntity(obj.GetType(), entityContext);
+
 
         }
 
@@ -1900,11 +1791,12 @@ namespace B1.DataAccess
             EntityContainer cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
                     entityContext.DefaultContainerName, DataSpace.CSpace);
 
-            StorageMetaData.EnsureStorageMetaData(entityContext, cspaceEntityContainer);
+            EntityContextCache.EnsureStorageMetaData(entityContext);
 
             return cspaceEntityContainer.BaseEntitySets.FirstOrDefault(
                     es => es.ElementType.Name == entityType.Name).Name;
         }
     }
 }
+
 #pragma warning restore 1591 // disable the xmlComments warning

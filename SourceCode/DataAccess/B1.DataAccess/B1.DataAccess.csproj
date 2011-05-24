@@ -80,6 +80,7 @@
     <Compile Include="DataConfigMgr.cs" />
     <Compile Include="DbCommandDebug.cs" />
     <Compile Include="DbTableDmlMgr.cs" />
+    <Compile Include="EntityContextCache.cs" />
     <Compile Include="EntityExpressions.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="PagingMgr.cs" />

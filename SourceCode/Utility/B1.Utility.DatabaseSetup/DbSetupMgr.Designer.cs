@@ -217,6 +217,8 @@
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
+            this.btnGenPwdHash = new System.Windows.Forms.Button();
+            this.btnTestMultiContextSingleLINQ = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -1169,6 +1171,7 @@
             // 
             // tabTestConfig
             // 
+            this.tabTestConfig.Controls.Add(this.btnTestMultiContextSingleLINQ);
             this.tabTestConfig.Controls.Add(this.labelConfigChangeValue);
             this.tabTestConfig.Controls.Add(this.btnWatch);
             this.tabTestConfig.Controls.Add(this.btnConfigTest);
@@ -2381,6 +2384,27 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
+            // btnGenPwdHash
+            // 
+            this.btnGenPwdHash.Location = new System.Drawing.Point(29, 112);
+            this.btnGenPwdHash.Name = "btnGenPwdHash";
+            this.btnGenPwdHash.Size = new System.Drawing.Size(87, 26);
+            this.btnGenPwdHash.TabIndex = 188;
+            this.btnGenPwdHash.Text = "Generate Hash";
+            this.btnGenPwdHash.UseVisualStyleBackColor = true;
+            this.btnGenPwdHash.Click += new System.EventHandler(this.btnGenPwdHash_Click);
+            // 
+            // btnTestMultiContextSingleLINQ
+            // 
+            this.btnTestMultiContextSingleLINQ.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestMultiContextSingleLINQ.Location = new System.Drawing.Point(875, 417);
+            this.btnTestMultiContextSingleLINQ.Name = "btnTestMultiContextSingleLINQ";
+            this.btnTestMultiContextSingleLINQ.Size = new System.Drawing.Size(101, 71);
+            this.btnTestMultiContextSingleLINQ.TabIndex = 13;
+            this.btnTestMultiContextSingleLINQ.Text = "Test Multi-Context single LINQ";
+            this.btnTestMultiContextSingleLINQ.UseVisualStyleBackColor = true;
+            this.btnTestMultiContextSingleLINQ.Click += new System.EventHandler(this.btnTestMultiContextSingleLINQ_Click);
+            // 
             // DbSetupMgr
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2610,6 +2634,7 @@
         private System.Windows.Forms.DataGridView dgvRegisteredTasks;
         private System.Windows.Forms.TabPage tabTestEF;
         private System.Windows.Forms.Button btnTestEFUpdate;
+        private System.Windows.Forms.Button btnTestMultiContextSingleLINQ;
     }
 }
 
