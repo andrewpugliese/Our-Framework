@@ -125,6 +125,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SampleDb.edmx</DependentUpon>
     </Compile>
+    <Compile Include="SampleDbSecond.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SampleDbSecond.edmx</DependentUpon>
+    </Compile>
     <Compile Include="TestAppSessionControl.cs" />
     <EmbeddedResource Include="DbSetupMgr.resx">
       <DependentUpon>DbSetupMgr.cs</DependentUpon>
@@ -162,6 +167,10 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>SampleDb.Designer.cs</LastGenOutput>
       <CustomToolNamespace>B1.Utility.DatabaseSetup.Models</CustomToolNamespace>
+    </EntityDeploy>
+    <EntityDeploy Include="SampleDbSecond.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>SampleDbSecond.Designer.cs</LastGenOutput>
     </EntityDeploy>
   </ItemGroup>
   <ItemGroup>

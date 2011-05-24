@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="SampleDbSecond.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+        <EntityContainer Name="SampleDbSecondStoreContainer">
+          <EntitySet Name="AppConfigParameters" EntityType="SampleDbSecond.Store.AppConfigParameters" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="TestSequence" EntityType="SampleDbSecond.Store.TestSequence" store:Type="Tables" Schema="B1" />
+        </EntityContainer>
+        <EntityType Name="AppConfigParameters">
+          <Key>
+            <PropertyRef Name="ParameterName" />
+          </Key>
+          <Property Name="ParameterName" Type="varchar" Nullable="false" MaxLength="48" />
+          <Property Name="ParameterValue" Type="varchar" Nullable="false" MaxLength="256" />
+        </EntityType>
+        <EntityType Name="TestSequence">
+          <Key>
+            <PropertyRef Name="AppSequenceId" />
+          </Key>
+          <Property Name="AppSequenceId" Type="bigint" Nullable="false" />
+          <Property Name="DbSequenceId" Type="bigint" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="AppSynchTime" Type="datetime" Nullable="false" />
+          <Property Name="AppLocalTime" Type="datetime" Nullable="false" />
+          <Property Name="DbServerTime" Type="datetime" Nullable="false" />
+          <Property Name="AppSequenceName" Type="varchar" Nullable="false" MaxLength="32" />
+          <Property Name="Remarks" Type="varchar" MaxLength="100" />
+          <Property Name="ExtraData" Type="varchar(max)" />
+        </EntityType>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="SampleDbSecond" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation">
+        <EntityContainer Name="SampleDbSecondContainer" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="TestSequences" EntityType="SampleDbSecond.TestSequence" />
+          <EntitySet Name="AppConfigParameters" EntityType="SampleDbSecond.AppConfigParameter" />
+        </EntityContainer>
+        <EntityType Name="TestSequence">
+          <Key>
+            <PropertyRef Name="AppSequenceId" />
+          </Key>
+          <Property Type="Int64" Name="AppSequenceId" Nullable="false" />
+          <Property Type="Int64" Name="DbSequenceId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="DateTime" Name="AppSynchTime" Nullable="false" />
+          <Property Type="DateTime" Name="AppLocalTime" Nullable="false" />
+          <Property Type="DateTime" Name="DbServerTime" Nullable="false" />
+          <Property Type="String" Name="AppSequenceName" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Remarks" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ExtraData" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="AppConfigParameter">
+          <Key>
+            <PropertyRef Name="ParameterName" />
+          </Key>
+          <Property Type="String" Name="ParameterName" Nullable="false" MaxLength="48" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ParameterValue" Nullable="false" MaxLength="256" FixedLength="false" Unicode="false" />
+        </EntityType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs" Space="C-S">
+        <Alias Key="Model" Value="SampleDbSecond" />
+        <Alias Key="Target" Value="SampleDbSecond.Store" />
+        <EntityContainerMapping CdmEntityContainer="SampleDbSecondContainer" StorageEntityContainer="SampleDbSecondStoreContainer">
+          <EntitySetMapping Name="TestSequences">
+            <EntityTypeMapping TypeName="SampleDbSecond.TestSequence">
+              <MappingFragment StoreEntitySet="TestSequence">
+                <ScalarProperty Name="ExtraData" ColumnName="ExtraData" />
+                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+                <ScalarProperty Name="AppSequenceName" ColumnName="AppSequenceName" />
+                <ScalarProperty Name="DbServerTime" ColumnName="DbServerTime" />
+                <ScalarProperty Name="AppLocalTime" ColumnName="AppLocalTime" />
+                <ScalarProperty Name="AppSynchTime" ColumnName="AppSynchTime" />
+                <ScalarProperty Name="DbSequenceId" ColumnName="DbSequenceId" />
+                <ScalarProperty Name="AppSequenceId" ColumnName="AppSequenceId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="AppConfigParameters">
+            <EntityTypeMapping TypeName="SampleDbSecond.AppConfigParameter">
+              <MappingFragment StoreEntitySet="AppConfigParameters">
+                <ScalarProperty Name="ParameterValue" ColumnName="ParameterValue" />
+                <ScalarProperty Name="ParameterName" ColumnName="ParameterName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <edmx:Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </edmx:Connection>
+    <edmx:Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+      </DesignerInfoPropertySet>
+    </edmx:Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram Name="SampleDbSecond" >
+        <EntityTypeShape EntityType="SampleDbSecond.TestSequence" Width="1.5" PointX="0.75" PointY="0.75" Height="2.2496956380208331" />
+        <EntityTypeShape EntityType="SampleDbSecond.AppConfigParameter" Width="1.5" PointX="3.375" PointY="0.75" Height="1.2636116536458335" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

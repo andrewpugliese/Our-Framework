@@ -65,7 +65,12 @@ namespace B1.Web
 
             public override string AppRelativeCurrentExecutionFilePath
             {
-                get { return string.Concat("~", _appRelativePath); }
+                get
+                {
+                    return _appRelativePath.StartsWith("/") ?
+                        string.Concat("~", _appRelativePath) :
+                        string.Concat("~/", _appRelativePath);
+                }
             }
 
             public override string PathInfo { get { return _pathInfo; } }
