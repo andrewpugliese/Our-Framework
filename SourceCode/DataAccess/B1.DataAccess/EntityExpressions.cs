@@ -1704,7 +1704,6 @@ namespace B1.DataAccess
             _entityType = type;
         }
 
-
         internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams()
         {
             return GetInsertSqlAndParams(new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
@@ -1769,11 +1768,11 @@ namespace B1.DataAccess
         {
             return GetUpdateSql(context
                     , entity
-                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+                    , new Dictionary<PropertyInfo, object>());
         }
 
         internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(
-            ObjectContext context, object entity, Dictionary<string, object> propertyDbFunctions)
+            ObjectContext context, object entity, Dictionary<PropertyInfo, object> propertyDbFunctions)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -1797,7 +1796,7 @@ namespace B1.DataAccess
                     , columnName);
 
                 object value = null;
-                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(propName))
+                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(_entityType.GetProperty(propName)))
                 {
                     DbPredicateParameter param = new DbPredicateParameter()
                     {
@@ -1818,19 +1817,18 @@ namespace B1.DataAccess
 
                     parameters.Add(param);
                 }
-                else value = propertyDbFunctions[propName];
+                else value = propertyDbFunctions[_entityType.GetProperty(propName)];
 
                 setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                          columnName
                          , value
                          , Environment.NewLine);
-
             }
 
-            foreach (string property in propertyDbFunctions.Keys)
-                if (ose.GetModifiedProperties().Where(j => j == property).Count() == 0)
+            foreach (PropertyInfo property in propertyDbFunctions.Keys)
+                if (ose.GetModifiedProperties().Where(j => j == property.Name).Count() == 0)
                 {
-                    string columnName = _qualifiedTable.GetColumnName(property);
+                    string columnName = _qualifiedTable.GetColumnName(property.Name);
                     setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                              columnName
                              , propertyDbFunctions[property]

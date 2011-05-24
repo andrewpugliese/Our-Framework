@@ -1287,7 +1287,7 @@ namespace B1.DataAccess
 
         public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
             , object updateObject
-            , Dictionary<string, object> propertyDbFunctions)
+            , Dictionary<PropertyInfo, object> propertyDbFunctions)
         {
             ObjectParser updateParser = new ObjectParser(entityContext, updateObject, this);
 
@@ -1321,7 +1321,7 @@ namespace B1.DataAccess
         {
             return BuildUpdateDbCommand(entityContext
                     , updateObject
-                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+                    , new Dictionary<PropertyInfo, object>());
         }
 
         private string BuildCaseStatementsForSelect(DbTableDmlMgr dmlSelect)
@@ -3410,7 +3410,7 @@ namespace B1.DataAccess
                 DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
             return UpdateEntity(entityContext, updateObject,
-                    new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), dbTransaction, dbCmdIn);
+                    new Dictionary<PropertyInfo, object>(), dbTransaction, dbCmdIn);
         }
 
         /// <summary>
@@ -3426,17 +3426,41 @@ namespace B1.DataAccess
         /// <param name="dbCmdIn">Optional. See summary.</param>
         /// <returns></returns>
         public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
-                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
+                Dictionary<PropertyInfo, object> propertyDbFunctions, DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
             DbCommand dbCmd = null;
 
-            if(dbCmdIn != null)
+            if (dbCmdIn != null)
             {
                 dbCmd = dbCmdIn;
                 ObjectParser.RemapDbCommandParameters(dbCmd, updateObject);
             }
             else
-                dbCmd = BuildUpdateDbCommand(entityContext, updateObject, propertyDbFunctions);
+            {
+                DbCommandMgr cmdMgr = new DbCommandMgr(this);
+                cmdMgr.AddDbCommand(BuildUpdateDbCommand(entityContext, updateObject, propertyDbFunctions));
+                ObjectParser entity = new ObjectParser(entityContext, updateObject, this);
+                object[] columns = new object[propertyDbFunctions.Count()];
+                int i = 0;
+                foreach (PropertyInfo pi in propertyDbFunctions.Keys)
+                    columns[i++] = entity.QualifiedTable.GetColumnName(pi.Name);
+                DbTableDmlMgr dmlMgr = DbCatalogGetTableDmlMgr(entity.QualifiedTable.SchemaName + "."
+                        + entity.QualifiedTable.EntityName
+                        , columns);
+                foreach (PropertyInfo pi in propertyDbFunctions.Keys)
+                {
+                    string columnName = entity.QualifiedTable.GetColumnName(pi.Name);
+
+                    string paramName = BuildBindVariableName(LinqTableMgr.BuildParamName(pi.Name, new List<DbPredicateParameter>(), this));
+
+                    Expression exp = DbPredicate.CreatePredicatePart(t => t.Column(columnName) ==
+                            t.Function(paramName));
+                    //dmlMgr.setor(ExpressionType.AndAlso, exp);
+                }
+                dbCmd = BuildSelectDbCommand(dmlMgr, null);
+                cmdMgr.AddDbCommand(dbCmd);
+                dbCmd = cmdMgr.DbCommandBlock;
+            }
 
             ExecuteNonQuery(dbCmd, dbTransaction);
 

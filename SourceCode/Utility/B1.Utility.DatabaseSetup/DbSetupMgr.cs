@@ -13,6 +13,7 @@ using System.Data.Objects;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 
 using Microsoft.Practices.EnterpriseLibrary.Data;
 
@@ -1824,8 +1825,8 @@ namespace B1.Utility.DatabaseSetup
 
             // the overloads collection is used for columns that require a database operation and are not known to the EF
             // for example (getdate()).  So we show example with column DbServerTime
-            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            Dictionary<PropertyInfo, object> propFunctions = new Dictionary<PropertyInfo, object>();
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbServerTime), _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
             foreach (Models.TestSequence seq in sequences)
             {
                 seq.Remarks = "Updated By EF Test Update; localTime: " + DateTime.Now.ToString("HH:mm:ss:fff");
@@ -1835,7 +1836,7 @@ namespace B1.Utility.DatabaseSetup
                 // First time in, dbCmd will be null so a new command will be created. 
                 // Subsequent calls will use the first DbCommand.
                 // Also, each call to the db will update 
-                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, overloads, null, dbCmd);
+                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, propFunctions, null, dbCmd);
                 dbCmd = results.Item2;
             }
 
