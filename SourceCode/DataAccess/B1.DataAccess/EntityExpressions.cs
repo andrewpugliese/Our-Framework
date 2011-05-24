@@ -1429,22 +1429,6 @@ namespace B1.DataAccess
             return node;
         }
 
-        // This function is called whenever member of a entity is accessed.
-        protected override Expression VisitMember(MemberExpression node)
-        {
-            if (node.Type.IsGenericType && (node.Type.GetGenericTypeDefinition() == typeof(ObjectQuery<>)
-                    || node.Type.GetGenericTypeDefinition() == typeof(ObjectSet<>)))
-            {
-                // Expression.Lambda is wrapping up "node" into a new expression tree inside an anonymous function
-                // which can be compiled and run to get the object out of it.
-                ObjectContext entityContext = ((ObjectQuery)Expression.Lambda(node).Compile().DynamicInvoke()).Context;
-
-            }
-
-            //?? return base.VisitMember(node);
-            return node;
-        }
-
         public static List<Type> GetNonGenericTypes(Type type, List<Type> nonGenericTypes = null)
         {
             if(type.IsGenericType)
