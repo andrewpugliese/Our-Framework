@@ -1852,5 +1852,58 @@ namespace B1.Utility.DatabaseSetup
             //?? TestDataAccessMgr.TestDbMultiContext(_daMgr);
         }
 
+        private void btnTestEFInsert_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            DbCommand dbCmd = null;
+
+            // the overloads collection is used for columns that require a database operation and are not known to the EF
+            // for example (getdate()).  So we show example with column DbServerTime
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+
+            Int64 appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
+
+            DbFunctionStructure autogenerate = new DbFunctionStructure();
+            if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.SqlServer
+                || _daMgr.DatabaseType == DataAccessMgr.EnumDbType.Db2)
+                autogenerate.AutoGenerate = true; // identity column
+            else
+            { // oracle sequence
+                autogenerate.AutoGenerate = false;
+                autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".DbSequenceId_Seq.nextVal";
+            }
+
+            overloads.Add(Constants.DbSequenceId, autogenerate);
+
+            Models.TestSequence seq = new Models.TestSequence()
+            {
+                AppSequenceId = appSequenceId,
+                AppSequenceName = "EF Insert",
+                AppLocalTime = DateTime.Now,
+                AppSynchTime = _daMgr.DbSynchTime,
+                Remarks = "Added by EF Test Insert"
+            };
+
+       
+            _daMgr.InsertEntity(entities, seq, overloads, null);
+
+            
+            overloads.Clear();
+            if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.Oracle)
+            {
+                autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".TESTDBSEQUENCEID_SEQ.nextVal";
+                overloads.Add(Constants.DbSequenceId, autogenerate);
+            }
+
+            _daMgr.InsertEntity(entities, new Models.TestDbSequenceId() { Remarks = "Added by EF Test Insert" },
+                    overloads, null);      
+            
+        }
+
     }
 }

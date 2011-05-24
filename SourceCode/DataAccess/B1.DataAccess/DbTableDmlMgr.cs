@@ -744,6 +744,20 @@ namespace B1.DataAccess
                 Expression.Parameter(typeof(DbTableDmlMgr), "j")), this);
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="combiningOperation"></param>
+        /// <param name="predicate"></param>
+        public void SetOrAddWhereCondition(ExpressionType combiningOperation, Expression predicate)
+        {
+            if(_whereCondition == null)
+                SetWhereCondition(predicate);
+            else
+                AddToWhereCondition(combiningOperation, predicate);
+        }
+
         /// <summary>
         /// 
         /// </summary>

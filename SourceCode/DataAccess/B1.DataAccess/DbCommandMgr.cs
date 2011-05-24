@@ -656,6 +656,31 @@ namespace B1.DataAccess
             else if (dbCommand.Parameters.Count > 0
                         || dbCommand.CommandText != _daMgr.BuildNoOpDbCommand().CommandText) // dont add the empty command
                 AddDynamicSQL(dbCommand.CommandText, _daMgr.CloneParameterCollection(dbCommand.Parameters));
+
+            if(dbCommand.Site != null && dbCommand.Site is ParameterSite)
+            {
+                List<DbPredicateParameter> newParams = new List<DbPredicateParameter>(
+                            (List<DbPredicateParameter>)dbCommand.Site.GetService(null));
+
+                foreach(DbPredicateParameter param in newParams)
+                {
+                    if(_paramAliases.ContainsKey(param.ParameterName))
+                    {
+                        string newName = _paramAliases[param.ParameterName].FirstOrDefault().ParameterName;
+
+                        if(newName != null)
+                            param.ParameterName = newName;
+                    }
+                }
+
+                if(_dbCommand.Site == null)
+                    _dbCommand.Site = new ParameterSite(newParams);
+                else if(_dbCommand.Site is ParameterSite)
+                {
+                    ((List<DbPredicateParameter>)dbCommand.Site.GetService(null)).AddRange(newParams);
+                }
+
+            }
         }
 
         /// <summary>
