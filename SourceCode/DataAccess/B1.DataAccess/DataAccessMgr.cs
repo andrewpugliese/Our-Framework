@@ -3469,10 +3469,8 @@ namespace B1.DataAccess
                             , new List<DbPredicateParameter>(), this));
 
                     Expression exp = DbPredicate.CreatePredicatePart(t => t.Column(columnName) ==
-                            t.Function(paramName));
-                    if (dmlMgr._whereCondition == null)
-                        dmlMgr.SetWhereCondition(exp);
-                    else dmlMgr.AddToWhereCondition(ExpressionType.AndAlso, exp);
+                            t.Parameter(entity.QualifiedTable.EntityName, columnName, paramName));
+                    dmlMgr.SetOrAddWhereCondition(ExpressionType.AndAlso, exp);
                 }
                 dbCmd = BuildSelectDbCommand(dmlMgr, null);
                 foreach (EntityKeyMember ek in

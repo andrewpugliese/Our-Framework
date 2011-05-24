@@ -1706,7 +1706,15 @@ namespace B1.DataAccess
 
                     parameters.Add(param);
                 }
-                else value = propertyDbFunctions[_entityType.GetProperty(propName)];
+                else
+                {
+                    if (propertyDbFunctions[_entityType.GetProperty(propName)] is string)
+                        value = (string)propertyDbFunctions[_entityType.GetProperty(propName)];
+                    else if (propertyDbFunctions[_entityType.GetProperty(propName)] is DbFunctionStructure)
+                    {
+                        value = ((DbFunctionStructure)propertyDbFunctions[_entityType.GetProperty(propName)]).FunctionBody;
+                    }
+                }
 
                 setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                          columnName
