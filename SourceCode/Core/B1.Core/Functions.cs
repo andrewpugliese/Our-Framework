@@ -40,7 +40,7 @@ namespace B1.Core
         /// <para>By utilizing Universal Time to avoid timezone adjustments and military time format, we can leverage
         /// the fact that the collisions can be minimized and the tie breaker number can address those instances.</para>
         /// </remarks>
-        public static Int64 GetSequenceNumber(DateTime synchronizedTime, Int64 uniqueTieBreakerNumber)
+        public static Int64 GetSequenceNumber(DateTime synchronizedTime, Int32 uniqueTieBreakerNumber)
         {
             if (uniqueTieBreakerNumber > 99999)
                 throw new ArgumentOutOfRangeException("uniqueTieBreakerNumber"
@@ -66,7 +66,7 @@ namespace B1.Core
         /// </summary>
         /// <param name="uniqueTieBreakerNumber">A number that needs to be unique and less than 99999</param>
         /// <returns>Unique Sequence number that will correlate between threads</returns>
-        public static Int64 GetSequenceNumber(Int64 uniqueTieBreakerNumber)
+        public static Int64 GetSequenceNumber(Int32 uniqueTieBreakerNumber)
         {
             return GetSequenceNumber(DateTime.UtcNow, uniqueTieBreakerNumber);
         }
