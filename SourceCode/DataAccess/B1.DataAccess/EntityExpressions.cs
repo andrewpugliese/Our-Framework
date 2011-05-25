@@ -1738,7 +1738,7 @@ namespace B1.DataAccess
             {
                 string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
                 where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
-                        , key.Key, parameterName, Environment.NewLine);
+                        , key.Key, _daMgr.BuildBindVariableName(parameterName), Environment.NewLine);
 
                 parameters.Add(new DbPredicateParameter()
                 {

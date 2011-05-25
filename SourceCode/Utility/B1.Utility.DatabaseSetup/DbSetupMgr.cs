@@ -1860,8 +1860,6 @@ namespace B1.Utility.DatabaseSetup
 
             Models.SampleDbEntities entities = new Models.SampleDbEntities();
 
-            DbCommand dbCmd = null;
-
             // the overloads collection is used for columns that require a database operation and are not known to the EF
             // for example (getdate()).  So we show example with column DbServerTime
             Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);

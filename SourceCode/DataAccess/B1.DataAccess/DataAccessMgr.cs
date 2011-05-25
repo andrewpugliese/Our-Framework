@@ -3554,7 +3554,9 @@ namespace B1.DataAccess
                     {
                         if(DatabaseType == EnumDbType.Oracle)
                         {
-                            dmlSelect.SetWhereCondition(t => t.Function("rowid") == t.Function(BuildBindVariableName(Constants.ParamNewId)));
+                            string bindVarName = BuildBindVariableName(Constants.ParamNewId);
+
+                            dmlSelect.SetWhereCondition(t => t.Function("rowid") == t.Function(bindVarName));
                         }
                         else if(DatabaseType == EnumDbType.SqlServer)
                         {
