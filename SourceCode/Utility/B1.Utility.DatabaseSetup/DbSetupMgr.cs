@@ -1890,10 +1890,8 @@ namespace B1.Utility.DatabaseSetup
                 Remarks = "Added by EF Test Insert"
             };
 
-       
             _daMgr.InsertEntity(entities, seq, overloads, null);
 
-            
             overloads.Clear();
             if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.Oracle)
             {
