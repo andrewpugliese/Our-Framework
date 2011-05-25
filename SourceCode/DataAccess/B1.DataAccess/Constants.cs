@@ -176,6 +176,7 @@ namespace B1.DataAccess
         /// Default Parameter Name for Paging 'Page Size'
         /// </summary>
         public const string PageSize = "PageSize";
+        internal const string ParamNewId = "NewId";
         internal const string ParamDelimiters = ", {0}()[];+-/*.<>=!";
         internal const string Parent_Column_Id = "Parent_Column_Id";
         internal const string Parent_Object_Id = "Parent_Object_Id";

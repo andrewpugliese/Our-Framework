@@ -56,6 +56,7 @@ Tables\B1.AppConfigParameters.sql
 
 // table for testing and demo
 Tables\B1.TestSequence.sql
+Tables\B1.TestDbSequenceIds.sql
 
 
 //

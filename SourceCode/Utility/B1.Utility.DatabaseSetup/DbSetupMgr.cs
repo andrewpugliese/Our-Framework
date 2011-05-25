@@ -13,6 +13,7 @@ using System.Data.Objects;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
 
 using Microsoft.Practices.EnterpriseLibrary.Data;
 
@@ -1824,8 +1825,8 @@ namespace B1.Utility.DatabaseSetup
 
             // the overloads collection is used for columns that require a database operation and are not known to the EF
             // for example (getdate()).  So we show example with column DbServerTime
-            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            Dictionary<PropertyInfo, object> propFunctions = new Dictionary<PropertyInfo, object>();
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbServerTime), _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
             foreach (Models.TestSequence seq in sequences)
             {
                 seq.Remarks = "Updated By EF Test Update; localTime: " + DateTime.Now.ToString("HH:mm:ss:fff");
@@ -1835,7 +1836,7 @@ namespace B1.Utility.DatabaseSetup
                 // First time in, dbCmd will be null so a new command will be created. 
                 // Subsequent calls will use the first DbCommand.
                 // Also, each call to the db will update 
-                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, overloads, null, dbCmd);
+                Tuple<ObjectContext, DbCommand> results = _daMgr.UpdateEntity(entities, seq, propFunctions, null, dbCmd);
                 dbCmd = results.Item2;
             }
 
@@ -1850,6 +1851,59 @@ namespace B1.Utility.DatabaseSetup
             aa.testEntities();
 
             //?? TestDataAccessMgr.TestDbMultiContext(_daMgr);
+        }
+
+        private void btnTestEFInsert_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            DbCommand dbCmd = null;
+
+            // the overloads collection is used for columns that require a database operation and are not known to the EF
+            // for example (getdate()).  So we show example with column DbServerTime
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+
+            Int64 appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
+
+            DbFunctionStructure autogenerate = new DbFunctionStructure();
+            if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.SqlServer
+                || _daMgr.DatabaseType == DataAccessMgr.EnumDbType.Db2)
+                autogenerate.AutoGenerate = true; // identity column
+            else
+            { // oracle sequence
+                autogenerate.AutoGenerate = false;
+                autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".DbSequenceId_Seq.nextVal";
+            }
+
+            overloads.Add(Constants.DbSequenceId, autogenerate);
+
+            Models.TestSequence seq = new Models.TestSequence()
+            {
+                AppSequenceId = appSequenceId,
+                AppSequenceName = "EF Insert",
+                AppLocalTime = DateTime.Now,
+                AppSynchTime = _daMgr.DbSynchTime,
+                Remarks = "Added by EF Test Insert"
+            };
+
+       
+            _daMgr.InsertEntity(entities, seq, overloads, null);
+
+            
+            overloads.Clear();
+            if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.Oracle)
+            {
+                autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".TESTDBSEQUENCEID_SEQ.nextVal";
+                overloads.Add(Constants.DbSequenceId, autogenerate);
+            }
+
+            _daMgr.InsertEntity(entities, new Models.TestDbSequenceId() { Remarks = "Added by EF Test Insert" },
+                    overloads, null);      
+            
         }
 
     }

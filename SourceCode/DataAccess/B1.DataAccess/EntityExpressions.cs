@@ -1579,13 +1579,12 @@ namespace B1.DataAccess
             _entityType = type;
         }
 
-
-        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams()
+        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams(bool getRowId = false)
         {
-            return GetInsertSqlAndParams(new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+            return GetInsertSqlAndParams(new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), getRowId);
         }
 
-        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams(Dictionary<string, object> propertyDbFunctions)
+        internal Tuple<string, List<DbPredicateParameter>> GetInsertSqlAndParams(Dictionary<string, object> propertyDbFunctions, bool getRowId = false)
         {
             StringBuilder sb = new StringBuilder("INSERT INTO");
 
@@ -1595,6 +1594,8 @@ namespace B1.DataAccess
 
             StringBuilder sbColumns = new StringBuilder("");
             StringBuilder sbValues = new StringBuilder("");
+
+            DbTableStructure table = _daMgr.DbCatalogGetTable(QualifiedTable.SchemaName, QualifiedTable.EntityName);
 
             List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
             foreach (PropertyInfo prop in _entityType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Public
@@ -1611,7 +1612,7 @@ namespace B1.DataAccess
                     sbColumns.AppendFormat("{0}{1}", sbColumns.Length == 0 ? "" : ", ",
                             columnName);
 
-                    object value = null;
+                    string value = null;
                     if (!propertyDbFunctions.ContainsKey(prop.Name))
                     {
                         DbPredicateParameter param = new DbPredicateParameter()
@@ -1628,7 +1629,15 @@ namespace B1.DataAccess
                         parameters.Add(param);
                         value = _daMgr.BuildBindVariableName(param.ParameterName);
                     }
-                    else value = propertyDbFunctions[prop.Name];
+                    else 
+                    {
+                        if(propertyDbFunctions[prop.Name] is string)
+                            value = (string)propertyDbFunctions[prop.Name];
+                        else if (propertyDbFunctions[prop.Name] is DbFunctionStructure)
+                        {
+                            value = ((DbFunctionStructure)propertyDbFunctions[prop.Name]).FunctionBody;
+                        }
+                    }
 
                     sbValues.AppendFormat("{0}{1}", sbValues.Length == 0 ? "" : ", ", value);
 
@@ -1636,7 +1645,11 @@ namespace B1.DataAccess
 
             }
 
-            sb.AppendFormat("({0}) {2}VALUES ({1}){2}", sbColumns, sbValues, Environment.NewLine);
+            if(sbColumns.Length == 0 && _daMgr.DatabaseType == DataAccessMgr.EnumDbType.SqlServer)
+                sb.Append(" default values ");
+            else
+                sb.AppendFormat("({0}) {2}VALUES ({1}){2}", sbColumns, sbValues, Environment.NewLine);
+
             return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
         }
 
@@ -1644,11 +1657,11 @@ namespace B1.DataAccess
         {
             return GetUpdateSql(context
                     , entity
-                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase));
+                    , new Dictionary<PropertyInfo, object>());
         }
 
         internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(
-            ObjectContext context, object entity, Dictionary<string, object> propertyDbFunctions)
+            ObjectContext context, object entity, Dictionary<PropertyInfo, object> propertyDbFunctions)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -1672,7 +1685,7 @@ namespace B1.DataAccess
                     , columnName);
 
                 object value = null;
-                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(propName))
+                if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(_entityType.GetProperty(propName)))
                 {
                     DbPredicateParameter param = new DbPredicateParameter()
                     {
@@ -1693,19 +1706,26 @@ namespace B1.DataAccess
 
                     parameters.Add(param);
                 }
-                else value = propertyDbFunctions[propName];
+                else
+                {
+                    if (propertyDbFunctions[_entityType.GetProperty(propName)] is string)
+                        value = (string)propertyDbFunctions[_entityType.GetProperty(propName)];
+                    else if (propertyDbFunctions[_entityType.GetProperty(propName)] is DbFunctionStructure)
+                    {
+                        value = ((DbFunctionStructure)propertyDbFunctions[_entityType.GetProperty(propName)]).FunctionBody;
+                    }
+                }
 
                 setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                          columnName
                          , value
                          , Environment.NewLine);
-
             }
 
-            foreach (string property in propertyDbFunctions.Keys)
-                if (ose.GetModifiedProperties().Where(j => j == property).Count() == 0)
+            foreach (PropertyInfo property in propertyDbFunctions.Keys)
+                if (ose.GetModifiedProperties().Where(j => j == property.Name).Count() == 0)
                 {
-                    string columnName = _qualifiedTable.GetColumnName(property);
+                    string columnName = _qualifiedTable.GetColumnName(property.Name);
                     setColumns.AppendFormat("{0}{1} = {2}{3}", setColumns.Length == 0 ? "" : ", ",
                              columnName
                              , propertyDbFunctions[property]
@@ -1767,7 +1787,7 @@ namespace B1.DataAccess
         internal static string GetEntitySetName(ObjectContext entityContext, object entity)
         {
             Type entityType = ObjectContext.GetObjectType(entity.GetType());
-            return GetEntitySetName(entityContext, entity);
+            return GetEntitySetName(entityContext, entity.GetType());
         }
 
         internal static string GetEntitySetName(ObjectContext entityContext, Type entityType)

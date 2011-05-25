@@ -24,9 +24,12 @@ using System.Runtime.Serialization;
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UserMaster1", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AppMaster_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "AppMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AppMaster), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_SignonControl_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "SignonControl", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.SignonControl), true)]
-[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AppSessions_AppMaster_Code", "AppMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.AppMaster), "AppSession", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.AppSession), true)]
+[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AppSessions_AppMaster_Code", "AppMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.AppMaster), "AppSession", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AppSession), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserSessions_UserMaster_UserCode", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UserSession", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserSession), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_UserAccessGroups", "UserAccessGroup", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UserAccessGroup), "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
+[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AccessControlGroupRules_UIControls", "UIControl", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UIControl), "AccessControlGroupRule", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroupRule), true)]
+[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AccessControlGroupRules_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "AccessControlGroupRule", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroupRule), true)]
+[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_AccessControlGroups", "AccessControlGroup", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroup), "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
 
 #endregion
 
@@ -269,6 +272,54 @@ namespace B1.Utility.DatabaseSetup.Models
             }
         }
         private ObjectSet<UserAccessGroup> _UserAccessGroups;
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        public ObjectSet<AccessControlGroupRule> AccessControlGroupRules
+        {
+            get
+            {
+                if ((_AccessControlGroupRules == null))
+                {
+                    _AccessControlGroupRules = base.CreateObjectSet<AccessControlGroupRule>("AccessControlGroupRules");
+                }
+                return _AccessControlGroupRules;
+            }
+        }
+        private ObjectSet<AccessControlGroupRule> _AccessControlGroupRules;
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        public ObjectSet<AccessControlGroup> AccessControlGroups
+        {
+            get
+            {
+                if ((_AccessControlGroups == null))
+                {
+                    _AccessControlGroups = base.CreateObjectSet<AccessControlGroup>("AccessControlGroups");
+                }
+                return _AccessControlGroups;
+            }
+        }
+        private ObjectSet<AccessControlGroup> _AccessControlGroups;
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        public ObjectSet<TestDbSequenceId> TestDbSequenceIds
+        {
+            get
+            {
+                if ((_TestDbSequenceIds == null))
+                {
+                    _TestDbSequenceIds = base.CreateObjectSet<TestDbSequenceId>("TestDbSequenceIds");
+                }
+                return _TestDbSequenceIds;
+            }
+        }
+        private ObjectSet<TestDbSequenceId> _TestDbSequenceIds;
 
         #endregion
         #region AddTo Methods
@@ -368,6 +419,30 @@ namespace B1.Utility.DatabaseSetup.Models
         {
             base.AddObject("UserAccessGroups", userAccessGroup);
         }
+    
+        /// <summary>
+        /// Deprecated Method for adding a new object to the AccessControlGroupRules EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
+        /// </summary>
+        public void AddToAccessControlGroupRules(AccessControlGroupRule accessControlGroupRule)
+        {
+            base.AddObject("AccessControlGroupRules", accessControlGroupRule);
+        }
+    
+        /// <summary>
+        /// Deprecated Method for adding a new object to the AccessControlGroups EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
+        /// </summary>
+        public void AddToAccessControlGroups(AccessControlGroup accessControlGroup)
+        {
+            base.AddObject("AccessControlGroups", accessControlGroup);
+        }
+    
+        /// <summary>
+        /// Deprecated Method for adding a new object to the TestDbSequenceIds EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
+        /// </summary>
+        public void AddToTestDbSequenceIds(TestDbSequenceId testDbSequenceId)
+        {
+            base.AddObject("TestDbSequenceIds", testDbSequenceId);
+        }
 
         #endregion
     }
@@ -376,6 +451,397 @@ namespace B1.Utility.DatabaseSetup.Models
     #endregion
     
     #region Entities
+    
+    /// <summary>
+    /// No Metadata Documentation available.
+    /// </summary>
+    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="AccessControlGroup")]
+    [Serializable()]
+    [DataContractAttribute(IsReference=true)]
+    public partial class AccessControlGroup : EntityObject
+    {
+        #region Factory Method
+    
+        /// <summary>
+        /// Create a new AccessControlGroup object.
+        /// </summary>
+        /// <param name="accessControlGroupCode">Initial value of the AccessControlGroupCode property.</param>
+        /// <param name="accessControlGroupName">Initial value of the AccessControlGroupName property.</param>
+        public static AccessControlGroup CreateAccessControlGroup(global::System.Int32 accessControlGroupCode, global::System.String accessControlGroupName)
+        {
+            AccessControlGroup accessControlGroup = new AccessControlGroup();
+            accessControlGroup.AccessControlGroupCode = accessControlGroupCode;
+            accessControlGroup.AccessControlGroupName = accessControlGroupName;
+            return accessControlGroup;
+        }
+
+        #endregion
+        #region Primitive Properties
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int32 AccessControlGroupCode
+        {
+            get
+            {
+                return _AccessControlGroupCode;
+            }
+            set
+            {
+                if (_AccessControlGroupCode != value)
+                {
+                    OnAccessControlGroupCodeChanging(value);
+                    ReportPropertyChanging("AccessControlGroupCode");
+                    _AccessControlGroupCode = StructuralObject.SetValidValue(value);
+                    ReportPropertyChanged("AccessControlGroupCode");
+                    OnAccessControlGroupCodeChanged();
+                }
+            }
+        }
+        private global::System.Int32 _AccessControlGroupCode;
+        partial void OnAccessControlGroupCodeChanging(global::System.Int32 value);
+        partial void OnAccessControlGroupCodeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.String AccessControlGroupName
+        {
+            get
+            {
+                return _AccessControlGroupName;
+            }
+            set
+            {
+                OnAccessControlGroupNameChanging(value);
+                ReportPropertyChanging("AccessControlGroupName");
+                _AccessControlGroupName = StructuralObject.SetValidValue(value, false);
+                ReportPropertyChanged("AccessControlGroupName");
+                OnAccessControlGroupNameChanged();
+            }
+        }
+        private global::System.String _AccessControlGroupName;
+        partial void OnAccessControlGroupNameChanging(global::System.String value);
+        partial void OnAccessControlGroupNameChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public Nullable<global::System.Boolean> DefaultAccessDenied
+        {
+            get
+            {
+                return _DefaultAccessDenied;
+            }
+            set
+            {
+                OnDefaultAccessDeniedChanging(value);
+                ReportPropertyChanging("DefaultAccessDenied");
+                _DefaultAccessDenied = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("DefaultAccessDenied");
+                OnDefaultAccessDeniedChanged();
+            }
+        }
+        private Nullable<global::System.Boolean> _DefaultAccessDenied;
+        partial void OnDefaultAccessDeniedChanging(Nullable<global::System.Boolean> value);
+        partial void OnDefaultAccessDeniedChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String Remarks
+        {
+            get
+            {
+                return _Remarks;
+            }
+            set
+            {
+                OnRemarksChanging(value);
+                ReportPropertyChanging("Remarks");
+                _Remarks = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("Remarks");
+                OnRemarksChanged();
+            }
+        }
+        private global::System.String _Remarks;
+        partial void OnRemarksChanging(global::System.String value);
+        partial void OnRemarksChanged();
+
+        #endregion
+    
+        #region Navigation Properties
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserMaster_AccessControlGroups", "UserMaster")]
+        public EntityCollection<UserMaster> UserMasters
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<UserMaster>("B1SampleModel.FK_UserMaster_AccessControlGroups", "UserMaster");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserMaster>("B1SampleModel.FK_UserMaster_AccessControlGroups", "UserMaster", value);
+                }
+            }
+        }
+
+        #endregion
+    }
+    
+    /// <summary>
+    /// No Metadata Documentation available.
+    /// </summary>
+    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="AccessControlGroupRule")]
+    [Serializable()]
+    [DataContractAttribute(IsReference=true)]
+    public partial class AccessControlGroupRule : EntityObject
+    {
+        #region Factory Method
+    
+        /// <summary>
+        /// Create a new AccessControlGroupRule object.
+        /// </summary>
+        /// <param name="accessControlGroupCode">Initial value of the AccessControlGroupCode property.</param>
+        /// <param name="uIControlCode">Initial value of the UIControlCode property.</param>
+        /// <param name="accessDenied">Initial value of the AccessDenied property.</param>
+        public static AccessControlGroupRule CreateAccessControlGroupRule(global::System.Int32 accessControlGroupCode, global::System.Int32 uIControlCode, global::System.Boolean accessDenied)
+        {
+            AccessControlGroupRule accessControlGroupRule = new AccessControlGroupRule();
+            accessControlGroupRule.AccessControlGroupCode = accessControlGroupCode;
+            accessControlGroupRule.UIControlCode = uIControlCode;
+            accessControlGroupRule.AccessDenied = accessDenied;
+            return accessControlGroupRule;
+        }
+
+        #endregion
+        #region Primitive Properties
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int32 AccessControlGroupCode
+        {
+            get
+            {
+                return _AccessControlGroupCode;
+            }
+            set
+            {
+                if (_AccessControlGroupCode != value)
+                {
+                    OnAccessControlGroupCodeChanging(value);
+                    ReportPropertyChanging("AccessControlGroupCode");
+                    _AccessControlGroupCode = StructuralObject.SetValidValue(value);
+                    ReportPropertyChanged("AccessControlGroupCode");
+                    OnAccessControlGroupCodeChanged();
+                }
+            }
+        }
+        private global::System.Int32 _AccessControlGroupCode;
+        partial void OnAccessControlGroupCodeChanging(global::System.Int32 value);
+        partial void OnAccessControlGroupCodeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int32 UIControlCode
+        {
+            get
+            {
+                return _UIControlCode;
+            }
+            set
+            {
+                if (_UIControlCode != value)
+                {
+                    OnUIControlCodeChanging(value);
+                    ReportPropertyChanging("UIControlCode");
+                    _UIControlCode = StructuralObject.SetValidValue(value);
+                    ReportPropertyChanged("UIControlCode");
+                    OnUIControlCodeChanged();
+                }
+            }
+        }
+        private global::System.Int32 _UIControlCode;
+        partial void OnUIControlCodeChanging(global::System.Int32 value);
+        partial void OnUIControlCodeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Boolean AccessDenied
+        {
+            get
+            {
+                return _AccessDenied;
+            }
+            set
+            {
+                OnAccessDeniedChanging(value);
+                ReportPropertyChanging("AccessDenied");
+                _AccessDenied = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("AccessDenied");
+                OnAccessDeniedChanged();
+            }
+        }
+        private global::System.Boolean _AccessDenied;
+        partial void OnAccessDeniedChanging(global::System.Boolean value);
+        partial void OnAccessDeniedChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public Nullable<global::System.Int32> LastModifiedUserCode
+        {
+            get
+            {
+                return _LastModifiedUserCode;
+            }
+            set
+            {
+                OnLastModifiedUserCodeChanging(value);
+                ReportPropertyChanging("LastModifiedUserCode");
+                _LastModifiedUserCode = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("LastModifiedUserCode");
+                OnLastModifiedUserCodeChanged();
+            }
+        }
+        private Nullable<global::System.Int32> _LastModifiedUserCode;
+        partial void OnLastModifiedUserCodeChanging(Nullable<global::System.Int32> value);
+        partial void OnLastModifiedUserCodeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public Nullable<global::System.DateTime> LastModifiedDateTime
+        {
+            get
+            {
+                return _LastModifiedDateTime;
+            }
+            set
+            {
+                OnLastModifiedDateTimeChanging(value);
+                ReportPropertyChanging("LastModifiedDateTime");
+                _LastModifiedDateTime = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("LastModifiedDateTime");
+                OnLastModifiedDateTimeChanged();
+            }
+        }
+        private Nullable<global::System.DateTime> _LastModifiedDateTime;
+        partial void OnLastModifiedDateTimeChanging(Nullable<global::System.DateTime> value);
+        partial void OnLastModifiedDateTimeChanged();
+
+        #endregion
+    
+        #region Navigation Properties
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AccessControlGroupRules_UIControls", "UIControl")]
+        public UIControl UIControl
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "UIControl").Value;
+            }
+            set
+            {
+                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "UIControl").Value = value;
+            }
+        }
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [BrowsableAttribute(false)]
+        [DataMemberAttribute()]
+        public EntityReference<UIControl> UIControlReference
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "UIControl");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UIControl>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "UIControl", value);
+                }
+            }
+        }
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AccessControlGroupRules_UserMaster", "UserMaster")]
+        public UserMaster UserMaster
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "UserMaster").Value;
+            }
+            set
+            {
+                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "UserMaster").Value = value;
+            }
+        }
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [BrowsableAttribute(false)]
+        [DataMemberAttribute()]
+        public EntityReference<UserMaster> UserMasterReference
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "UserMaster");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UserMaster>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "UserMaster", value);
+                }
+            }
+        }
+
+        #endregion
+    }
     
     /// <summary>
     /// No Metadata Documentation available.
@@ -611,12 +1077,14 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <param name="appCode">Initial value of the AppCode property.</param>
         /// <param name="appId">Initial value of the AppId property.</param>
         /// <param name="remarks">Initial value of the Remarks property.</param>
-        public static AppMaster CreateAppMaster(global::System.Int32 appCode, global::System.String appId, global::System.String remarks)
+        /// <param name="isTaskProcessingEngine">Initial value of the IsTaskProcessingEngine property.</param>
+        public static AppMaster CreateAppMaster(global::System.Int32 appCode, global::System.String appId, global::System.String remarks, global::System.Boolean isTaskProcessingEngine)
         {
             AppMaster appMaster = new AppMaster();
             appMaster.AppCode = appCode;
             appMaster.AppId = appId;
             appMaster.Remarks = remarks;
+            appMaster.IsTaskProcessingEngine = isTaskProcessingEngine;
             return appMaster;
         }
 
@@ -745,6 +1213,30 @@ namespace B1.Utility.DatabaseSetup.Models
         private Nullable<global::System.DateTime> _LastModifiedDateTime;
         partial void OnLastModifiedDateTimeChanging(Nullable<global::System.DateTime> value);
         partial void OnLastModifiedDateTimeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Boolean IsTaskProcessingEngine
+        {
+            get
+            {
+                return _IsTaskProcessingEngine;
+            }
+            set
+            {
+                OnIsTaskProcessingEngineChanging(value);
+                ReportPropertyChanging("IsTaskProcessingEngine");
+                _IsTaskProcessingEngine = StructuralObject.SetValidValue(value);
+                ReportPropertyChanged("IsTaskProcessingEngine");
+                OnIsTaskProcessingEngineChanged();
+            }
+        }
+        private global::System.Boolean _IsTaskProcessingEngine;
+        partial void OnIsTaskProcessingEngineChanging(global::System.Boolean value);
+        partial void OnIsTaskProcessingEngineChanged();
 
         #endregion
     
@@ -795,33 +1287,17 @@ namespace B1.Utility.DatabaseSetup.Models
         [SoapIgnoreAttribute()]
         [DataMemberAttribute()]
         [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AppSessions_AppMaster_Code", "AppSession")]
-        public AppSession AppSession
+        public EntityCollection<AppSession> AppSession
         {
             get
             {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession").Value;
-            }
-            set
-            {
-                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession").Value = value;
-            }
-        }
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [BrowsableAttribute(false)]
-        [DataMemberAttribute()]
-        public EntityReference<AppSession> AppSessionReference
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession");
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession");
             }
             set
             {
                 if ((value != null))
                 {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession", value);
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<AppSession>("B1SampleModel.FK_AppSessions_AppMaster_Code", "AppSession", value);
                 }
             }
         }
@@ -853,7 +1329,8 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <param name="environmentSettings">Initial value of the EnvironmentSettings property.</param>
         /// <param name="configSettings">Initial value of the ConfigSettings property.</param>
         /// <param name="statusMessage">Initial value of the StatusMessage property.</param>
-        public static AppSession CreateAppSession(global::System.Int32 appCode, global::System.String appId, global::System.String appProduct, global::System.String appVersion, global::System.String machineName, global::System.Int64 processId, global::System.DateTime startDateTime, global::System.DateTime statusDateTime, global::System.String environmentSettings, global::System.String configSettings, global::System.String statusMessage)
+        /// <param name="multipleSessionCode">Initial value of the MultipleSessionCode property.</param>
+        public static AppSession CreateAppSession(global::System.Int32 appCode, global::System.String appId, global::System.String appProduct, global::System.String appVersion, global::System.String machineName, global::System.Int64 processId, global::System.DateTime startDateTime, global::System.DateTime statusDateTime, global::System.String environmentSettings, global::System.String configSettings, global::System.String statusMessage, global::System.Int64 multipleSessionCode)
         {
             AppSession appSession = new AppSession();
             appSession.AppCode = appCode;
@@ -867,6 +1344,7 @@ namespace B1.Utility.DatabaseSetup.Models
             appSession.EnvironmentSettings = environmentSettings;
             appSession.ConfigSettings = configSettings;
             appSession.StatusMessage = statusMessage;
+            appSession.MultipleSessionCode = multipleSessionCode;
             return appSession;
         }
 
@@ -1139,6 +1617,33 @@ namespace B1.Utility.DatabaseSetup.Models
         private global::System.String _StatusMessage;
         partial void OnStatusMessageChanging(global::System.String value);
         partial void OnStatusMessageChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int64 MultipleSessionCode
+        {
+            get
+            {
+                return _MultipleSessionCode;
+            }
+            set
+            {
+                if (_MultipleSessionCode != value)
+                {
+                    OnMultipleSessionCodeChanging(value);
+                    ReportPropertyChanging("MultipleSessionCode");
+                    _MultipleSessionCode = StructuralObject.SetValidValue(value);
+                    ReportPropertyChanged("MultipleSessionCode");
+                    OnMultipleSessionCodeChanged();
+                }
+            }
+        }
+        private global::System.Int64 _MultipleSessionCode;
+        partial void OnMultipleSessionCodeChanging(global::System.Int64 value);
+        partial void OnMultipleSessionCodeChanged();
 
         #endregion
     
@@ -1505,6 +2010,85 @@ namespace B1.Utility.DatabaseSetup.Models
         }
 
         #endregion
+    }
+    
+    /// <summary>
+    /// No Metadata Documentation available.
+    /// </summary>
+    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="TestDbSequenceId")]
+    [Serializable()]
+    [DataContractAttribute(IsReference=true)]
+    public partial class TestDbSequenceId : EntityObject
+    {
+        #region Factory Method
+    
+        /// <summary>
+        /// Create a new TestDbSequenceId object.
+        /// </summary>
+        /// <param name="dbSequenceId">Initial value of the DbSequenceId property.</param>
+        public static TestDbSequenceId CreateTestDbSequenceId(global::System.Int64 dbSequenceId)
+        {
+            TestDbSequenceId testDbSequenceId = new TestDbSequenceId();
+            testDbSequenceId.DbSequenceId = dbSequenceId;
+            return testDbSequenceId;
+        }
+
+        #endregion
+        #region Primitive Properties
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
+        [DataMemberAttribute()]
+        public global::System.Int64 DbSequenceId
+        {
+            get
+            {
+                return _DbSequenceId;
+            }
+            set
+            {
+                if (_DbSequenceId != value)
+                {
+                    OnDbSequenceIdChanging(value);
+                    ReportPropertyChanging("DbSequenceId");
+                    _DbSequenceId = StructuralObject.SetValidValue(value);
+                    ReportPropertyChanged("DbSequenceId");
+                    OnDbSequenceIdChanged();
+                }
+            }
+        }
+        private global::System.Int64 _DbSequenceId;
+        partial void OnDbSequenceIdChanging(global::System.Int64 value);
+        partial void OnDbSequenceIdChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String Remarks
+        {
+            get
+            {
+                return _Remarks;
+            }
+            set
+            {
+                OnRemarksChanging(value);
+                ReportPropertyChanging("Remarks");
+                _Remarks = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("Remarks");
+                OnRemarksChanged();
+            }
+        }
+        private global::System.String _Remarks;
+        partial void OnRemarksChanging(global::System.String value);
+        partial void OnRemarksChanged();
+
+        #endregion
+    
     }
     
     /// <summary>
@@ -1949,6 +2533,28 @@ namespace B1.Utility.DatabaseSetup.Models
                 if ((value != null))
                 {
                     ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserAccessGroupPermission>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UserAccessGroupPermissions", value);
+                }
+            }
+        }
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AccessControlGroupRules_UIControls", "AccessControlGroupRule")]
+        public EntityCollection<AccessControlGroupRule> AccessControlGroupRules
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<AccessControlGroupRule>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "AccessControlGroupRule");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<AccessControlGroupRule>("B1SampleModel.FK_AccessControlGroupRules_UIControls", "AccessControlGroupRule", value);
                 }
             }
         }
@@ -2948,6 +3554,54 @@ namespace B1.Utility.DatabaseSetup.Models
         private Nullable<global::System.DateTime> _LastModifiedDateTime;
         partial void OnLastModifiedDateTimeChanging(Nullable<global::System.DateTime> value);
         partial void OnLastModifiedDateTimeChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String PasswordSalt
+        {
+            get
+            {
+                return _PasswordSalt;
+            }
+            set
+            {
+                OnPasswordSaltChanging(value);
+                ReportPropertyChanging("PasswordSalt");
+                _PasswordSalt = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("PasswordSalt");
+                OnPasswordSaltChanged();
+            }
+        }
+        private global::System.String _PasswordSalt;
+        partial void OnPasswordSaltChanging(global::System.String value);
+        partial void OnPasswordSaltChanged();
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [DataMemberAttribute()]
+        public global::System.String EmailAddress
+        {
+            get
+            {
+                return _EmailAddress;
+            }
+            set
+            {
+                OnEmailAddressChanging(value);
+                ReportPropertyChanging("EmailAddress");
+                _EmailAddress = StructuralObject.SetValidValue(value, true);
+                ReportPropertyChanged("EmailAddress");
+                OnEmailAddressChanged();
+            }
+        }
+        private global::System.String _EmailAddress;
+        partial void OnEmailAddressChanging(global::System.String value);
+        partial void OnEmailAddressChanged();
 
         #endregion
     
@@ -3157,6 +3811,66 @@ namespace B1.Utility.DatabaseSetup.Models
                 if ((value != null))
                 {
                     ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UserAccessGroup>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserAccessGroup", value);
+                }
+            }
+        }
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AccessControlGroupRules_UserMaster", "AccessControlGroupRule")]
+        public EntityCollection<AccessControlGroupRule> AccessControlGroupRules
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<AccessControlGroupRule>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "AccessControlGroupRule");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<AccessControlGroupRule>("B1SampleModel.FK_AccessControlGroupRules_UserMaster", "AccessControlGroupRule", value);
+                }
+            }
+        }
+    
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [XmlIgnoreAttribute()]
+        [SoapIgnoreAttribute()]
+        [DataMemberAttribute()]
+        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserMaster_AccessControlGroups", "AccessControlGroup")]
+        public AccessControlGroup AccessControlGroup
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AccessControlGroup>("B1SampleModel.FK_UserMaster_AccessControlGroups", "AccessControlGroup").Value;
+            }
+            set
+            {
+                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AccessControlGroup>("B1SampleModel.FK_UserMaster_AccessControlGroups", "AccessControlGroup").Value = value;
+            }
+        }
+        /// <summary>
+        /// No Metadata Documentation available.
+        /// </summary>
+        [BrowsableAttribute(false)]
+        [DataMemberAttribute()]
+        public EntityReference<AccessControlGroup> AccessControlGroupReference
+        {
+            get
+            {
+                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<AccessControlGroup>("B1SampleModel.FK_UserMaster_AccessControlGroups", "AccessControlGroup");
+            }
+            set
+            {
+                if ((value != null))
+                {
+                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<AccessControlGroup>("B1SampleModel.FK_UserMaster_AccessControlGroups", "AccessControlGroup", value);
                 }
             }
         }
