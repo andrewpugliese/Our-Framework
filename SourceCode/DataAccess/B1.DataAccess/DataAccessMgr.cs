@@ -1305,7 +1305,7 @@ namespace B1.DataAccess
             DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
 
             Tuple<string, List<DbPredicateParameter>> updateSqlandParams 
-                    = updateParser.GetUpdateSql(entityContext, updateObject, propertyDbFunctions);
+                    = updateParser.GetUpdateSqlAndParams(entityContext, updateObject, propertyDbFunctions);
 
             foreach (DbPredicateParameter param in updateSqlandParams.Item2)
             {
@@ -1319,7 +1319,7 @@ namespace B1.DataAccess
                     , column.DataTypeNativeDb
                     , column.MaxLength
                     , ParameterDirection.Input
-                    , DBNull.Value);
+                    , param.Value);
             }
             
             // return the new dbCommand
@@ -2525,7 +2525,7 @@ namespace B1.DataAccess
         public Int64 GetNextSequenceNumber(string sequenceKey)
         {
             // gets the tie-breaker number for the sequenceKey
-            Int64 uniqueNumber = GetNextUniqueId(sequenceKey, 1);
+            Int32 uniqueNumber = Convert.ToInt32(GetNextUniqueId(sequenceKey, 1, 99999, 1));
             // return a formatted sequence number using the uniqueNumber for a tie-breaker
             return Functions.GetSequenceNumber(DbSynchTime, uniqueNumber);
         }
@@ -3453,13 +3453,16 @@ namespace B1.DataAccess
                 DbCommandMgr cmdMgr = new DbCommandMgr(this);
                 cmdMgr.AddDbCommand(BuildUpdateDbCommand(entityContext, updateObject, propertyDbFunctions));
                 ObjectParser entity = new ObjectParser(entityContext, updateObject, this);
+
                 object[] columns = new object[propertyDbFunctions.Count()];
                 int i = 0;
                 foreach (PropertyInfo pi in propertyDbFunctions.Keys)
                     columns[i++] = entity.QualifiedTable.GetColumnName(pi.Name);
+
                 DbTableDmlMgr dmlMgr = DbCatalogGetTableDmlMgr(entity.QualifiedTable.SchemaName + "."
                         + entity.QualifiedTable.EntityName
                         , columns);
+
                 foreach (EntityKeyMember ek in 
                         entityContext.ObjectStateManager.GetObjectStateEntry(updateObject).EntityKey.EntityKeyValues)
                 {
@@ -3469,20 +3472,15 @@ namespace B1.DataAccess
                             , new List<DbPredicateParameter>(), this));
 
                     Expression exp = DbPredicate.CreatePredicatePart(t => t.Column(columnName) ==
-                            t.Parameter(entity.QualifiedTable.EntityName, columnName, paramName));
+                            t.Function(paramName));
                     dmlMgr.SetOrAddWhereCondition(ExpressionType.AndAlso, exp);
                 }
                 dbCmd = BuildSelectDbCommand(dmlMgr, null);
-                foreach (EntityKeyMember ek in
-                        entityContext.ObjectStateManager.GetObjectStateEntry(updateObject).EntityKey.EntityKeyValues)
-                    dbCmd.Parameters[LinqTableMgr.BuildParamName(ek.Key
-                        , new List<DbPredicateParameter>(), this)].Value = ek.Value;
                 cmdMgr.AddDbCommand(dbCmd);
                 dbCmd = cmdMgr.DbCommandBlock;
             }
 
-            ExecuteNonQuery(dbCmd, dbTransaction);
-
+            UpdateEntitiesFromReader(updateObject, ExecuteReader(dbCmd, dbTransaction));
             entityContext.ObjectStateManager.ChangeObjectState(updateObject, EntityState.Unchanged);
 
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);

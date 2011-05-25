@@ -1653,14 +1653,14 @@ namespace B1.DataAccess
             return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
         }
 
-        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(ObjectContext context, object entity)
+        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSqlAndParams(ObjectContext context, object entity)
         {
-            return GetUpdateSql(context
+            return GetUpdateSqlAndParams(context
                     , entity
                     , new Dictionary<PropertyInfo, object>());
         }
 
-        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSql(
+        internal Tuple<string, List<DbPredicateParameter>> GetUpdateSqlAndParams(
             ObjectContext context, object entity, Dictionary<PropertyInfo, object> propertyDbFunctions)
         {
             StringBuilder sb = new StringBuilder();
@@ -1747,6 +1747,7 @@ namespace B1.DataAccess
                     TableName = _qualifiedTable.EntityName,
                     SchemaName = _qualifiedTable.SchemaName,
                     MemberPropertyName = key.Key,
+                    Value = key.Value,
                     MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
                             , _entityType.GetProperty(key.Key))).Compile()
