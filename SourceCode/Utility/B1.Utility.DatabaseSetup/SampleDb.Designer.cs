@@ -19,14 +19,11 @@ using System.Runtime.Serialization;
 #region EDM Relationship Metadata
 
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UIControls_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UIControls", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UIControl), true)]
-[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UIControls", "UIControls", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UIControl), "UserAccessGroupPermissions", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserAccessGroupPermission), true)]
-[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UserAccessGroupPermissions", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserAccessGroupPermission), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UserMaster1", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AppMaster_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "AppMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AppMaster), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_SignonControl_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "SignonControl", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.SignonControl), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AppSessions_AppMaster_Code", "AppMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.AppMaster), "AppSession", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AppSession), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserSessions_UserMaster_UserCode", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "UserSession", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserSession), true)]
-[assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_UserAccessGroups", "UserAccessGroup", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UserAccessGroup), "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AccessControlGroupRules_UIControls", "UIControl", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.UIControl), "AccessControlGroupRule", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroupRule), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_AccessControlGroupRules_UserMaster", "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.ZeroOrOne, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), "AccessControlGroupRule", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroupRule), true)]
 [assembly: EdmRelationshipAttribute("B1SampleModel", "FK_UserMaster_AccessControlGroups", "AccessControlGroup", System.Data.Metadata.Edm.RelationshipMultiplicity.One, typeof(B1.Utility.DatabaseSetup.Models.AccessControlGroup), "UserMaster", System.Data.Metadata.Edm.RelationshipMultiplicity.Many, typeof(B1.Utility.DatabaseSetup.Models.UserMaster), true)]
@@ -164,22 +161,6 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        public ObjectSet<UserAccessGroupPermission> UserAccessGroupPermissions
-        {
-            get
-            {
-                if ((_UserAccessGroupPermissions == null))
-                {
-                    _UserAccessGroupPermissions = base.CreateObjectSet<UserAccessGroupPermission>("UserAccessGroupPermissions");
-                }
-                return _UserAccessGroupPermissions;
-            }
-        }
-        private ObjectSet<UserAccessGroupPermission> _UserAccessGroupPermissions;
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
         public ObjectSet<UserMaster> UserMasters
         {
             get
@@ -256,22 +237,6 @@ namespace B1.Utility.DatabaseSetup.Models
             }
         }
         private ObjectSet<UserSession> _UserSessions;
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        public ObjectSet<UserAccessGroup> UserAccessGroups
-        {
-            get
-            {
-                if ((_UserAccessGroups == null))
-                {
-                    _UserAccessGroups = base.CreateObjectSet<UserAccessGroup>("UserAccessGroups");
-                }
-                return _UserAccessGroups;
-            }
-        }
-        private ObjectSet<UserAccessGroup> _UserAccessGroups;
     
         /// <summary>
         /// No Metadata Documentation available.
@@ -365,14 +330,6 @@ namespace B1.Utility.DatabaseSetup.Models
         }
     
         /// <summary>
-        /// Deprecated Method for adding a new object to the UserAccessGroupPermissions EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
-        /// </summary>
-        public void AddToUserAccessGroupPermissions(UserAccessGroupPermission userAccessGroupPermission)
-        {
-            base.AddObject("UserAccessGroupPermissions", userAccessGroupPermission);
-        }
-    
-        /// <summary>
         /// Deprecated Method for adding a new object to the UserMasters EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
         /// </summary>
         public void AddToUserMasters(UserMaster userMaster)
@@ -410,14 +367,6 @@ namespace B1.Utility.DatabaseSetup.Models
         public void AddToUserSessions(UserSession userSession)
         {
             base.AddObject("UserSessions", userSession);
-        }
-    
-        /// <summary>
-        /// Deprecated Method for adding a new object to the UserAccessGroups EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
-        /// </summary>
-        public void AddToUserAccessGroups(UserAccessGroup userAccessGroup)
-        {
-            base.AddObject("UserAccessGroups", userAccessGroup);
         }
     
         /// <summary>
@@ -2521,28 +2470,6 @@ namespace B1.Utility.DatabaseSetup.Models
         [XmlIgnoreAttribute()]
         [SoapIgnoreAttribute()]
         [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UIControls", "UserAccessGroupPermissions")]
-        public EntityCollection<UserAccessGroupPermission> UserAccessGroupPermissions
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<UserAccessGroupPermission>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UserAccessGroupPermissions");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserAccessGroupPermission>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UserAccessGroupPermissions", value);
-                }
-            }
-        }
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
         [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_AccessControlGroupRules_UIControls", "AccessControlGroupRule")]
         public EntityCollection<AccessControlGroupRule> AccessControlGroupRules
         {
@@ -2718,397 +2645,6 @@ namespace B1.Utility.DatabaseSetup.Models
     /// <summary>
     /// No Metadata Documentation available.
     /// </summary>
-    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="UserAccessGroup")]
-    [Serializable()]
-    [DataContractAttribute(IsReference=true)]
-    public partial class UserAccessGroup : EntityObject
-    {
-        #region Factory Method
-    
-        /// <summary>
-        /// Create a new UserAccessGroup object.
-        /// </summary>
-        /// <param name="userAccessGroupCode">Initial value of the UserAccessGroupCode property.</param>
-        /// <param name="userAccessGroupName">Initial value of the UserAccessGroupName property.</param>
-        public static UserAccessGroup CreateUserAccessGroup(global::System.Int32 userAccessGroupCode, global::System.String userAccessGroupName)
-        {
-            UserAccessGroup userAccessGroup = new UserAccessGroup();
-            userAccessGroup.UserAccessGroupCode = userAccessGroupCode;
-            userAccessGroup.UserAccessGroupName = userAccessGroupName;
-            return userAccessGroup;
-        }
-
-        #endregion
-        #region Primitive Properties
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.Int32 UserAccessGroupCode
-        {
-            get
-            {
-                return _UserAccessGroupCode;
-            }
-            set
-            {
-                if (_UserAccessGroupCode != value)
-                {
-                    OnUserAccessGroupCodeChanging(value);
-                    ReportPropertyChanging("UserAccessGroupCode");
-                    _UserAccessGroupCode = StructuralObject.SetValidValue(value);
-                    ReportPropertyChanged("UserAccessGroupCode");
-                    OnUserAccessGroupCodeChanged();
-                }
-            }
-        }
-        private global::System.Int32 _UserAccessGroupCode;
-        partial void OnUserAccessGroupCodeChanging(global::System.Int32 value);
-        partial void OnUserAccessGroupCodeChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.String UserAccessGroupName
-        {
-            get
-            {
-                return _UserAccessGroupName;
-            }
-            set
-            {
-                OnUserAccessGroupNameChanging(value);
-                ReportPropertyChanging("UserAccessGroupName");
-                _UserAccessGroupName = StructuralObject.SetValidValue(value, false);
-                ReportPropertyChanged("UserAccessGroupName");
-                OnUserAccessGroupNameChanged();
-            }
-        }
-        private global::System.String _UserAccessGroupName;
-        partial void OnUserAccessGroupNameChanging(global::System.String value);
-        partial void OnUserAccessGroupNameChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
-        [DataMemberAttribute()]
-        public Nullable<global::System.Boolean> DefaultAccessDenied
-        {
-            get
-            {
-                return _DefaultAccessDenied;
-            }
-            set
-            {
-                OnDefaultAccessDeniedChanging(value);
-                ReportPropertyChanging("DefaultAccessDenied");
-                _DefaultAccessDenied = StructuralObject.SetValidValue(value);
-                ReportPropertyChanged("DefaultAccessDenied");
-                OnDefaultAccessDeniedChanged();
-            }
-        }
-        private Nullable<global::System.Boolean> _DefaultAccessDenied;
-        partial void OnDefaultAccessDeniedChanging(Nullable<global::System.Boolean> value);
-        partial void OnDefaultAccessDeniedChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
-        [DataMemberAttribute()]
-        public global::System.String Remarks
-        {
-            get
-            {
-                return _Remarks;
-            }
-            set
-            {
-                OnRemarksChanging(value);
-                ReportPropertyChanging("Remarks");
-                _Remarks = StructuralObject.SetValidValue(value, true);
-                ReportPropertyChanged("Remarks");
-                OnRemarksChanged();
-            }
-        }
-        private global::System.String _Remarks;
-        partial void OnRemarksChanging(global::System.String value);
-        partial void OnRemarksChanged();
-
-        #endregion
-    
-        #region Navigation Properties
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserMaster_UserAccessGroups", "UserMaster")]
-        public EntityCollection<UserMaster> UserMasters
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<UserMaster>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserMaster");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserMaster>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserMaster", value);
-                }
-            }
-        }
-
-        #endregion
-    }
-    
-    /// <summary>
-    /// No Metadata Documentation available.
-    /// </summary>
-    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="UserAccessGroupPermission")]
-    [Serializable()]
-    [DataContractAttribute(IsReference=true)]
-    public partial class UserAccessGroupPermission : EntityObject
-    {
-        #region Factory Method
-    
-        /// <summary>
-        /// Create a new UserAccessGroupPermission object.
-        /// </summary>
-        /// <param name="userAccessGroupCode">Initial value of the UserAccessGroupCode property.</param>
-        /// <param name="uIControlCode">Initial value of the UIControlCode property.</param>
-        /// <param name="accessDenied">Initial value of the AccessDenied property.</param>
-        public static UserAccessGroupPermission CreateUserAccessGroupPermission(global::System.Int32 userAccessGroupCode, global::System.Int32 uIControlCode, global::System.Boolean accessDenied)
-        {
-            UserAccessGroupPermission userAccessGroupPermission = new UserAccessGroupPermission();
-            userAccessGroupPermission.UserAccessGroupCode = userAccessGroupCode;
-            userAccessGroupPermission.UIControlCode = uIControlCode;
-            userAccessGroupPermission.AccessDenied = accessDenied;
-            return userAccessGroupPermission;
-        }
-
-        #endregion
-        #region Primitive Properties
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.Int32 UserAccessGroupCode
-        {
-            get
-            {
-                return _UserAccessGroupCode;
-            }
-            set
-            {
-                if (_UserAccessGroupCode != value)
-                {
-                    OnUserAccessGroupCodeChanging(value);
-                    ReportPropertyChanging("UserAccessGroupCode");
-                    _UserAccessGroupCode = StructuralObject.SetValidValue(value);
-                    ReportPropertyChanged("UserAccessGroupCode");
-                    OnUserAccessGroupCodeChanged();
-                }
-            }
-        }
-        private global::System.Int32 _UserAccessGroupCode;
-        partial void OnUserAccessGroupCodeChanging(global::System.Int32 value);
-        partial void OnUserAccessGroupCodeChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.Int32 UIControlCode
-        {
-            get
-            {
-                return _UIControlCode;
-            }
-            set
-            {
-                if (_UIControlCode != value)
-                {
-                    OnUIControlCodeChanging(value);
-                    ReportPropertyChanging("UIControlCode");
-                    _UIControlCode = StructuralObject.SetValidValue(value);
-                    ReportPropertyChanged("UIControlCode");
-                    OnUIControlCodeChanged();
-                }
-            }
-        }
-        private global::System.Int32 _UIControlCode;
-        partial void OnUIControlCodeChanging(global::System.Int32 value);
-        partial void OnUIControlCodeChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.Boolean AccessDenied
-        {
-            get
-            {
-                return _AccessDenied;
-            }
-            set
-            {
-                OnAccessDeniedChanging(value);
-                ReportPropertyChanging("AccessDenied");
-                _AccessDenied = StructuralObject.SetValidValue(value);
-                ReportPropertyChanged("AccessDenied");
-                OnAccessDeniedChanged();
-            }
-        }
-        private global::System.Boolean _AccessDenied;
-        partial void OnAccessDeniedChanging(global::System.Boolean value);
-        partial void OnAccessDeniedChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
-        [DataMemberAttribute()]
-        public Nullable<global::System.Int32> LastModifiedUserCode
-        {
-            get
-            {
-                return _LastModifiedUserCode;
-            }
-            set
-            {
-                OnLastModifiedUserCodeChanging(value);
-                ReportPropertyChanging("LastModifiedUserCode");
-                _LastModifiedUserCode = StructuralObject.SetValidValue(value);
-                ReportPropertyChanged("LastModifiedUserCode");
-                OnLastModifiedUserCodeChanged();
-            }
-        }
-        private Nullable<global::System.Int32> _LastModifiedUserCode;
-        partial void OnLastModifiedUserCodeChanging(Nullable<global::System.Int32> value);
-        partial void OnLastModifiedUserCodeChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
-        [DataMemberAttribute()]
-        public Nullable<global::System.DateTime> LastModifiedDateTime
-        {
-            get
-            {
-                return _LastModifiedDateTime;
-            }
-            set
-            {
-                OnLastModifiedDateTimeChanging(value);
-                ReportPropertyChanging("LastModifiedDateTime");
-                _LastModifiedDateTime = StructuralObject.SetValidValue(value);
-                ReportPropertyChanged("LastModifiedDateTime");
-                OnLastModifiedDateTimeChanged();
-            }
-        }
-        private Nullable<global::System.DateTime> _LastModifiedDateTime;
-        partial void OnLastModifiedDateTimeChanging(Nullable<global::System.DateTime> value);
-        partial void OnLastModifiedDateTimeChanged();
-
-        #endregion
-    
-        #region Navigation Properties
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UIControls", "UIControls")]
-        public UIControl UIControl
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UIControls").Value;
-            }
-            set
-            {
-                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UIControls").Value = value;
-            }
-        }
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [BrowsableAttribute(false)]
-        [DataMemberAttribute()]
-        public EntityReference<UIControl> UIControlReference
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UIControl>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UIControls");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UIControl>("B1SampleModel.FK_UserAccessGroupPermissions_UIControls", "UIControls", value);
-                }
-            }
-        }
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UserMaster", "UserMaster")]
-        public UserMaster UserMaster
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserMaster").Value;
-            }
-            set
-            {
-                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserMaster").Value = value;
-            }
-        }
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [BrowsableAttribute(false)]
-        [DataMemberAttribute()]
-        public EntityReference<UserMaster> UserMasterReference
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserMaster>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserMaster");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UserMaster>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserMaster", value);
-                }
-            }
-        }
-
-        #endregion
-    }
-    
-    /// <summary>
-    /// No Metadata Documentation available.
-    /// </summary>
     [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="UserMaster")]
     [Serializable()]
     [DataContractAttribute(IsReference=true)]
@@ -3127,7 +2663,10 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <param name="multipleSignonAllowed">Initial value of the MultipleSignonAllowed property.</param>
         /// <param name="forcePasswordChange">Initial value of the ForcePasswordChange property.</param>
         /// <param name="failedSignonAttempts">Initial value of the FailedSignonAttempts property.</param>
-        public static UserMaster CreateUserMaster(global::System.Int32 userCode, global::System.String userId, global::System.String userPassword, global::System.Int32 defaultAccessGroupCode, global::System.Boolean signonRestricted, global::System.Boolean multipleSignonAllowed, global::System.Boolean forcePasswordChange, global::System.Byte failedSignonAttempts)
+        /// <param name="firstName">Initial value of the FirstName property.</param>
+        /// <param name="lastName">Initial value of the LastName property.</param>
+        /// <param name="passwordSalt">Initial value of the PasswordSalt property.</param>
+        public static UserMaster CreateUserMaster(global::System.Int32 userCode, global::System.String userId, global::System.String userPassword, global::System.Int32 defaultAccessGroupCode, global::System.Boolean signonRestricted, global::System.Boolean multipleSignonAllowed, global::System.Boolean forcePasswordChange, global::System.Byte failedSignonAttempts, global::System.String firstName, global::System.String lastName, global::System.String passwordSalt)
         {
             UserMaster userMaster = new UserMaster();
             userMaster.UserCode = userCode;
@@ -3138,6 +2677,9 @@ namespace B1.Utility.DatabaseSetup.Models
             userMaster.MultipleSignonAllowed = multipleSignonAllowed;
             userMaster.ForcePasswordChange = forcePasswordChange;
             userMaster.FailedSignonAttempts = failedSignonAttempts;
+            userMaster.FirstName = firstName;
+            userMaster.LastName = lastName;
+            userMaster.PasswordSalt = passwordSalt;
             return userMaster;
         }
 
@@ -3390,7 +2932,7 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
         [DataMemberAttribute()]
         public global::System.String FirstName
         {
@@ -3402,7 +2944,7 @@ namespace B1.Utility.DatabaseSetup.Models
             {
                 OnFirstNameChanging(value);
                 ReportPropertyChanging("FirstName");
-                _FirstName = StructuralObject.SetValidValue(value, true);
+                _FirstName = StructuralObject.SetValidValue(value, false);
                 ReportPropertyChanged("FirstName");
                 OnFirstNameChanged();
             }
@@ -3438,7 +2980,7 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
         [DataMemberAttribute()]
         public global::System.String LastName
         {
@@ -3450,7 +2992,7 @@ namespace B1.Utility.DatabaseSetup.Models
             {
                 OnLastNameChanging(value);
                 ReportPropertyChanging("LastName");
-                _LastName = StructuralObject.SetValidValue(value, true);
+                _LastName = StructuralObject.SetValidValue(value, false);
                 ReportPropertyChanged("LastName");
                 OnLastNameChanged();
             }
@@ -3558,7 +3100,7 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=true)]
+        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
         [DataMemberAttribute()]
         public global::System.String PasswordSalt
         {
@@ -3570,7 +3112,7 @@ namespace B1.Utility.DatabaseSetup.Models
             {
                 OnPasswordSaltChanging(value);
                 ReportPropertyChanging("PasswordSalt");
-                _PasswordSalt = StructuralObject.SetValidValue(value, true);
+                _PasswordSalt = StructuralObject.SetValidValue(value, false);
                 ReportPropertyChanged("PasswordSalt");
                 OnPasswordSaltChanged();
             }
@@ -3625,28 +3167,6 @@ namespace B1.Utility.DatabaseSetup.Models
                 if ((value != null))
                 {
                     ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UIControl>("B1SampleModel.FK_UIControls_UserMaster", "UIControls", value);
-                }
-            }
-        }
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserAccessGroupPermissions_UserMaster", "UserAccessGroupPermissions")]
-        public EntityCollection<UserAccessGroupPermission> UserAccessGroupPermissions
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedCollection<UserAccessGroupPermission>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserAccessGroupPermissions");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserAccessGroupPermission>("B1SampleModel.FK_UserAccessGroupPermissions_UserMaster", "UserAccessGroupPermissions", value);
                 }
             }
         }
@@ -3773,44 +3293,6 @@ namespace B1.Utility.DatabaseSetup.Models
                 if ((value != null))
                 {
                     ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedCollection<UserSession>("B1SampleModel.FK_UserSessions_UserMaster_UserCode", "UserSession", value);
-                }
-            }
-        }
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [XmlIgnoreAttribute()]
-        [SoapIgnoreAttribute()]
-        [DataMemberAttribute()]
-        [EdmRelationshipNavigationPropertyAttribute("B1SampleModel", "FK_UserMaster_UserAccessGroups", "UserAccessGroup")]
-        public UserAccessGroup UserAccessGroup
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserAccessGroup>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserAccessGroup").Value;
-            }
-            set
-            {
-                ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserAccessGroup>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserAccessGroup").Value = value;
-            }
-        }
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [BrowsableAttribute(false)]
-        [DataMemberAttribute()]
-        public EntityReference<UserAccessGroup> UserAccessGroupReference
-        {
-            get
-            {
-                return ((IEntityWithRelationships)this).RelationshipManager.GetRelatedReference<UserAccessGroup>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserAccessGroup");
-            }
-            set
-            {
-                if ((value != null))
-                {
-                    ((IEntityWithRelationships)this).RelationshipManager.InitializeRelatedReference<UserAccessGroup>("B1SampleModel.FK_UserMaster_UserAccessGroups", "UserAccessGroup", value);
                 }
             }
         }

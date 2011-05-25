@@ -191,8 +191,8 @@
           <Property Name="MultipleSignonAllowed" Type="bit" Nullable="false" />
           <Property Name="ForcePasswordChange" Type="bit" Nullable="false" />
           <Property Name="FailedSignonAttempts" Type="tinyint" Nullable="false" />
-          <Property Name="UserPassword" Type="varchar" MaxLength="96" />
-          <Property Name="PasswordSalt" Type="varchar" MaxLength="96" />
+          <Property Name="UserPassword" Type="varchar" Nullable="false" MaxLength="96" />
+          <Property Name="PasswordSalt" Type="varchar" Nullable="false" MaxLength="96" />
           <Property Name="EmailAddress" Type="varchar" MaxLength="96" />
           <Property Name="LastSignonDateTime" Type="datetime" />
           <Property Name="NamePrefix" Type="varchar" MaxLength="5" />
@@ -337,19 +337,10 @@
           <EntitySet Name="TestSequences" EntityType="B1SampleModel.TestSequence" />
           <EntitySet Name="UIControls" EntityType="B1SampleModel.UIControl" />
           <EntitySet Name="UniqueIds" EntityType="B1SampleModel.UniqueId" />
-          <EntitySet Name="UserAccessGroupPermissions" EntityType="B1SampleModel.UserAccessGroupPermission" />
           <EntitySet Name="UserMasters" EntityType="B1SampleModel.UserMaster" />
           <AssociationSet Name="FK_UIControls_UserMaster" Association="B1SampleModel.FK_UIControls_UserMaster">
             <End Role="UserMaster" EntitySet="UserMasters" />
             <End Role="UIControls" EntitySet="UIControls" />
-          </AssociationSet>
-          <AssociationSet Name="FK_UserAccessGroupPermissions_UIControls" Association="B1SampleModel.FK_UserAccessGroupPermissions_UIControls">
-            <End Role="UIControls" EntitySet="UIControls" />
-            <End Role="UserAccessGroupPermissions" EntitySet="UserAccessGroupPermissions" />
-          </AssociationSet>
-          <AssociationSet Name="FK_UserAccessGroupPermissions_UserMaster" Association="B1SampleModel.FK_UserAccessGroupPermissions_UserMaster">
-            <End Role="UserMaster" EntitySet="UserMasters" />
-            <End Role="UserAccessGroupPermissions" EntitySet="UserAccessGroupPermissions" />
           </AssociationSet>
           <AssociationSet Name="FK_UserMaster_UserMaster" Association="B1SampleModel.FK_UserMaster_UserMaster">
             <End Role="UserMaster" EntitySet="UserMasters" />
@@ -374,11 +365,6 @@
           <AssociationSet Name="FK_UserSessions_UserMaster_UserCode" Association="B1SampleModel.FK_UserSessions_UserMaster_UserCode">
             <End Role="UserMaster" EntitySet="UserMasters" />
             <End Role="UserSession" EntitySet="UserSessions" />
-          </AssociationSet>
-          <EntitySet Name="UserAccessGroups" EntityType="B1SampleModel.UserAccessGroup" />
-          <AssociationSet Name="FK_UserMaster_UserAccessGroups" Association="B1SampleModel.FK_UserMaster_UserAccessGroups">
-            <End Role="UserAccessGroup" EntitySet="UserAccessGroups" />
-            <End Role="UserMaster" EntitySet="UserMasters" />
           </AssociationSet>
           <EntitySet Name="AccessControlGroupRules" EntityType="B1SampleModel.AccessControlGroupRule" />
           <EntitySet Name="AccessControlGroups" EntityType="B1SampleModel.AccessControlGroup" />
@@ -437,7 +423,6 @@
           <Property Name="LastModifiedUserCode" Type="Int32" />
           <Property Name="LastModifiedDateTime" Type="DateTime" />
           <NavigationProperty Name="UserMaster" Relationship="B1SampleModel.FK_UIControls_UserMaster" FromRole="UIControls" ToRole="UserMaster" />
-          <NavigationProperty Name="UserAccessGroupPermissions" Relationship="B1SampleModel.FK_UserAccessGroupPermissions_UIControls" FromRole="UIControls" ToRole="UserAccessGroupPermissions" />
           <NavigationProperty Name="AccessControlGroupRules" Relationship="B1SampleModel.FK_AccessControlGroupRules_UIControls" FromRole="UIControl" ToRole="AccessControlGroupRule" />
         </EntityType>
         <EntityType Name="UniqueId">
@@ -449,19 +434,6 @@
           <Property Name="CacheBlockSize" Type="Int16" Nullable="false" />
           <Property Name="MaxIdValue" Type="Int64" />
           <Property Name="RolloverIdValue" Type="Int64" />
-        </EntityType>
-        <EntityType Name="UserAccessGroupPermission">
-          <Key>
-            <PropertyRef Name="UserAccessGroupCode" />
-            <PropertyRef Name="UIControlCode" />
-          </Key>
-          <Property Name="UserAccessGroupCode" Type="Int32" Nullable="false" />
-          <Property Name="UIControlCode" Type="Int32" Nullable="false" />
-          <Property Name="AccessDenied" Type="Boolean" Nullable="false" />
-          <Property Name="LastModifiedUserCode" Type="Int32" />
-          <Property Name="LastModifiedDateTime" Type="DateTime" />
-          <NavigationProperty Name="UIControl" Relationship="B1SampleModel.FK_UserAccessGroupPermissions_UIControls" FromRole="UserAccessGroupPermissions" ToRole="UIControls" />
-          <NavigationProperty Name="UserMaster" Relationship="B1SampleModel.FK_UserAccessGroupPermissions_UserMaster" FromRole="UserAccessGroupPermissions" ToRole="UserMaster" />
         </EntityType>
         <EntityType Name="UserMaster">
           <Key>
@@ -477,22 +449,20 @@
           <Property Name="FailedSignonAttempts" Type="Byte" Nullable="false" />
           <Property Name="LastSignonDateTime" Type="DateTime" />
           <Property Name="NamePrefix" Type="String" MaxLength="5" Unicode="false" FixedLength="false" />
-          <Property Name="FirstName" Type="String" MaxLength="40" Unicode="false" FixedLength="false" />
+          <Property Name="FirstName" Type="String" MaxLength="40" Unicode="false" FixedLength="false" Nullable="false" />
           <Property Name="MiddleName" Type="String" MaxLength="40" Unicode="false" FixedLength="false" />
-          <Property Name="LastName" Type="String" MaxLength="60" Unicode="false" FixedLength="false" />
+          <Property Name="LastName" Type="String" MaxLength="60" Unicode="false" FixedLength="false" Nullable="false" />
           <Property Name="NameSuffix" Type="String" MaxLength="5" Unicode="false" FixedLength="false" />
           <Property Name="Remarks" Type="String" MaxLength="512" Unicode="false" FixedLength="false" />
           <Property Name="LastModifiedUserCode" Type="Int32" />
           <Property Name="LastModifiedDateTime" Type="DateTime" />
           <NavigationProperty Name="UIControls" Relationship="B1SampleModel.FK_UIControls_UserMaster" FromRole="UserMaster" ToRole="UIControls" />
-          <NavigationProperty Name="UserAccessGroupPermissions" Relationship="B1SampleModel.FK_UserAccessGroupPermissions_UserMaster" FromRole="UserMaster" ToRole="UserAccessGroupPermissions" />
           <NavigationProperty Name="UserMaster1" Relationship="B1SampleModel.FK_UserMaster_UserMaster" FromRole="UserMaster" ToRole="UserMaster1" />
           <NavigationProperty Name="UserMaster2" Relationship="B1SampleModel.FK_UserMaster_UserMaster" FromRole="UserMaster1" ToRole="UserMaster" />
           <NavigationProperty Name="AppMasters" Relationship="B1SampleModel.FK_AppMaster_UserMaster" FromRole="UserMaster" ToRole="AppMaster" />
           <NavigationProperty Name="SignonControls" Relationship="B1SampleModel.FK_SignonControl_UserMaster" FromRole="UserMaster" ToRole="SignonControl" />
           <NavigationProperty Name="UserSessions" Relationship="B1SampleModel.FK_UserSessions_UserMaster_UserCode" FromRole="UserMaster" ToRole="UserSession" />
-          <NavigationProperty Name="UserAccessGroup" Relationship="B1SampleModel.FK_UserMaster_UserAccessGroups" FromRole="UserMaster" ToRole="UserAccessGroup" />
-          <Property Type="String" Name="PasswordSalt" MaxLength="96" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="PasswordSalt" MaxLength="96" FixedLength="false" Unicode="false" Nullable="false" />
           <Property Type="String" Name="EmailAddress" MaxLength="96" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="AccessControlGroupRules" Relationship="B1SampleModel.FK_AccessControlGroupRules_UserMaster" FromRole="UserMaster" ToRole="AccessControlGroupRule" />
           <NavigationProperty Name="AccessControlGroup" Relationship="B1SampleModel.FK_UserMaster_AccessControlGroups" FromRole="UserMaster" ToRole="AccessControlGroup" />
@@ -505,30 +475,6 @@
               <PropertyRef Name="UserCode" />
             </Principal>
             <Dependent Role="UIControls">
-              <PropertyRef Name="LastModifiedUserCode" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_UserAccessGroupPermissions_UIControls">
-          <End Role="UIControls" Type="B1SampleModel.UIControl" Multiplicity="1" />
-          <End Role="UserAccessGroupPermissions" Type="B1SampleModel.UserAccessGroupPermission" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="UIControls">
-              <PropertyRef Name="UIControlCode" />
-            </Principal>
-            <Dependent Role="UserAccessGroupPermissions">
-              <PropertyRef Name="UIControlCode" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_UserAccessGroupPermissions_UserMaster">
-          <End Role="UserMaster" Type="B1SampleModel.UserMaster" Multiplicity="0..1" />
-          <End Role="UserAccessGroupPermissions" Type="B1SampleModel.UserAccessGroupPermission" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="UserMaster">
-              <PropertyRef Name="UserCode" />
-            </Principal>
-            <Dependent Role="UserAccessGroupPermissions">
               <PropertyRef Name="LastModifiedUserCode" />
             </Dependent>
           </ReferentialConstraint>
@@ -656,28 +602,6 @@
             </Principal>
             <Dependent Role="UserSession">
               <PropertyRef Name="UserCode" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <EntityType Name="UserAccessGroup">
-          <Key>
-            <PropertyRef Name="UserAccessGroupCode" />
-          </Key>
-          <Property Type="Int32" Name="UserAccessGroupCode" Nullable="false" />
-          <Property Type="String" Name="UserAccessGroupName" Nullable="false" MaxLength="64" FixedLength="false" Unicode="false" />
-          <Property Type="Boolean" Name="DefaultAccessDenied" />
-          <Property Type="String" Name="Remarks" MaxLength="512" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="UserMasters" Relationship="B1SampleModel.FK_UserMaster_UserAccessGroups" FromRole="UserAccessGroup" ToRole="UserMaster" />
-        </EntityType>
-        <Association Name="FK_UserMaster_UserAccessGroups">
-          <End Type="B1SampleModel.UserAccessGroup" Role="UserAccessGroup" Multiplicity="1" />
-          <End Type="B1SampleModel.UserMaster" Role="UserMaster" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="UserAccessGroup">
-              <PropertyRef Name="UserAccessGroupCode" />
-            </Principal>
-            <Dependent Role="UserMaster">
-              <PropertyRef Name="DefaultAccessGroupCode" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -926,24 +850,12 @@
         <EntityTypeShape EntityType="B1SampleModel.TestSequence" Width="1.5" PointX="9.75" PointY="0.75" Height="2.2496956380208335" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UIControl" Width="1.5" PointX="5.25" PointY="4.75" Height="2.0853483072916674" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UniqueId" Width="1.5" PointX="0.75" PointY="9.75" Height="1.7566536458333317" IsExpanded="true" />
-        <EntityTypeShape EntityType="B1SampleModel.UserAccessGroupPermission" Width="1.5" PointX="7.5" PointY="4.75" Height="2.0853483072916674" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UserMaster" Width="1.5" PointX="3" PointY="3.25" Height="5.0436002604166674" IsExpanded="true" />
         <AssociationConnector Association="B1SampleModel.FK_UIControls_UserMaster" ManuallyRouted="false">
           <ConnectorPoint PointX="4.5" PointY="6.0285953776041659" />
           <ConnectorPoint PointX="4.791666666666667" PointY="6.028595377604165" />
           <ConnectorPoint PointX="4.958333333333333" PointY="6.0285953776041659" />
           <ConnectorPoint PointX="5.25" PointY="6.0285953776041659" />
-        </AssociationConnector>
-        <AssociationConnector Association="B1SampleModel.FK_UserAccessGroupPermissions_UIControls" ManuallyRouted="false">
-          <ConnectorPoint PointX="6.75" PointY="5.9324446614583328" />
-          <ConnectorPoint PointX="7.5" PointY="5.9324446614583328" />
-        </AssociationConnector>
-        <AssociationConnector Association="B1SampleModel.FK_UserAccessGroupPermissions_UserMaster" ManuallyRouted="false">
-          <ConnectorPoint PointX="4.5" PointY="3.9999995000000004" />
-          <ConnectorPoint PointX="4.791666666666667" PointY="3.9999995" />
-          <ConnectorPoint PointX="4.958333333333333" PointY="3.9999995000000004" />
-          <ConnectorPoint PointX="8.25" PointY="3.9999995000000004" />
-          <ConnectorPoint PointX="8.25" PointY="4.75" />
         </AssociationConnector>
         <AssociationConnector Association="B1SampleModel.FK_UserMaster_UserMaster" ManuallyRouted="false">
           <ConnectorPoint PointX="3.5319230769230767" PointY="3.25" />
@@ -975,25 +887,19 @@
           <ConnectorPoint PointX="4.5" PointY="9.1102604166666659" />
           <ConnectorPoint PointX="5.25" PointY="9.1102604166666659" />
         </AssociationConnector>
-        <EntityTypeShape EntityType="B1SampleModel.UserAccessGroup" Width="1.5" PointX="0.75" PointY="4.875" Height="1.7566536458333388" />
-        <AssociationConnector Association="B1SampleModel.FK_UserMaster_UserAccessGroups" >
-          <ConnectorPoint PointX="2.25" PointY="5.8651432291666667" />
-          <ConnectorPoint PointX="3" PointY="5.8651432291666667" />
-        </AssociationConnector>
         <EntityTypeShape EntityType="B1SampleModel.AccessControlGroupRule" Width="1.5" PointX="7.5" PointY="8.375" Height="2.3648893229166674" />
         <EntityTypeShape EntityType="B1SampleModel.AccessControlGroup" Width="1.5" PointX="0.75" PointY="13.5" Height="1.9802864583333246" />
         <AssociationConnector Association="B1SampleModel.FK_AccessControlGroupRules_UIControls" >
-          <ConnectorPoint PointX="6.7500000000000009" PointY="7.3071907552083326" />
-          <ConnectorPoint PointX="7.125" PointY="7.6821907552083317" />
-          <ConnectorPoint PointX="7.125" PointY="9.5574446614583337" />
-          <ConnectorPoint PointX="7.5" PointY="9.5574446614583337" />
+          <ConnectorPoint PointX="6.75" PointY="5.7926741536458328" />
+          <ConnectorPoint PointX="7.7604141666666671" PointY="5.7926741536458319" />
+          <ConnectorPoint PointX="7.9270808333333331" PointY="5.7926741536458328" />
+          <ConnectorPoint PointX="8.25" PointY="5.7926741536458328" />
+          <ConnectorPoint PointX="8.25" PointY="8.375" />
         </AssociationConnector>
         <AssociationConnector Association="B1SampleModel.FK_AccessControlGroupRules_UserMaster" >
-          <ConnectorPoint PointX="4.5" PointY="3.25" />
-          <ConnectorPoint PointX="4.875" PointY="2.875" />
-          <ConnectorPoint PointX="4.875" PointY="8" />
-          <ConnectorPoint PointX="7.1261528461538459" PointY="8" />
-          <ConnectorPoint PointX="7.5011528461538459" PointY="8.375" />
+          <ConnectorPoint PointX="4.5" PointY="3.96875" />
+          <ConnectorPoint PointX="7.8437475" PointY="3.96875" />
+          <ConnectorPoint PointX="7.8437475" PointY="8.375" />
         </AssociationConnector>
         <AssociationConnector Association="B1SampleModel.FK_UserMaster_AccessControlGroups" >
           <ConnectorPoint PointX="2.25" PointY="14.490143229166662" />
