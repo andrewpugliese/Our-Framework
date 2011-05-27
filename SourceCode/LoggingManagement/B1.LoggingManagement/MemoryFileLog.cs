@@ -51,7 +51,7 @@ namespace B1.LoggingManagement
             _logFileNamePrefix = logFileNamePrefix;
             _logFileDirectory = logFileDirectory;
             _logFileSize = logFileSize;
-            _writer = new MemoryMappedLogWriter(_logName, GenerateLogFileName(), "txt", _logFileDirectory, false, _logFileSize);
+            _writer = new MemoryMappedLogWriter(_logName + Guid.NewGuid(), GenerateLogFileName(), "txt", _logFileDirectory, false, _logFileSize);
             _priorities = priorities;
         }
 
@@ -83,8 +83,9 @@ namespace B1.LoggingManagement
         private string GenerateLogFileName()
         {
             DateTime now = DateTime.Now;
-            return string.Format("{0}_{1:##}{2:##}{3}{4}", _logFileNamePrefix, now.Month, now.Day
-                    , now.ToString("HH"), now.ToString("mm"));
+            return string.Format("{0}_{1}_{2:##}{3:##}{4}{5}", _logFileNamePrefix,
+                    System.Diagnostics.Process.GetCurrentProcess().Id, now.Month, now.Day, now.ToString("HH"),
+                    now.ToString("MM"));
         }
 
         /// <summary>
@@ -92,7 +93,15 @@ namespace B1.LoggingManagement
         /// </summary>
         public void Dispose()
         {
-            _writer.Dispose();
+            if(_writer != null)
+            {
+                _writer.Dispose();
+            }
+        }
+
+        ~MemoryFileLog()
+        {
+            Dispose();
         }
     }
 }
