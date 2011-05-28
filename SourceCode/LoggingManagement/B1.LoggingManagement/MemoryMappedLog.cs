@@ -371,7 +371,7 @@ namespace B1.LoggingManagement
         /// <summary>
         /// 
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
             if(_logFile != null)
                 _logFile.Dispose();
@@ -604,6 +604,19 @@ namespace B1.LoggingManagement
                         MemoryMappedFileAccess.ReadWrite, null, 
                         HandleInheritability.Inheritable, false);                                   
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Dispose()
+        {
+            int currentWriteOffset = CurrentWriteOffset;
+
+            base.Dispose();
+
+            if(currentWriteOffset == 0)
+                File.Delete(_logFilePath);
         }
     }
 
