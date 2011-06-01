@@ -9,50 +9,63 @@ using System.Data.Common;
 using B1.Core;
 using B1.DataAccess;
 
-namespace B1.TaskProcessing
+namespace B1.TaskProcessingFunctions
 {
     public class TaskRegistration
     {
         public static Int32 RegisterAssemblyTasks(DataAccessMgr daMgr
                 , string assemblyName
                 , string assemblyFileName
-                , bool includeVersionInTaskId
-                , bool includeAssemblyPath)
+                , Int32? userCode)
         {
             Assembly asm = Assembly.LoadFrom(assemblyFileName);
             DbCommandMgr cmdMgr = new DbCommandMgr(daMgr);
             DbTableDmlMgr dmlMgr = new DbTableDmlMgr(Constants.TaskRegistrations, DataAccess.Constants.SCHEMA_CORE);
             dmlMgr.AddColumn(Constants.TaskId, daMgr.BuildParamName(Constants.TaskId), DbTableColumnType.ForInsertOnly);
             dmlMgr.AddColumn(Constants.AssemblyName, daMgr.BuildParamName(Constants.AssemblyName));
-            dmlMgr.AddColumn(Constants.AssemblyVersion, daMgr.BuildParamName(Constants.AssemblyVersion));
             dmlMgr.AddColumn(Constants.TaskDescription, daMgr.BuildParamName(Constants.TaskDescription));
             dmlMgr.AddColumn(Constants.LastRegisteredDate, EnumDateTimeLocale.Default);
-            if (includeAssemblyPath)
-                dmlMgr.AddColumn(Constants.AssemblyFile, daMgr.BuildParamName(Constants.AssemblyFile));
-            dmlMgr.AddColumn(Constants.ClassName, daMgr.BuildParamName(Constants.ClassName));
+            if (userCode.HasValue)
+            {
+                dmlMgr.AddColumn(Constants.LastModifiedUserCode, daMgr.BuildParamName(Constants.LastModifiedUserCode));
+                dmlMgr.AddColumn(Constants.LastModifiedDateTime, EnumDateTimeLocale.Default);
+            }
             dmlMgr.SetWhereCondition((j) =>
                     j.Column(Constants.TaskId) ==
-                    j.Parameter(Constants.TaskRegistrations, Constants.TaskId,
-                        daMgr.BuildParamName(Constants.TaskId)));
+                        j.Parameter(Constants.TaskRegistrations
+                        , Constants.TaskId
+                        , daMgr.BuildParamName(Constants.TaskId)));
             DbCommand dbCmd = daMgr.BuildMergeDbCommand(dmlMgr);
 
             int typesFound = 0; ;
-            string version = asm.GetName().Version.ToString();
             foreach (Type t in ObjectFactory.SearchTypes<TaskProcess>(asm))
             {
                 TaskProcess tp = ObjectFactory.Create<TaskProcess>(assemblyFileName, t.FullName, null, null, null, null);
-                dbCmd.Parameters[daMgr.BuildParamName(Constants.TaskId)].Value = t.FullName 
-                        + (includeVersionInTaskId ? "." + version : "");
-                dbCmd.Parameters[daMgr.BuildParamName(Constants.ClassName)].Value = t.FullName; 
-                dbCmd.Parameters[daMgr.BuildParamName(Constants.AssemblyFile)].Value = assemblyFileName;
+                dbCmd.Parameters[daMgr.BuildParamName(Constants.TaskId)].Value = t.FullName; 
                 dbCmd.Parameters[daMgr.BuildParamName(Constants.AssemblyName)].Value = assemblyName;
-                dbCmd.Parameters[daMgr.BuildParamName(Constants.AssemblyVersion)].Value = version;
                 dbCmd.Parameters[daMgr.BuildParamName(Constants.TaskDescription)].Value = tp.TaskDescription();
+                if (userCode.HasValue)
+                    dbCmd.Parameters[daMgr.BuildParamName(Constants.LastModifiedUserCode)].Value = userCode.Value;
                 cmdMgr.AddDbCommand(dbCmd);
                 ++typesFound;
             }
             cmdMgr.ExecuteNonQuery();
             return typesFound;
         }
+
+        public static DataTable GetRegisteredTasks(DataAccessMgr daMgr)
+        {
+            DbCommand dbCmd = daMgr.DbCmdCacheGetOrAdd(Constants.TaskRegistrationList
+                    , BuildCmdGetRegisteredTasksList);
+            return daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+        }
+            
+        static DbCommand BuildCmdGetRegisteredTasksList(DataAccessMgr daMgr)
+        {
+            DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
+                     , Constants.TaskRegistrations);
+            return daMgr.BuildSelectDbCommand(dmlSelectMgr, null);
+        }
+
     }
 }

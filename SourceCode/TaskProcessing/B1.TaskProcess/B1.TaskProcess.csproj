@@ -8,7 +8,7 @@
     <ProjectGuid>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>B1.TaskProcessing</RootNamespace>
+    <RootNamespace>B1.TaskProcessingFunctions</RootNamespace>
     <AssemblyName>B1.TaskProcessing</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

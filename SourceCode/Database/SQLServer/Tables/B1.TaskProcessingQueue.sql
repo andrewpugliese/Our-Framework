@@ -9,6 +9,9 @@ CREATE TABLE B1.TaskProcessingQueue
 														 -- 0: NotQueued; 32: Queued; 64: InProcess; 128: Failed; 255: Succeeded
 	PriorityCode			TINYINT NOT NULL DEFAULT(32), -- The priority code of the task item (any number 0 - 255)
 														-- items are dequeued in PriorityCode order.
+	WaitForDateTime			DATETIME NOT NULL DEFAULT(GETUTCDATE()),-- The earliest datetime that the task can be processed 
+	WaitForTasks			BIT NOT NULL DEFAULT(0), -- Indicates that this task has dependancies
+	WaitForNoUsers			BIT NOT NULL DEFAULT(1), -- indicates that task item cannot be processed until all users are off system
 	StatusMsg				VARCHAR(512),	-- The status msg for this task queue record
 	StatusDateTime			DATETIME,		-- The datetime of the last status change
 	StartedDateTime			DATETIME,		-- The datetime when the task last started
@@ -16,11 +19,8 @@ CREATE TABLE B1.TaskProcessingQueue
 	ProcessEngineId			VARCHAR(32),	-- The EngineId that last processed (or currently processing) the queue item
 	LastCompletedCode		TINYINT,		-- The status code of the last completion (Failed or Succeeded)
 	LastCompletedMsg		VARCHAR(512),	-- The status msg of the completion
-	WaitForDateTime			DATETIME,		-- The earliest datetime that the task can be processed 
 	WaitForEngineId			VARCHAR(32),	-- The only Engine process that can process this task
 	WaitForConfigId			VARCHAR(32),	-- The only configuration that this task must be processed under
-	WaitForTaskDateTime		DATETIME,		-- Indicates that this task has dependancies
-	WaitForNoUsers			BIT,			-- indicates that task item cannot be processed until all users are off system
 	TaskParameters			VARCHAR(512),	-- String that will be passed to task function
 	ClearParametersAtEnd	BIT,			-- Indicates whether or not to clear the TaskParameters column on completion
 	IntervalCount			INT,			-- The current interval iteration of this task when not null
@@ -57,9 +57,9 @@ ON B1.TaskProcessingQueue
 (
 	StatusCode
 	, PriorityCode
-	, TaskQueueCode
 	, WaitForDateTime
-	, WaitForTaskDateTime
+	, WaitForTasks
+	, WaitForNoUsers
 	, WaitForEngineId
 	, WaitForConfigId
 ) ON B1CoreIdx

@@ -26,7 +26,8 @@ using B1.CacheManagement;
 using B1.TraceViewer;
 using B1.Utility.TestConsoleApp;
 using B1.SessionManagement;
-
+using B1.TaskProcessingEngine;
+using B1.TaskProcessingFunctions;
 
 namespace B1.Utility.DatabaseSetup
 {
@@ -92,7 +93,7 @@ namespace B1.Utility.DatabaseSetup
         bool _refreshAppSessions = false;
         Dictionary<Int64, UserSession> _userSessions = null;
         bool _dbSetup = false;
-        TaskProcessing.TaskProcessEngine _tpe = null;
+        TaskProcessEngine _tpe = null;
 
         /// <summary>
         /// PagingMgr used by GridConrol
@@ -1767,7 +1768,7 @@ namespace B1.Utility.DatabaseSetup
             btnStartTPE.Enabled = false;
             if (_daMgr == null)
                 CreateDbMgr();
-            _tpe = new TaskProcessing.TaskProcessEngine(_daMgr);
+            _tpe = new TaskProcessEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
             _tpe.Start();
         }
 
@@ -1802,8 +1803,18 @@ namespace B1.Utility.DatabaseSetup
             {
                 if (_daMgr == null)
                     CreateDbMgr();
-                TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, true, true);
+                TaskProcessingFunctions.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, _currentUserCode);
+                RefreshRegisteredTasks();
             }
+        }
+
+        private void RefreshRegisteredTasks()
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+            dgvRegisteredTasks.DataSource = TaskRegistration.GetRegisteredTasks(_daMgr);
+            dgvRegisteredTasks.Refresh();
+            FormatGridColumns(dgvRegisteredTasks);
         }
 
         private void btnTestEFUpdate_Click(object sender, EventArgs e)
@@ -1904,6 +1915,11 @@ namespace B1.Utility.DatabaseSetup
             _daMgr.InsertEntity(entities, new Models.TestDbSequenceId() { Remarks = "Added by EF Test Insert" },
                     overloads, null);      
             
+        }
+
+        private void btnRefreshRegTaskList_Click(object sender, EventArgs e)
+        {
+            RefreshRegisteredTasks();
         }
 
     }

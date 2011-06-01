@@ -1,0 +1,50 @@
+Framework UI Design Outline
+
+Page
+
+Signon
+	- Everyone has access
+	
+Home
+	- Default page
+	Contains
+		Links
+			Admin
+
+Administration			
+	User Administration
+	Access Control Groups
+	Access Control Group Rules
+	UI Controls
+
+Application Administration
+
+	Application Configuration
+	Application Session View
+	User Session Management
+	Signon Control
+	Application Master
+	
+		
+User Profile
+	Change Password
+	Change Name / Email
+	
+User Registration
+
+
+Task Processing
+	Task Registration
+	Task Status View
+	Task Configurations
+	Task Dependancies
+	Task Processing Queue
+
+	
+DMLMgr
+	Switch Order of Param (TableName, SchemaName) (Ad Join)
+	Comment all parameters
+	120 Limit on all lines
+	Make DMLMgr maintain DbTableStructure in memory on Add
+	AddToOrderBy //?? 
+	//?? DaMgr member?
