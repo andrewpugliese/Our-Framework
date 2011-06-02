@@ -1663,9 +1663,9 @@ namespace B1.DataAccess
         internal Tuple<string, List<DbPredicateParameter>> GetUpdateSqlAndParams(
             ObjectContext context, object entity, Dictionary<PropertyInfo, object> propertyDbFunctions)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder updateSQL = new StringBuilder();
 
-            sb.AppendFormat("UPDATE {0}.{1}{2} SET "
+            updateSQL.AppendFormat("UPDATE {0}.{1}{2} SET "
                     , _qualifiedTable.SchemaName
                     , _qualifiedTable.EntityName
                     , Environment.NewLine);
@@ -1730,13 +1730,52 @@ namespace B1.DataAccess
                              columnName
                              , propertyDbFunctions[property]
                              , Environment.NewLine);
-                }                   
+                }
+
+            updateSQL.Append(setColumns);
 
             // build where clause
+            // build where clause
+            Tuple<string, List<DbPredicateParameter>> whereClause
+                    = BuildWhereClause(ose.EntityKey.EntityKeyValues, parameters);
+
+            updateSQL.Append(whereClause.Item1);
+            parameters = whereClause.Item2;
+            return new Tuple<string,List<DbPredicateParameter>>(updateSQL.ToString(), parameters);
+        }
+
+
+        internal Tuple<string, List<DbPredicateParameter>> GeDeleteSqlAndParams(
+            ObjectContext context, object entity)
+        {
+            StringBuilder deleteSQL = new StringBuilder();
+
+            deleteSQL.AppendFormat("DELETE FROM {0}.{1}{2} "
+                    , _qualifiedTable.SchemaName
+                    , _qualifiedTable.EntityName
+                    , Environment.NewLine);
+
+            List<DbPredicateParameter> parameters = new List<DbPredicateParameter>();
+
+            ObjectStateEntry ose = context.ObjectStateManager.GetObjectStateEntry(entity);
+
+            Tuple<string, List<DbPredicateParameter>> whereClause
+                    = BuildWhereClause(ose.EntityKey.EntityKeyValues, parameters);
+
+            deleteSQL.Append(whereClause.Item1);
+            parameters = whereClause.Item2;
+            return new Tuple<string, List<DbPredicateParameter>>(deleteSQL.ToString(), parameters);
+        }
+
+        Tuple<string, List<DbPredicateParameter>> BuildWhereClause(EntityKeyMember[] entityKeyValues
+                , List<DbPredicateParameter> parameters)
+        {
+            // build where clause
             StringBuilder where = new StringBuilder();
-            foreach(EntityKeyMember key in ose.EntityKey.EntityKeyValues)
+            foreach (EntityKeyMember key in entityKeyValues)
             {
                 string parameterName = LinqTableMgr.BuildParamName(key.Key, parameters, _daMgr);
+
                 where.AppendFormat("{0}{1} = {2}{3}", where.Length > 0 ? "AND " : "WHERE" + Environment.NewLine
                         , key.Key, _daMgr.BuildBindVariableName(parameterName), Environment.NewLine);
 
@@ -1753,13 +1792,8 @@ namespace B1.DataAccess
                             , _entityType.GetProperty(key.Key))).Compile()
                 });
             }
-
-            sb.Append(setColumns);
-
-            sb.AppendFormat(where.ToString());
-            return new Tuple<string,List<DbPredicateParameter>>(sb.ToString(), parameters);
+            return new Tuple<string, List<DbPredicateParameter>>(where.ToString(), parameters);
         }
-
 
         /// <summary>
         /// Points the ParameterSite(Isite) parameters to the new object.

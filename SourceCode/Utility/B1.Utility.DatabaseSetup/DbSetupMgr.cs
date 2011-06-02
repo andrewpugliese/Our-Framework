@@ -1822,11 +1822,17 @@ namespace B1.Utility.DatabaseSetup
             if(_daMgr == null)
                 CreateDbMgr();
 
+            // we will select a list of entities from the TestSequence table
+            // which will populate our Context
+            // Then we will update the rows in the DB and the Context
+            // in the call to the new method UpdateEntity
+            // The test can be verified by viewing the FirstPage of data in the UI
             Models.SampleDbEntities entities = new Models.SampleDbEntities();
 
             int seqParam = 0;
 
             //Select top 10 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
             DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
                     from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
 
@@ -1916,6 +1922,39 @@ namespace B1.Utility.DatabaseSetup
         private void btnRefreshRegTaskList_Click(object sender, EventArgs e)
         {
             RefreshRegisteredTasks();
+        }
+
+        private void btnTestDelete_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            // we will select a list of entities from the TestSequence table
+            // which will populate our Context
+            // Then we will delete the rows from the DB and the Context
+            // in the call to the new method DeleteEntity
+            // The test can be verified by viewing the FirstPage of data in the UI
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            int seqParam = 0;
+            //Select top 10 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
+
+            // Execute the command to build the set and fill the context
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities);
+
+            DbCommand dbCmd = null;
+            foreach (Models.TestSequence seq in sequences)
+            {
+                // First time in, dbCmd will be null so a new command will be created. 
+                // Subsequent calls will use the first DbCommand.
+                // Delete the entity and remove it from the context 
+                Tuple<ObjectContext, DbCommand> results = _daMgr.DeleteEntity(entities, seq, null, dbCmd);
+                dbCmd = results.Item2;
+            }
+
         }
 
     }
