@@ -2382,7 +2382,7 @@ namespace B1.DataAccess
         {
             DbTableStructure tableStructure = _dbCatalogMgr.GetDbTable(schemaName, tableName);
 
-            return new DbTableDmlMgr(tableStructure, selectColumns);
+            return new DbTableDmlMgr(this, tableStructure, selectColumns);
         }
 
         /// <summary>
@@ -2397,7 +2397,7 @@ namespace B1.DataAccess
         {
             DbTableStructure tableStructure = _dbCatalogMgr.GetDbTable(fullyQualifiedTableName);
 
-            return new DbTableDmlMgr(tableStructure, selectColumns);
+            return new DbTableDmlMgr(this, tableStructure, selectColumns);
         }
 
         #endregion
@@ -3579,7 +3579,7 @@ namespace B1.DataAccess
                 // If we already have all the data, and there is nothing to select, skip select creation.
                 if(selectColumns.Count > 0)
                 {
-                    DbTableDmlMgr dmlSelect = new DbTableDmlMgr(table, selectColumns.ToArray());
+                    DbTableDmlMgr dmlSelect = new DbTableDmlMgr(this, table, selectColumns.ToArray());
                     DbCommand dbCmdSelect = null;
 
                     if(bGetRowFromId)

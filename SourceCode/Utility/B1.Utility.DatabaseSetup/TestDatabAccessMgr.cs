@@ -591,19 +591,19 @@ namespace B1.Utility.DatabaseSetup
 
             DbParameter paramTableName = _daMgr.CreateParameter("TableName", 
                 DbType.String, "", 128, ParameterDirection.Input, null);
-            
-            DbTableDmlMgr joinSelect = new DbTableDmlMgr("tables", "sys", "name as TableName");
-            
-            string schemasAlias = joinSelect.AddJoin("schemas", "sys", DbTableJoinType.Inner, 
+
+            DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr, "sys", "tables", "name as TableName");
+
+            string schemasAlias = joinSelect.AddJoin("sys", "schemas", DbTableJoinType.Inner, 
                     (j) => j.Column("schema_id") == j.Column("tables", "schema_id"),
                     "name as TableName");
 
-            string columnsAlias = joinSelect.AddJoin("columns", "sys", DbTableJoinType.Inner, 
+            string columnsAlias = joinSelect.AddJoin("sys", "columns", DbTableJoinType.Inner, 
                     (j) => j.Column("object_Id") == j.Column("sys", "tables", "object_Id"),
                     "name as ColumnName", "column_id as OrdinalPosition", "is_rowguidcol as IsRowGuidCol",
                     "is_computed as IsComputed", "is_identity as IsIdentity");
 
-            string columnsInformationAlias = joinSelect.AddJoin("columns", "information_schema", DbTableJoinType.Inner, 
+            string columnsInformationAlias = joinSelect.AddJoin("information_schema", "columns", DbTableJoinType.Inner, 
                     (j) => j.Column("Table_Schema") == j.Column("schemas", "name")
                     && j.Column("Table_Name") == j.Column("tables", "name")
                     && j.Column("Column_Name") == j.AliasedColumn(columnsAlias, "name"),
@@ -649,7 +649,7 @@ namespace B1.Utility.DatabaseSetup
             DbTableStructure tableAppConfigParameters = _daMgr.DbCatalogGetTable(DataAccess.Constants.SCHEMA_CORE, 
                     "AppConfigParameters");
                         
-            DbTableDmlMgr joinSelect = new DbTableDmlMgr(tableAppConfigSettings, "ConfigSetName", "ConfigKey");
+            DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr, tableAppConfigSettings, "ConfigSetName", "ConfigKey");
             joinSelect.AddJoin(tableAppConfigParameters, DbTableJoinType.LeftOuter, 
                     (j) => j.Column("AppConfigParameters", "ParameterName") == j.Column("AppConfigSettings", "ConfigSetName"),
                     "ParameterName", "ParameterValue", new DbFunction(_daMgr.GetDbTimeAs(EnumDateTimeLocale.Local, "TheTime")));

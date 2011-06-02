@@ -20,7 +20,7 @@ namespace B1.TaskProcessingFunctions
         {
             Assembly asm = Assembly.LoadFrom(assemblyFileName);
             DbCommandMgr cmdMgr = new DbCommandMgr(daMgr);
-            DbTableDmlMgr dmlMgr = new DbTableDmlMgr(Constants.TaskRegistrations, DataAccess.Constants.SCHEMA_CORE);
+            DbTableDmlMgr dmlMgr = new DbTableDmlMgr(daMgr, DataAccess.Constants.SCHEMA_CORE, Constants.TaskRegistrations);
             dmlMgr.AddColumn(Constants.TaskId, daMgr.BuildParamName(Constants.TaskId), DbTableColumnType.ForInsertOnly);
             dmlMgr.AddColumn(Constants.AssemblyName, daMgr.BuildParamName(Constants.AssemblyName));
             dmlMgr.AddColumn(Constants.TaskDescription, daMgr.BuildParamName(Constants.TaskDescription));

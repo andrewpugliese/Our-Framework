@@ -87,13 +87,13 @@ namespace B1.DataAccess
         /// <summary>
         /// Instantiate a DbTableJoin class for defining a join to a another table.
         /// </summary>
-        /// <param name="tableName">Table to join to</param>
         /// <param name="schemaName">Schema of table to join</param>
+        /// <param name="tableName">Table to join to</param>
         /// <param name="alias">Table alias</param>
         /// <param name="joinType">Type of join</param>
         /// <param name="joinPredicate">Join predicate, i.e, SQL ON conditions</param>
         /// <param name="selectColumns">Columns for select.</param>
-        public DbTableJoin(string tableName, string schemaName, string alias, DbTableJoinType joinType, 
+        public DbTableJoin(string schemaName, string tableName, string alias, DbTableJoinType joinType, 
                 DbPredicate joinPredicate, params object[] selectColumns)
         {
             TableName = tableName;
@@ -303,40 +303,33 @@ namespace B1.DataAccess
             throw new KeyNotFoundException("Could not find table " + tableName);
         }
 
-        Int16 _orderByColumn = 0;
+        Int16 _orderByColumnOffset = 0;
+        Int16 _groupByColumnOffset = 0;
         DataAccessMgr _daMgr = null;
 
         /// <summary>
         /// Creates instance of DbTableDmlMgr
         /// </summary>
         /// <param name="daMgr">DataAccessMgr Object</param>
-        /// <param name="tableName"></param>
-        /// <param name="schemaName"></param>
+        /// <param name="schemaName">Schema Name of Main table</param>
+        /// <param name="tableName">Main table name</param>
         /// <param name="selectColumns">Columns for select. </param>
         public DbTableDmlMgr(DataAccessMgr daMgr, string schemaName, string tableName, params object[] selectColumns)
         {
             _daMgr = daMgr;
-            AddJoin(tableName, schemaName, DbTableJoinType.None, null, selectColumns);
+            AddJoin(schemaName, tableName, DbTableJoinType.None, null, selectColumns);
         }
+
 
         /// <summary>
         /// Creates instance of DbTableDmlMgr
         /// </summary>
-        /// <param name="tableName"></param>
-        /// <param name="schemaName"></param>
-        /// <param name="selectColumns">Columns for select. </param>
-        public DbTableDmlMgr(string tableName, string schemaName, params object[] selectColumns)
-        {
-            AddJoin(tableName, schemaName, DbTableJoinType.None, null, selectColumns);
-        }
-
-        /// <summary>
-        /// Creates instance of DbTableDmlMgr
-        /// </summary>
-        /// <param name="table"></param>
+        /// <param name="daMgr">DataAccessMgr Object</param>
+        /// <param name="table">Main DbTableStructure</param>
         /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
-        public DbTableDmlMgr(DbTableStructure table, params object[] selectColumns)
+        public DbTableDmlMgr(DataAccessMgr daMgr, DbTableStructure table, params object[] selectColumns)
         {
+            _daMgr = daMgr;
             AddJoin(table, DbTableJoinType.None, null, selectColumns);
         }
 
@@ -357,13 +350,13 @@ namespace B1.DataAccess
                 {
                     object[] selectColumns = table.SelectColumns.ToArray();
 
-                    newTableList.Add(new DbTableJoin(table.TableName, table.SchemaName, table.TableAlias, table.JoinType,
+                    newTableList.Add(new DbTableJoin(table.SchemaName, table.TableName, table.TableAlias, table.JoinType,
                             table.JoinPredicate == null ? null : new DbPredicate(table.JoinPredicate._predicate, this), 
                             selectColumns));
                 }
             }
             _daMgr = dmlMgr._daMgr;
-            _orderByColumn = dmlMgr._orderByColumn;
+            _orderByColumnOffset = dmlMgr._orderByColumnOffset;
             CaseColumns = dmlMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
             ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
             GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(dmlMgr.GroupByColumns);
@@ -398,18 +391,21 @@ namespace B1.DataAccess
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="tableName"></param>
         /// <param name="schemaName"></param>
+        /// <param name="tableName"></param>
         /// <param name="type"></param>
         /// <param name="predicate"></param>
         /// <param name="selectColumns">Columns for select.</param>
         /// <returns>Newly joined table alias.</returns>
-        public string AddJoin(string tableName, string schemaName, DbTableJoinType type, Expression<Func<DbTableDmlMgr, bool>> predicate,
-                params object[] selectColumns)
+        public string AddJoin(string schemaName
+                , string tableName
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
         {
             string alias = "T" + (TableCount + 1).ToString();
             Add(schemaName, tableName,
-                    new DbTableJoin(tableName, schemaName, alias, type, 
+                    new DbTableJoin(schemaName, tableName, alias, type, 
                     predicate == null ? null : new DbPredicate(predicate, this), selectColumns));
 
             return alias;
@@ -423,8 +419,10 @@ namespace B1.DataAccess
         /// <param name="predicate"></param>
         /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param>
         /// <returns>Newly joined table alias.</returns>
-        public string AddJoin(DbTableStructure table, DbTableJoinType type, Expression<Func<DbTableDmlMgr, bool>> predicate,
-                params object[] selectColumns)
+        public string AddJoin(DbTableStructure table
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
         {
             string alias = "T" + (TableCount + 1).ToString();
             Add(table.SchemaName, table.TableName,
@@ -602,6 +600,89 @@ namespace B1.DataAccess
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
+        }
+
+        /// <summary>
+        /// Method will add the fully qualified column name to the Order By clause
+        /// as an ascending sort order
+        /// </summary>
+        /// <param name="schemaName">Schema name of the table that owns the column</param>
+        /// <param name="tableName">Table name of the table that owns the column</param>
+        /// <param name="columnName">Column name to use in the order by</param>
+        /// <returns>The offset of the column in the order by container (0, 1, 2)</returns>
+        public Int16 AddOrderByColumnAscending(string schemaName, string tableName, string columnName)
+        {
+            OrderByColumns.Add(_orderByColumnOffset, new DbQualifiedObject<DbIndexColumnStructure>(
+                    schemaName
+                    , tableName
+                    , _daMgr.BuildIndexColumnAscending(columnName)));
+            return _orderByColumnOffset++;
+        }
+
+        /// <summary>
+        /// Method will add the column name to the Order By clause
+        /// as an ascending sort order.  It will assume the MainTable Schema and Table.
+        /// </summary>
+        /// <param name="columnName">Column Name of the Main Table to use in the order by</param>
+        /// <returns>The offset of the column in the order by container (0, 1, 2)</returns>
+        public Int16 AddOrderByColumnAscending(string columnName)
+        {
+            return AddOrderByColumnAscending(MainTable.SchemaName, MainTable.TableName, columnName);
+        }
+
+        /// <summary>
+        /// Method will add the fully qualified column name to the Order By clause
+        /// as an ascending sort order
+        /// </summary>
+        /// <param name="schemaName">Schema name of the table that owns the column</param>
+        /// <param name="tableName">Table name of the table that owns the column</param>
+        /// <param name="columnName">Column name to use in the order by</param>
+        /// <returns>The offset of the column in the order by container (0, 1, 2)</returns>
+        public Int16 AddOrderByColumnDescending(string schemaName, string tableName, string columnName)
+        {
+            OrderByColumns.Add(_orderByColumnOffset, new DbQualifiedObject<DbIndexColumnStructure>(
+                    schemaName
+                    , tableName
+                    , _daMgr.BuildIndexColumnDescending(columnName)));
+            return _orderByColumnOffset++;
+        }
+
+        /// <summary>
+        /// Method will add the column name to the Order By clause
+        /// as an descending sort order.  It will assume the MainTable Schema and Table.
+        /// </summary>
+        /// <param name="columnName">Column Name of the Main Table to use in the order by</param>
+        /// <returns>The offset of the column in the order by container (0, 1, 2)</returns>
+        public Int16 AddOrderByColumnDescending(string columnName)
+        {
+            return AddOrderByColumnDescending(MainTable.SchemaName, MainTable.TableName, columnName);
+        }
+
+        /// <summary>
+        /// Method will add the fully qualified column name to the Group By clause
+        /// </summary>
+        /// <param name="schemaName">Schema Name of the table containing the column</param>
+        /// <param name="tableName">Table Name which column belongs to</param>
+        /// <param name="columnName">Column to group by</param>
+        /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
+        public Int16 AddGroupByColumnAscending(string schemaName, string tableName, string columnName)
+        {
+            GroupByColumns.Add(_groupByColumnOffset, new DbQualifiedObject<string>(
+                    schemaName
+                    , tableName
+                    , columnName));
+            return _groupByColumnOffset++;
+        }
+
+        /// <summary>
+        /// Method will add the column name to the Group By clause.  
+        /// It will assume the column belongs to the main table.
+        /// </summary>
+        /// <param name="columnName">Column (of the MainTable) to group by</param>
+        /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
+        public Int16 AddGroupByColumn(string columnName)
+        {
+            return AddGroupByColumnAscending(MainTable.SchemaName, MainTable.TableName, columnName);
         }
 
         /// <summary>

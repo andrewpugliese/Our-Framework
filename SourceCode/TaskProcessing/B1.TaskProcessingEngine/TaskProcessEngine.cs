@@ -251,7 +251,9 @@ namespace B1.TaskProcessingEngine
         {
             // move to constructor
             DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
-            DbTableDmlMgr dmlUpdate = new DbTableDmlMgr(Constants.TaskProcessingQueue, DataAccess.Constants.SCHEMA_CORE
+            DbTableDmlMgr dmlUpdate = new DbTableDmlMgr(_daMgr
+                    , DataAccess.Constants.SCHEMA_CORE
+                    , Constants.TaskProcessingQueue
                     , Constants.StatusCode);
             dmlUpdate.AddColumn(Constants.StatusCode, _daMgr.BuildParamName(Constants.StatusCode));
 
