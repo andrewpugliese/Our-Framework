@@ -133,11 +133,11 @@ namespace B1.SessionManagement
             dmlChange.AddColumn(Constants.RestrictSignon
                     , _daMgr.BuildParamName(Constants.RestrictSignon));
             dmlChange.AddColumn(Constants.StatusSeconds
-                    , Constants.StatusSeconds);
+                    , _daMgr.BuildParamName(Constants.StatusSeconds));
             dmlChange.AddColumn(Constants.RestrictSignonMsg
-                    , Constants.RestrictSignonMsg);
+                    , _daMgr.BuildParamName(Constants.RestrictSignonMsg));
             dmlChange.AddColumn(Constants.FailedAttemptLimit
-                    , Constants.FailedAttemptLimit);
+                    , _daMgr.BuildParamName(Constants.FailedAttemptLimit));
 
             dmlChange.SetWhereCondition((j) =>
                     j.Column(Constants.SignonControl, Constants.ControlCode) ==

@@ -6,7 +6,7 @@ using System.Threading;
 
 using B1.DataAccess;
 
-namespace B1.TaskProcessing
+namespace B1.TaskProcessingFunctions
 {
     public abstract class TaskProcess
     {
@@ -16,7 +16,6 @@ namespace B1.TaskProcessing
         protected DataAccessMgr _daMgr = null;
         protected ProcessStatusEnum _processStatus = ProcessStatusEnum.Ready;
         protected string _payload = null;
-        protected string _taskStatusMsg = null;
         ManualResetEvent _stopEvent = new ManualResetEvent(false);
         ManualResetEvent _resumeEvent = new ManualResetEvent(false);
         TaskCompletedDelegate _taskCompletedHandler = null;
@@ -34,7 +33,7 @@ namespace B1.TaskProcessing
             _processStatus = ProcessStatusEnum.Ready;
         }
 
-        public virtual void Start()
+        public void Start()
         {
             try
             {
@@ -52,7 +51,7 @@ namespace B1.TaskProcessing
                             _resumeEvent.Reset();
                     }
 
-                    TaskStatusEnum taskStatus = TaskFunctionBody();
+                    TaskStatusEnum taskStatus = TaskFunctionBody(_payload);
                     if (taskStatus == TaskStatusEnum.Completed
                         || taskStatus == TaskStatusEnum.Failed)
                     {
@@ -75,30 +74,31 @@ namespace B1.TaskProcessing
             }
         }
 
-        public abstract TaskStatusEnum TaskFunctionBody();
+        public abstract TaskStatusEnum TaskFunctionBody(string payload);
         public abstract string TaskDescription();
+        public abstract string TaskStatus();
 
-        public virtual void Stop()
+        public void Stop()
         {
             _processStatus = ProcessStatusEnum.Stopped;
             _stopEvent.Set();   // signal to stop
         }
 
-        public virtual void Pause()
+        public void Pause()
         {
             _processStatus = ProcessStatusEnum.Paused;
         }
 
-        public virtual void Resume()
+        public void Resume()
         {
             _processStatus = ProcessStatusEnum.Working;
             _resumeEvent.Set();   // signal to resume
         }
 
-        public virtual string Status()
+        public string Status()
         {
             return string.Format("Process Status: {0} Task Status Msg: {1}{2}"
-                , _processStatus.ToString(), _taskStatusMsg, Environment.NewLine);
+                , _processStatus.ToString(), TaskStatus(), Environment.NewLine);
         }
     }
 }

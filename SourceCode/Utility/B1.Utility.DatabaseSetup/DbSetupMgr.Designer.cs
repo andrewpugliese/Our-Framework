@@ -205,20 +205,25 @@
             this.dgvUserSessions = new System.Windows.Forms.DataGridView();
             this.Users = new System.Windows.Forms.GroupBox();
             this.tabTaskProcessing = new System.Windows.Forms.TabPage();
+            this.nudMaxTasks = new System.Windows.Forms.NumericUpDown();
+            this.label51 = new System.Windows.Forms.Label();
+            this.tbTaskAssemblyPath = new System.Windows.Forms.TextBox();
             this.btnResumeTPE = new System.Windows.Forms.Button();
             this.btnPauseTPE = new System.Windows.Forms.Button();
             this.btnStopTPE = new System.Windows.Forms.Button();
             this.btnStartTPE = new System.Windows.Forms.Button();
             this.tabTaskRegister = new System.Windows.Forms.TabPage();
+            this.btnRefreshRegTaskList = new System.Windows.Forms.Button();
             this.label50 = new System.Windows.Forms.Label();
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnTestEFInsert = new System.Windows.Forms.Button();
             this.btnTestEFUpdate = new System.Windows.Forms.Button();
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnTestEFInsert = new System.Windows.Forms.Button();
+            this.btnTestDelete = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -242,6 +247,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).BeginInit();
             this.tabTaskProcessing.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).BeginInit();
             this.tabTaskRegister.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).BeginInit();
             this.tabTestEF.SuspendLayout();
@@ -2238,6 +2244,9 @@
             // 
             // tabTaskProcessing
             // 
+            this.tabTaskProcessing.Controls.Add(this.nudMaxTasks);
+            this.tabTaskProcessing.Controls.Add(this.label51);
+            this.tabTaskProcessing.Controls.Add(this.tbTaskAssemblyPath);
             this.tabTaskProcessing.Controls.Add(this.btnResumeTPE);
             this.tabTaskProcessing.Controls.Add(this.btnPauseTPE);
             this.tabTaskProcessing.Controls.Add(this.btnStopTPE);
@@ -2249,6 +2258,48 @@
             this.tabTaskProcessing.TabIndex = 6;
             this.tabTaskProcessing.Text = "Test Task Processing";
             this.tabTaskProcessing.UseVisualStyleBackColor = true;
+            // 
+            // nudMaxTasks
+            // 
+            this.nudMaxTasks.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.nudMaxTasks.Location = new System.Drawing.Point(90, 426);
+            this.nudMaxTasks.Maximum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.nudMaxTasks.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nudMaxTasks.Name = "nudMaxTasks";
+            this.nudMaxTasks.Size = new System.Drawing.Size(51, 20);
+            this.nudMaxTasks.TabIndex = 155;
+            this.nudMaxTasks.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.nudMaxTasks.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // label51
+            // 
+            this.label51.AutoSize = true;
+            this.label51.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label51.ForeColor = System.Drawing.SystemColors.WindowFrame;
+            this.label51.Location = new System.Drawing.Point(22, 407);
+            this.label51.Name = "label51";
+            this.label51.Size = new System.Drawing.Size(134, 13);
+            this.label51.TabIndex = 154;
+            this.label51.Text = "Max Tasks Per Engine";
+            // 
+            // tbTaskAssemblyPath
+            // 
+            this.tbTaskAssemblyPath.Location = new System.Drawing.Point(25, 359);
+            this.tbTaskAssemblyPath.Name = "tbTaskAssemblyPath";
+            this.tbTaskAssemblyPath.Size = new System.Drawing.Size(527, 20);
+            this.tbTaskAssemblyPath.TabIndex = 4;
             // 
             // btnResumeTPE
             // 
@@ -2295,6 +2346,7 @@
             // 
             // tabTaskRegister
             // 
+            this.tabTaskRegister.Controls.Add(this.btnRefreshRegTaskList);
             this.tabTaskRegister.Controls.Add(this.label50);
             this.tabTaskRegister.Controls.Add(this.dgvRegisteredTasks);
             this.tabTaskRegister.Controls.Add(this.btnTaskRegister);
@@ -2305,6 +2357,16 @@
             this.tabTaskRegister.TabIndex = 7;
             this.tabTaskRegister.Text = "Test Task Registration";
             this.tabTaskRegister.UseVisualStyleBackColor = true;
+            // 
+            // btnRefreshRegTaskList
+            // 
+            this.btnRefreshRegTaskList.Location = new System.Drawing.Point(160, 6);
+            this.btnRefreshRegTaskList.Name = "btnRefreshRegTaskList";
+            this.btnRefreshRegTaskList.Size = new System.Drawing.Size(79, 25);
+            this.btnRefreshRegTaskList.TabIndex = 184;
+            this.btnRefreshRegTaskList.Text = "Refresh";
+            this.btnRefreshRegTaskList.UseVisualStyleBackColor = true;
+            this.btnRefreshRegTaskList.Click += new System.EventHandler(this.btnRefreshRegTaskList_Click);
             // 
             // label50
             // 
@@ -2359,6 +2421,7 @@
             // 
             // tabTestEF
             // 
+            this.tabTestEF.Controls.Add(this.btnTestDelete);
             this.tabTestEF.Controls.Add(this.btnTestEFInsert);
             this.tabTestEF.Controls.Add(this.btnTestEFUpdate);
             this.tabTestEF.Location = new System.Drawing.Point(4, 22);
@@ -2367,6 +2430,16 @@
             this.tabTestEF.TabIndex = 8;
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnTestEFInsert
+            // 
+            this.btnTestEFInsert.Location = new System.Drawing.Point(39, 68);
+            this.btnTestEFInsert.Name = "btnTestEFInsert";
+            this.btnTestEFInsert.Size = new System.Drawing.Size(75, 23);
+            this.btnTestEFInsert.TabIndex = 1;
+            this.btnTestEFInsert.Text = "Test Insert";
+            this.btnTestEFInsert.UseVisualStyleBackColor = true;
+            this.btnTestEFInsert.Click += new System.EventHandler(this.btnTestEFInsert_Click);
             // 
             // btnTestEFUpdate
             // 
@@ -2396,15 +2469,15 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnTestEFInsert
+            // btnTestDelete
             // 
-            this.btnTestEFInsert.Location = new System.Drawing.Point(39, 68);
-            this.btnTestEFInsert.Name = "btnTestEFInsert";
-            this.btnTestEFInsert.Size = new System.Drawing.Size(75, 23);
-            this.btnTestEFInsert.TabIndex = 1;
-            this.btnTestEFInsert.Text = "Test Insert";
-            this.btnTestEFInsert.UseVisualStyleBackColor = true;
-            this.btnTestEFInsert.Click += new System.EventHandler(this.btnTestEFInsert_Click);
+            this.btnTestDelete.Location = new System.Drawing.Point(39, 114);
+            this.btnTestDelete.Name = "btnTestDelete";
+            this.btnTestDelete.Size = new System.Drawing.Size(75, 24);
+            this.btnTestDelete.TabIndex = 3;
+            this.btnTestDelete.Text = "Test Delete";
+            this.btnTestDelete.UseVisualStyleBackColor = true;
+            this.btnTestDelete.Click += new System.EventHandler(this.btnTestDelete_Click);
             // 
             // DbSetupMgr
             // 
@@ -2447,6 +2520,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).EndInit();
             this.tabTaskProcessing.ResumeLayout(false);
+            this.tabTaskProcessing.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).EndInit();
             this.tabTaskRegister.ResumeLayout(false);
             this.tabTaskRegister.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).EndInit();
@@ -2637,6 +2712,11 @@
         private System.Windows.Forms.Button btnTestEFUpdate;
         private System.Windows.Forms.Button btnTestMultiContextSingleLINQ;
         private System.Windows.Forms.Button btnTestEFInsert;
+        private System.Windows.Forms.NumericUpDown nudMaxTasks;
+        private System.Windows.Forms.Label label51;
+        private System.Windows.Forms.TextBox tbTaskAssemblyPath;
+        private System.Windows.Forms.Button btnRefreshRegTaskList;
+        private System.Windows.Forms.Button btnTestDelete;
     }
 }
 

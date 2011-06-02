@@ -26,7 +26,8 @@ using B1.CacheManagement;
 using B1.TraceViewer;
 using B1.Utility.TestConsoleApp;
 using B1.SessionManagement;
-
+using B1.TaskProcessingEngine;
+using B1.TaskProcessingFunctions;
 
 namespace B1.Utility.DatabaseSetup
 {
@@ -92,7 +93,7 @@ namespace B1.Utility.DatabaseSetup
         bool _refreshAppSessions = false;
         Dictionary<Int64, UserSession> _userSessions = null;
         bool _dbSetup = false;
-        TaskProcessing.TaskProcessEngine _tpe = null;
+        TaskProcessEngine _tpe = null;
 
         /// <summary>
         /// PagingMgr used by GridConrol
@@ -1767,7 +1768,7 @@ namespace B1.Utility.DatabaseSetup
             btnStartTPE.Enabled = false;
             if (_daMgr == null)
                 CreateDbMgr();
-            _tpe = new TaskProcessing.TaskProcessEngine(_daMgr);
+            _tpe = new TaskProcessEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
             _tpe.Start();
         }
 
@@ -1802,8 +1803,18 @@ namespace B1.Utility.DatabaseSetup
             {
                 if (_daMgr == null)
                     CreateDbMgr();
-                TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, true, true);
+                TaskProcessingFunctions.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, _currentUserCode);
+                RefreshRegisteredTasks();
             }
+        }
+
+        private void RefreshRegisteredTasks()
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+            dgvRegisteredTasks.DataSource = TaskRegistration.GetRegisteredTasks(_daMgr);
+            dgvRegisteredTasks.Refresh();
+            FormatGridColumns(dgvRegisteredTasks);
         }
 
         private void btnTestEFUpdate_Click(object sender, EventArgs e)
@@ -1811,11 +1822,17 @@ namespace B1.Utility.DatabaseSetup
             if(_daMgr == null)
                 CreateDbMgr();
 
+            // we will select a list of entities from the TestSequence table
+            // which will populate our Context
+            // Then we will update the rows in the DB and the Context
+            // in the call to the new method UpdateEntity
+            // The test can be verified by viewing the FirstPage of data in the UI
             Models.SampleDbEntities entities = new Models.SampleDbEntities();
 
             int seqParam = 0;
 
             //Select top 10 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
             DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
                     from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
 
@@ -1900,6 +1917,44 @@ namespace B1.Utility.DatabaseSetup
             _daMgr.InsertEntity(entities, new Models.TestDbSequenceId() { Remarks = "Added by EF Test Insert" },
                     overloads, null);      
             
+        }
+
+        private void btnRefreshRegTaskList_Click(object sender, EventArgs e)
+        {
+            RefreshRegisteredTasks();
+        }
+
+        private void btnTestDelete_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            // we will select a list of entities from the TestSequence table
+            // which will populate our Context
+            // Then we will delete the rows from the DB and the Context
+            // in the call to the new method DeleteEntity
+            // The test can be verified by viewing the FirstPage of data in the UI
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            int seqParam = 0;
+            //Select top 10 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > seqParam orderby a.AppSequenceId select a, 10);
+
+            // Execute the command to build the set and fill the context
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities);
+
+            DbCommand dbCmd = null;
+            foreach (Models.TestSequence seq in sequences)
+            {
+                // First time in, dbCmd will be null so a new command will be created. 
+                // Subsequent calls will use the first DbCommand.
+                // Delete the entity and remove it from the context 
+                Tuple<ObjectContext, DbCommand> results = _daMgr.DeleteEntity(entities, seq, null, dbCmd);
+                dbCmd = results.Item2;
+            }
+
         }
 
     }
