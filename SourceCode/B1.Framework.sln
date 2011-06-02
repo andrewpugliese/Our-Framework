@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.Test.SampleTasks", "Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.Data.Models", "Data\B1.Data.Models\B1.Data.Models.csproj", "{928EAA7F-557A-461C-96C9-FE4AB7EDF0E6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.Utility.SecondEntities", "Utility\B1.Utility.SecondEntities\B1.Utility.SecondEntities.csproj", "{23642148-7B7A-4682-8F6F-FA4BFA7C1296}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -282,6 +284,16 @@ Global
 		{928EAA7F-557A-461C-96C9-FE4AB7EDF0E6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{928EAA7F-557A-461C-96C9-FE4AB7EDF0E6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{928EAA7F-557A-461C-96C9-FE4AB7EDF0E6}.Release|x86.ActiveCfg = Release|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{23642148-7B7A-4682-8F6F-FA4BFA7C1296}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -522,16 +522,18 @@ ScreenSwapper.prototype.show = function (screen, leftToRight) {
     }
 }
 
-// DialogForm with feedback shown //?? Currently dialog options are hardcoded
-// submitFn can return {error: true, Msg: error message or success message}  - Optionally it can have buttons
-var DialogForm = function (divSelector) {
+var DialogForm = function () {
     var thisObj = this;
-    this.formScreen = $($(divSelector).find(".edit-form")[0]);       // Original forms screen
-    this.feedbackScreen = $("<div id='feedbackScreen'></div>").appendTo(divSelector);    // Feedback screen - success or failure messages is shown here
-    this.dialogScreen = $(divSelector);                              // Dialog screen - this is where forms, feedbacks screens are rotated.
+    this.dialogScreen = $("<div></div>");       // Dialog main screen
+    this.formScreen = $("<div></div>").appendTo(this.dialogScreen); // Data entry form screen which is loaded
+    this.feedbackScreen = $("<div></div>").appendTo(this.dialogScreen); // Feedback screen after submission
 
-    //?? Temporary to test the overlay
-    this.divSelector = divSelector;
+//    this.formScreen = $($(divSelector).find(".edit-form")[0]);       // Original forms screen
+//    this.feedbackScreen = $("<div id='feedbackScreen'></div>").appendTo(divSelector);    // Feedback screen - success or failure messages is shown here
+//    this.dialogScreen = $(divSelector);                              // Dialog screen - this is where forms, feedbacks screens are rotated.
+
+//    //?? Temporary to test the overlay
+//    this.divSelector = divSelector;
 
     // Close button
     this.closeButton = {
@@ -556,10 +558,44 @@ var DialogForm = function (divSelector) {
     //   - Retry shows the form again with existing entries
 }
 
+//// DialogForm with feedback shown //?? Currently dialog options are hardcoded
+//// submitFn can return {error: true, Msg: error message or success message}  - Optionally it can have buttons
+//var DialogForm = function (divSelector) {
+//    var thisObj = this;
+//    this.formScreen = $($(divSelector).find(".edit-form")[0]);       // Original forms screen
+//    this.feedbackScreen = $("<div id='feedbackScreen'></div>").appendTo(divSelector);    // Feedback screen - success or failure messages is shown here
+//    this.dialogScreen = $(divSelector);                              // Dialog screen - this is where forms, feedbacks screens are rotated.
+
+//    //?? Temporary to test the overlay
+//    this.divSelector = divSelector;
+
+//    // Close button
+//    this.closeButton = {
+//        text: "Close",
+//        click: function () { $(this).dialog("close"); }
+//    };
+
+//    // Retry button
+//    this.retryButton = {
+//        text: "Retry",
+//        click: function () {
+//            thisObj.dialogScreen.dialog("option", "buttons", [thisObj.saveButton, thisObj.closeButton]);
+//            thisObj.feedbackScreen.hide();
+//            thisObj.formScreen.show();
+//        }
+//    };
+
+//    // showEmpty
+//    // showResetToDefault
+//    // ShowLoadingPage - loading with the whole dialog form disabled true/false
+//    // ShowFeedbackPage - Pass message which is shown. two flavor: Close, Retry/GiveUp
+//    //   - Retry shows the form again with existing entries
+//}
+
 // Shows dialog form
 //?? Select all form fields - text boxes, radio buttons, textarea, checkbxes etc and empty its values
 //?? this.formScreen
-DialogForm.prototype.show = function (ajaxUrl, datafn, onSuccessFn, width) {
+DialogForm.prototype.show = function (formUrl, ajaxUrl, datafn, onSuccessFn, width) {
     var thisObj = this;
     width = width || 600;
 
@@ -567,7 +603,8 @@ DialogForm.prototype.show = function (ajaxUrl, datafn, onSuccessFn, width) {
     this.formScreen.show();
 
     // Clear out the form
-    this.formScreen.find("form")[0].reset();
+    //?? this.formScreen.find("form")[0].reset();
+    this.formScreen.html("Loading...");
 
     this.saveButton = {
         text: "Save",
@@ -575,7 +612,7 @@ DialogForm.prototype.show = function (ajaxUrl, datafn, onSuccessFn, width) {
             if (thisObj.validate()) {
 
                 //?? Disable editing of the form with an overlay screen
-                overlayScreen();
+                //?? overlayScreen();
 
                 $.ajax({
                     url: ajaxUrl,
@@ -593,6 +630,19 @@ DialogForm.prototype.show = function (ajaxUrl, datafn, onSuccessFn, width) {
             }
         }
     };
+
+    $.ajax({
+        url: formUrl,
+        type: "get",
+        format: "html",
+        data: datafn(),
+        success: function (result) {
+            thisObj.formScreen.html(result);
+        },
+        error: function (xhr, status, error) {
+            thisObj.showFeedback({ success: false, responseText: xhr.responseText });
+        }
+    });
 
     // Load the dialog box
     this.dialogScreen.dialog({ width: width, height: 400, modal: true, buttons: [this.saveButton, this.closeButton] });

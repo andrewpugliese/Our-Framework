@@ -745,28 +745,30 @@ namespace B1.Utility.DatabaseSetup
         public void testEntities()
         {
             B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
+            B1.Utility.SecondEntities.SampleDbSecondContainer entitiesSecond
+                = new SecondEntities.SampleDbSecondContainer();
 
             var anonClass = new { a= "asdf", b = "bsdf" };
 
             var resultsJoin1 = from a in entities.AppConfigSettings
-                          join b in entities.AppConfigParameters on a.ConfigValue equals b.ParameterValue
+                               join b in entitiesSecond.AppConfigParameters on a.ConfigValue equals b.ParameterValue
                           join c in entities.AppSessions on new { name = b.ParameterName, v = b.ParameterValue } 
                                 equals new { name = c.MachineName, v = c.AppVersion }
                           where a.ConfigValue != null && a.ConfigValue != anonClass.b || a.ConfigKey.CompareTo("asdf") > 0
                           select new { a.ConfigKey, a.ConfigValue };
 
             var resultsJoin2 = from a in entities.AppConfigSettings
-                               from b in entities.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue).DefaultIfEmpty()
+                               from b in entitiesSecond.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue).DefaultIfEmpty()
                                where b.ParameterValue != null
                                select new { a.ConfigKey, a.ConfigValue };
 
             var resultsJoin3 = from a in entities.AppConfigSettings
-                          from b in entities.AppConfigParameters
+                               from b in entitiesSecond.AppConfigParameters
                           where a.ConfigValue == b.ParameterName
                           select new { a.ConfigKey, a.ConfigValue };
 
             var resultsJoin4 = from a in entities.AppConfigSettings
-                              join b in entities.AppConfigParameters on a.ConfigValue equals b.ParameterValue into bleft
+                               join b in entitiesSecond.AppConfigParameters on a.ConfigValue equals b.ParameterValue into bleft
                               join c in entities.AppSessions on a.ConfigValue equals c.AppVersion into cleft
                               from b in bleft.DefaultIfEmpty()
                               from c in cleft.DefaultIfEmpty()
@@ -774,7 +776,7 @@ namespace B1.Utility.DatabaseSetup
                               select new { a.ConfigKey, a.ConfigValue };
 
             var resultsJoin5 = from a in entities.AppConfigSettings
-                               join b in entities.AppConfigParameters on a.ConfigValue equals b.ParameterValue into bleft
+                               join b in entitiesSecond.AppConfigParameters on a.ConfigValue equals b.ParameterValue into bleft
                                where a.ConfigValue != null
                                select new { a.ConfigKey, a.ConfigValue };
 
@@ -798,15 +800,15 @@ namespace B1.Utility.DatabaseSetup
 
             var results5 = entities.AppConfigSettings;
 
-            var results6 = entities.AppConfigSettings.Join(entities.AppConfigParameters, k => k.ConfigSetName,
+            var results6 = entities.AppConfigSettings.Join(entitiesSecond.AppConfigParameters, k => k.ConfigSetName,
                 k => k.ParameterName, (o, i) => i);
 
-            var results7 = entities.AppConfigSettings.Where(a => a.ConfigValue != null).SelectMany(a => entities.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue), (a, p) => a);
+            var results7 = entities.AppConfigSettings.Where(a => a.ConfigValue != null).SelectMany(a => entitiesSecond.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue), (a, p) => a);
 
-            var results8 = entities.AppConfigSettings.SelectMany(a => entities.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue).DefaultIfEmpty(), (a, p) => a).Where(a => a.ConfigValue != null);
+            var results8 = entities.AppConfigSettings.SelectMany(a => entitiesSecond.AppConfigParameters.Where(p => p.ParameterValue == a.ConfigValue).DefaultIfEmpty(), (a, p) => a).Where(a => a.ConfigValue != null);
 
             var resultsGroupBy1 = from a in entities.AppConfigSettings
-                                  join b in entities.AppConfigParameters on a.ConfigValue equals b.ParameterValue
+                                  join b in entitiesSecond.AppConfigParameters on a.ConfigValue equals b.ParameterValue
                                   where a.ConfigValue != null
                                   //group a by new { a.ConfigKey, a.ConfigSetName, a.ConfigValue } into g
                                   group a by a.ConfigKey into g
@@ -899,19 +901,28 @@ namespace B1.Utility.DatabaseSetup
         public static void TestDbMultiContext(DataAccessMgr daMgr)
         {
             B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
-            B1.Utility.DatabaseSetup.ModelsSecond.SampleDbSecondContainer entitiesSecond
-                = new ModelsSecond.SampleDbSecondContainer();
+            B1.Utility.SecondEntities.SampleDbSecondContainer entitiesSecond
+                = new B1.Utility.SecondEntities.SampleDbSecondContainer();
 
-            var resultsJoin = from a in entities.AppConfigSettings
+            var resultsJoin1 = from a in entities.AppConfigSettings
                               from b in entitiesSecond.AppConfigParameters
                               from c in entities.AppMasters
                               from d in entitiesSecond.AppConfigParameters
                               where a.ConfigValue == b.ParameterName
                               select new { a.ConfigKey, a.ConfigValue };
 
-            DbCommand dbCmd = daMgr.BuildSelectDbCommand(resultsJoin, null);
+            var resultsJoin2 = from a in entities.AppConfigSettings
+                              join b in entitiesSecond.AppConfigParameters on a.ConfigValue equals b.ParameterValue
+                              join c in entities.AppMasters on a.ConfigKey equals c.AppId
+                              // from d in entitiesSecond.AppConfigParameters
+                              where a.ConfigValue == b.ParameterName
+                              select new { a.ConfigKey, a.ConfigValue };
 
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(resultsJoin1, null);
             DataTable tbl = daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
+            DbCommand dbCmd2 = daMgr.BuildSelectDbCommand(resultsJoin2, null);
+            DataTable tbl2 = daMgr.ExecuteDataSet(dbCmd2, null, null).Tables[0];
         }
     }
 }

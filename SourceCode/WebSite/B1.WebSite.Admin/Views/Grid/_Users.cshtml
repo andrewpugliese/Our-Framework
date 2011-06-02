@@ -20,6 +20,7 @@
             <td class="key" style="height: 20px">(Auto)</td>
             <td class="editable" style="width: 400px; height: 20px;">&nbsp;</td>
             <td class="editable" style="width: 400px; height: 20px;">&nbsp;</td>
+            <td>&nbsp;</td>
         </tr>
     @foreach (var item in Model) {
         <tr>
@@ -27,6 +28,7 @@
             <td class="key">@item.UserCode</td>
             <td class="editable">@item.UserId</td>
             <td class="editable">@item.FirstName</td>
+            <td><input type="button" value="Edit" onclick="javascript: editUser('@item.UserCode');" /></td>
         </tr>
     }
     </tbody>
@@ -43,6 +45,20 @@
         // Save the user
         // Edit Next/previous - Add new button
     }
-</script>
 
+    function editUser(userCode) {
+        // Check if the userDialog already was created
+        if (window.userDialog != 'undefined') {
+            window.userDialog = new DialogForm();
+        }
+
+        window.userDialog.show('@Url.Action("UserEditForm")',
+            '@Url.Action("UserEditForm")',
+            function () { return "userCode=" + userCode },
+            function (result) { /* ajaxGetConfigSets(); */ });
+    }
+
+// Load the Javascript for the edit dialog only one time - subsequent call will NOT load the javascript
+
+</script>
 

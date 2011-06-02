@@ -1859,17 +1859,6 @@ namespace B1.Utility.DatabaseSetup
 
         }
 
-        private void btnTestMultiContextSingleLINQ_Click(object sender, EventArgs e)
-        {
-            if (_daMgr == null)
-                CreateDbMgr();
-
-            TestDataAccessMgr aa = new TestDataAccessMgr(_daMgr, 1, null);
-            aa.testEntities();
-
-            //?? TestDataAccessMgr.TestDbMultiContext(_daMgr);
-        }
-
         private void btnTestEFInsert_Click(object sender, EventArgs e)
         {
             if(_daMgr == null)
@@ -1955,6 +1944,27 @@ namespace B1.Utility.DatabaseSetup
                 dbCmd = results.Item2;
             }
 
+        }
+
+        private void btnTestLINQQueries_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            try
+            {
+                TestDataAccessMgr aa = new TestDataAccessMgr(_daMgr, 1, null);
+                aa.testEntities();
+
+                TestDataAccessMgr.TestDbMultiContext(_daMgr);
+
+                MessageBox.Show("All LINQ queries ran without any exception being thrown");
+            }
+            catch (Exception ex)
+            {
+                _loggingMgr.WriteToLog(ex);
+                MessageBox.Show(ex.Message + ex.StackTrace);
+            }
         }
 
     }

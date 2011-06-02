@@ -63,5 +63,17 @@ namespace B1.WebSite.Admin.Controllers
             DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
             return PartialView("_Users", daMgr.ExecuteCollection<UserMaster>(dbCmd, null));
         }
+
+        public ActionResult UserEditForm(int userCode)
+        {
+            B1SampleEntities entities = new B1SampleEntities();
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+            var query = from a in entities.UserMasters
+                        where a.UserCode == userCode
+                        select new { a.UserCode, a.UserId, a.FirstName };
+            DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
+            return PartialView("_UserEdit", daMgr.ExecuteCollection<UserMaster>(dbCmd, null).First());
+        }
     }
 }

@@ -130,23 +130,63 @@ namespace B1.DataAccess
             Visit(queryable.Expression);
         }
 
-        protected override Expression VisitMember(MemberExpression node)
+        protected override Expression VisitMethodCall(MethodCallExpression expression)
         {
-            if (node.Type.IsGenericType && (node.Type.GetGenericTypeDefinition() == typeof(ObjectQuery<>)
-                    || node.Type.GetGenericTypeDefinition() == typeof(ObjectSet<>)))
+            /* // The expression tree - Where clause is argument to Select clause. Join clause is argument to Select clause.
+             * // Visit the arguments expression to keep drilling the expression tree.
+.Call System.Linq.Queryable.Select(
+    .Call System.Linq.Queryable.Where(
+        .Call System.Linq.Queryable.Join(
+            .Call ((System.Data.Objects.ObjectQuery`1[B1.Utility.DatabaseSetup.Models.AppConfigSetting]).Constant<System.Data.Objects.ObjectSet`1[B1.Utility.DatabaseSetup.Models.AppConfigSetting]>(System.Data.Objects.ObjectSet`1[B1.Utility.DatabaseSetup.Models.AppConfigSetting])).MergeAs(.Constant<System.Data.Objects.MergeOption>(AppendOnly))
+            ,
+            .Call ((System.Data.Objects.ObjectQuery`1[B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter]).Constant<System.Data.Objects.ObjectSet`1[B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter]>(System.Data.Objects.ObjectSet`1[B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter])).MergeAs(.Constant<System.Data.Objects.MergeOption>(AppendOnly))
+            ,
+            '(.Lambda #Lambda1<System.Func`2[B1.Utility.DatabaseSetup.Models.AppConfigSetting,System.String]>),
+            '(.Lambda #Lambda2<System.Func`2[B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter,System.String]>),
+            '(.Lambda #Lambda3<System.Func`3[B1.Utility.DatabaseSetup.Models.AppConfigSetting,B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter,<>f__AnonymousType0`2[B1.Utility.DatabaseSetup.Models.AppConfigSetting,B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter]]>))
+        , ......
+             */
+
+            // Discover the context from the expression
+            DiscoverContext(expression);
+
+            // Visit all the arguments to this method call
+            foreach (Expression argument in expression.Arguments)
+            {
+                Visit(argument);
+            }
+
+            return expression;
+        }
+
+        protected override Expression VisitMember(MemberExpression expression)
+        {
+            return DiscoverContext(expression);
+        }
+
+        protected Expression DiscoverContext(Expression expression)
+        {
+            Type type = expression is MemberExpression ? ((MemberExpression)expression).Type :
+                expression is MethodCallExpression && ((MethodCallExpression)expression).Object != null ?
+                ((MethodCallExpression)expression).Object.Type : expression.Type;
+
+            if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(ObjectQuery<>)
+                    || type.GetGenericTypeDefinition() == typeof(ObjectSet<>)))
             {
                 // Example: "System.Data.Objects.ObjectSet`1[[B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter, B1.Utility.DatabaseSetup, Version=1.13.1.0, Culture=neutral, PublicKeyToken=null]]"
-                string objectSetTypeName = node.Type.FullName;
-                
-                // Example: "B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter"
-                string entityTypeName = ObjectContext.GetObjectType(node.Type.GetGenericArguments()[0]).FullName;
+                string objectSetTypeName = type.FullName;
 
-                // Example: 
-                string contextClassName = node.Member.DeclaringType.FullName;
+                // Example: "B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter"
+                string entityTypeName = ObjectContext.GetObjectType(type.GetGenericArguments()[0]).FullName;
+                string contextClassName = type.FullName; //?? ((MemberExpression) expression).Member.DeclaringType.FullName;
+
+                // Get the expression which can be evaluated to get the ObjectContext
+                Expression expressionToRun = expression is MemberExpression ? (MemberExpression)expression :
+                    expression is MethodCallExpression ? ((MethodCallExpression)expression).Object : null;
 
                 // Ensure that the Context is stored
                 ObjectContext entityContext = EntityContextCache.Contexts.GetOrAdd(contextClassName,
-                    () => { return ((ObjectQuery)Expression.Lambda(node).Compile().DynamicInvoke()).Context ?? _defaultContext; });
+                    () => { return ((ObjectQuery)Expression.Lambda(expressionToRun).Compile().DynamicInvoke()).Context ?? _defaultContext; });
 
                 // Ensure that the Storage meta data is loaded into cache
                 EntityContextCache.EnsureStorageMetaData(entityContext);
@@ -157,7 +197,7 @@ namespace B1.DataAccess
                 EntityContextCache.TypesToContexts.GetOrAdd(entityTypeName, () => { return entityContext; });
             }
 
-            return node;
+            return expression;
         }
 
         public QualifiedEntity GetQualifiedEntity(Type dotNetEntityType)

@@ -81,22 +81,6 @@ namespace B1.Utility.DatabaseSetup.Models
         /// <summary>
         /// No Metadata Documentation available.
         /// </summary>
-        public ObjectSet<AppConfigParameter> AppConfigParameters
-        {
-            get
-            {
-                if ((_AppConfigParameters == null))
-                {
-                    _AppConfigParameters = base.CreateObjectSet<AppConfigParameter>("AppConfigParameters");
-                }
-                return _AppConfigParameters;
-            }
-        }
-        private ObjectSet<AppConfigParameter> _AppConfigParameters;
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
         public ObjectSet<AppConfigSetting> AppConfigSettings
         {
             get
@@ -288,14 +272,6 @@ namespace B1.Utility.DatabaseSetup.Models
 
         #endregion
         #region AddTo Methods
-    
-        /// <summary>
-        /// Deprecated Method for adding a new object to the AppConfigParameters EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
-        /// </summary>
-        public void AddToAppConfigParameters(AppConfigParameter appConfigParameter)
-        {
-            base.AddObject("AppConfigParameters", appConfigParameter);
-        }
     
         /// <summary>
         /// Deprecated Method for adding a new object to the AppConfigSettings EntitySet. Consider using the .Add method of the associated ObjectSet&lt;T&gt; property instead.
@@ -790,87 +766,6 @@ namespace B1.Utility.DatabaseSetup.Models
         }
 
         #endregion
-    }
-    
-    /// <summary>
-    /// No Metadata Documentation available.
-    /// </summary>
-    [EdmEntityTypeAttribute(NamespaceName="B1SampleModel", Name="AppConfigParameter")]
-    [Serializable()]
-    [DataContractAttribute(IsReference=true)]
-    public partial class AppConfigParameter : EntityObject
-    {
-        #region Factory Method
-    
-        /// <summary>
-        /// Create a new AppConfigParameter object.
-        /// </summary>
-        /// <param name="parameterName">Initial value of the ParameterName property.</param>
-        /// <param name="parameterValue">Initial value of the ParameterValue property.</param>
-        public static AppConfigParameter CreateAppConfigParameter(global::System.String parameterName, global::System.String parameterValue)
-        {
-            AppConfigParameter appConfigParameter = new AppConfigParameter();
-            appConfigParameter.ParameterName = parameterName;
-            appConfigParameter.ParameterValue = parameterValue;
-            return appConfigParameter;
-        }
-
-        #endregion
-        #region Primitive Properties
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=true, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.String ParameterName
-        {
-            get
-            {
-                return _ParameterName;
-            }
-            set
-            {
-                if (_ParameterName != value)
-                {
-                    OnParameterNameChanging(value);
-                    ReportPropertyChanging("ParameterName");
-                    _ParameterName = StructuralObject.SetValidValue(value, false);
-                    ReportPropertyChanged("ParameterName");
-                    OnParameterNameChanged();
-                }
-            }
-        }
-        private global::System.String _ParameterName;
-        partial void OnParameterNameChanging(global::System.String value);
-        partial void OnParameterNameChanged();
-    
-        /// <summary>
-        /// No Metadata Documentation available.
-        /// </summary>
-        [EdmScalarPropertyAttribute(EntityKeyProperty=false, IsNullable=false)]
-        [DataMemberAttribute()]
-        public global::System.String ParameterValue
-        {
-            get
-            {
-                return _ParameterValue;
-            }
-            set
-            {
-                OnParameterValueChanging(value);
-                ReportPropertyChanging("ParameterValue");
-                _ParameterValue = StructuralObject.SetValidValue(value, false);
-                ReportPropertyChanged("ParameterValue");
-                OnParameterValueChanged();
-            }
-        }
-        private global::System.String _ParameterValue;
-        partial void OnParameterValueChanging(global::System.String value);
-        partial void OnParameterValueChanged();
-
-        #endregion
-    
     }
     
     /// <summary>

@@ -1,20 +1,18 @@
-﻿<div id="userEdit" style="display: none;">
-    <div id="userEditForm" class="edit-form">
-        <form>
-            <fieldset>
-                <legend>Add/Edit a user</legend>
+﻿@model B1.Data.Models.UserMaster
 
-                <label for="edUserCode">User Code:</label>
-                <input type="text" name="edUserCode" id="edUserCode" disabled="disabled" value="@(Model.Count() > 0 ? Model.First().ConfigSetName : "")" style="width: 500px;" />
+<form>
+    <fieldset>
+        <legend>Add/Edit a user</legend>
 
-                <label for="edUserId">User Id:</label>
-                <span style="color: red; display:none;">*</span>
-                <input type="text" name="edUserId" id="edUserId" class="required" style="width: 500px;" />
+        <label for="edUserCode">User Code:</label>
+        <input type="text" name="edUserCode" id="edUserCode" disabled="disabled" value="@Model.UserCode" style="width: 500px;" />
 
-                <label for="edFirstName">First Name:</label>
-                <textarea name="edFirstName" id="edFirstName" rows="4" cols="100" style="width: 500px;"></textarea>
-            </fieldset>
-        </form>
-    </div>
-</div>
+        <label for="edUserId">User Id:</label>
+        <span style="color: red; display:none;">*</span>
+        <input type="text" name="edUserId" id="edUserId" value="@Model.UserId" class="required" style="width: 500px;" />
+
+        <label for="edFirstName">First Name:</label>
+        <input type="text" name="edFirstName" id="edFirstName" value="@Model.FirstName" class="required" style="width: 500px;" />
+    </fieldset>
+</form>
 
