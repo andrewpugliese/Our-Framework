@@ -120,7 +120,6 @@
             this.rbTranTestPass = new System.Windows.Forms.RadioButton();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.tabTestConfig = new System.Windows.Forms.TabPage();
-            this.btnTestMultiContextSingleLINQ = new System.Windows.Forms.Button();
             this.labelConfigChangeValue = new System.Windows.Forms.Label();
             this.btnWatch = new System.Windows.Forms.Button();
             this.btnConfigTest = new System.Windows.Forms.Button();
@@ -218,12 +217,13 @@
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnTestDelete = new System.Windows.Forms.Button();
             this.btnTestEFInsert = new System.Windows.Forms.Button();
             this.btnTestEFUpdate = new System.Windows.Forms.Button();
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnTestDelete = new System.Windows.Forms.Button();
+            this.btnTestLINQQueries = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -1177,7 +1177,6 @@
             // 
             // tabTestConfig
             // 
-            this.tabTestConfig.Controls.Add(this.btnTestMultiContextSingleLINQ);
             this.tabTestConfig.Controls.Add(this.labelConfigChangeValue);
             this.tabTestConfig.Controls.Add(this.btnWatch);
             this.tabTestConfig.Controls.Add(this.btnConfigTest);
@@ -1194,17 +1193,6 @@
             this.tabTestConfig.TabIndex = 2;
             this.tabTestConfig.Text = "Test Config";
             this.tabTestConfig.UseVisualStyleBackColor = true;
-            // 
-            // btnTestMultiContextSingleLINQ
-            // 
-            this.btnTestMultiContextSingleLINQ.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnTestMultiContextSingleLINQ.Location = new System.Drawing.Point(875, 417);
-            this.btnTestMultiContextSingleLINQ.Name = "btnTestMultiContextSingleLINQ";
-            this.btnTestMultiContextSingleLINQ.Size = new System.Drawing.Size(101, 71);
-            this.btnTestMultiContextSingleLINQ.TabIndex = 13;
-            this.btnTestMultiContextSingleLINQ.Text = "Test Multi-Context single LINQ";
-            this.btnTestMultiContextSingleLINQ.UseVisualStyleBackColor = true;
-            this.btnTestMultiContextSingleLINQ.Click += new System.EventHandler(this.btnTestMultiContextSingleLINQ_Click);
             // 
             // labelConfigChangeValue
             // 
@@ -2421,6 +2409,7 @@
             // 
             // tabTestEF
             // 
+            this.tabTestEF.Controls.Add(this.btnTestLINQQueries);
             this.tabTestEF.Controls.Add(this.btnTestDelete);
             this.tabTestEF.Controls.Add(this.btnTestEFInsert);
             this.tabTestEF.Controls.Add(this.btnTestEFUpdate);
@@ -2430,6 +2419,16 @@
             this.tabTestEF.TabIndex = 8;
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnTestDelete
+            // 
+            this.btnTestDelete.Location = new System.Drawing.Point(39, 114);
+            this.btnTestDelete.Name = "btnTestDelete";
+            this.btnTestDelete.Size = new System.Drawing.Size(75, 24);
+            this.btnTestDelete.TabIndex = 3;
+            this.btnTestDelete.Text = "Test Delete";
+            this.btnTestDelete.UseVisualStyleBackColor = true;
+            this.btnTestDelete.Click += new System.EventHandler(this.btnTestDelete_Click);
             // 
             // btnTestEFInsert
             // 
@@ -2469,15 +2468,16 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnTestDelete
+            // btnTestLINQQueries
             // 
-            this.btnTestDelete.Location = new System.Drawing.Point(39, 114);
-            this.btnTestDelete.Name = "btnTestDelete";
-            this.btnTestDelete.Size = new System.Drawing.Size(75, 24);
-            this.btnTestDelete.TabIndex = 3;
-            this.btnTestDelete.Text = "Test Delete";
-            this.btnTestDelete.UseVisualStyleBackColor = true;
-            this.btnTestDelete.Click += new System.EventHandler(this.btnTestDelete_Click);
+            this.btnTestLINQQueries.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestLINQQueries.Location = new System.Drawing.Point(39, 162);
+            this.btnTestLINQQueries.Name = "btnTestLINQQueries";
+            this.btnTestLINQQueries.Size = new System.Drawing.Size(124, 24);
+            this.btnTestLINQQueries.TabIndex = 14;
+            this.btnTestLINQQueries.Text = "Test LINQ Queries";
+            this.btnTestLINQQueries.UseVisualStyleBackColor = true;
+            this.btnTestLINQQueries.Click += new System.EventHandler(this.btnTestLINQQueries_Click);
             // 
             // DbSetupMgr
             // 
@@ -2710,13 +2710,13 @@
         private System.Windows.Forms.DataGridView dgvRegisteredTasks;
         private System.Windows.Forms.TabPage tabTestEF;
         private System.Windows.Forms.Button btnTestEFUpdate;
-        private System.Windows.Forms.Button btnTestMultiContextSingleLINQ;
         private System.Windows.Forms.Button btnTestEFInsert;
         private System.Windows.Forms.NumericUpDown nudMaxTasks;
         private System.Windows.Forms.Label label51;
         private System.Windows.Forms.TextBox tbTaskAssemblyPath;
         private System.Windows.Forms.Button btnRefreshRegTaskList;
         private System.Windows.Forms.Button btnTestDelete;
+        private System.Windows.Forms.Button btnTestLINQQueries;
     }
 }
 
