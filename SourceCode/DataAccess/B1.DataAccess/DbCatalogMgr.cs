@@ -641,7 +641,7 @@ namespace B1.DataAccess
                                         , joinSelect.ColumnsAs(Constants.Type_Name, Constants.DataType)
                                         , joinSelect.ColumnsAs(Constants.Nullable, Constants.IsNullable));
 
-                        joinSelect.AddCaseColumn("2", Constants.IsIdentity,
+                        joinSelect.AddCaseColumn("0", Constants.IsIdentity,
                                 joinSelect.When(t => t.AliasedColumn(tAlias, Constants.Pseudo_Column) == 2, "1"));
 
                         joinSelect.SetWhereCondition((j) =>
