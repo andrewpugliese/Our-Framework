@@ -17,7 +17,7 @@ using System.Runtime.Serialization;
 
 [assembly: EdmSchemaAttribute()]
 
-namespace B1.Utility.DatabaseSetup.ModelsSecond
+namespace B1.Utility.SecondEntities
 {
     #region Contexts
     

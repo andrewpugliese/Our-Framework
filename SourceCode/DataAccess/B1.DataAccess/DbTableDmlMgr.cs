@@ -303,6 +303,22 @@ namespace B1.DataAccess
             throw new KeyNotFoundException("Could not find table " + tableName);
         }
 
+        Int16 _orderByColumn = 0;
+        DataAccessMgr _daMgr = null;
+
+        /// <summary>
+        /// Creates instance of DbTableDmlMgr
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr Object</param>
+        /// <param name="tableName"></param>
+        /// <param name="schemaName"></param>
+        /// <param name="selectColumns">Columns for select. </param>
+        public DbTableDmlMgr(DataAccessMgr daMgr, string schemaName, string tableName, params object[] selectColumns)
+        {
+            _daMgr = daMgr;
+            AddJoin(tableName, schemaName, DbTableJoinType.None, null, selectColumns);
+        }
+
         /// <summary>
         /// Creates instance of DbTableDmlMgr
         /// </summary>
@@ -328,10 +344,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Creates instance of DbTableDmlMgr by performing a deep copy on passed in instance.
         /// </summary>
-        /// <param name="tableMgr"></param>
-        public DbTableDmlMgr(DbTableDmlMgr tableMgr)
+        /// <param name="dmlMgr"></param>
+        public DbTableDmlMgr(DbTableDmlMgr dmlMgr)
         {
-            foreach(var tableList in tableMgr.Tables)
+            foreach(var tableList in dmlMgr.Tables)
             {
                 List<DbTableJoin> newTableList = new List<DbTableJoin>();
 
@@ -346,14 +362,15 @@ namespace B1.DataAccess
                             selectColumns));
                 }
             }
-
-            CaseColumns = tableMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
-            ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(tableMgr.ColumnsForUpdateOrInsert);
-            GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(tableMgr.GroupByColumns);
-            OrderByColumns = new SortedDictionary<short,DbQualifiedObject<DbIndexColumnStructure>>(tableMgr.OrderByColumns);
-            SelectDistinct = tableMgr.SelectDistinct;
-            _whereCondition = tableMgr._whereCondition == null ? null : 
-                    new DbPredicate(tableMgr._whereCondition._predicate, this);
+            _daMgr = dmlMgr._daMgr;
+            _orderByColumn = dmlMgr._orderByColumn;
+            CaseColumns = dmlMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
+            ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
+            GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(dmlMgr.GroupByColumns);
+            OrderByColumns = new SortedDictionary<short,DbQualifiedObject<DbIndexColumnStructure>>(dmlMgr.OrderByColumns);
+            SelectDistinct = dmlMgr.SelectDistinct;
+            _whereCondition = dmlMgr._whereCondition == null ? null : 
+                    new DbPredicate(dmlMgr._whereCondition._predicate, this);
         }
 
         /// <summary>
@@ -770,6 +787,7 @@ namespace B1.DataAccess
                         predicate), Expression.Parameter(typeof(DbTableDmlMgr), 
                             _whereCondition._predicate.Parameters.First().Name));
         }
+
 
         /// <summary>
         /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements

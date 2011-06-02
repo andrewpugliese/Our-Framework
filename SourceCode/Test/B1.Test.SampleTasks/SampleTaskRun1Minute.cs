@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using B1.TaskProcessing;
+using B1.TaskProcessingFunctions;
 using B1.DataAccess;
 
 namespace B1.Test.SampleTasks
@@ -12,6 +12,7 @@ namespace B1.Test.SampleTasks
     {
         DateTime _started = DateTime.Now;
         int _count = 0;
+        string _taskStatusMsg = null;
 
         public SampleTaskRun1Minute(DataAccessMgr daMgr
             , string taskId
@@ -21,14 +22,19 @@ namespace B1.Test.SampleTasks
         {
         }
 
-        public override TaskStatusEnum TaskFunctionBody()
+        public override TaskStatusEnum TaskFunctionBody(string payload)
         {
             _taskStatusMsg = this.ToString() + "; Iteration: " + _count.ToString();
 
             TimeSpan ts = DateTime.Now - _started;
-            if (ts.TotalSeconds < 60)
+            if (ts.TotalSeconds < 60)   
                 return TaskStatusEnum.InProcess;
             else return TaskStatusEnum.Completed;
+        }
+
+        public override string TaskStatus()
+        {
+            return _taskStatusMsg;
         }
 
         public override string TaskDescription()

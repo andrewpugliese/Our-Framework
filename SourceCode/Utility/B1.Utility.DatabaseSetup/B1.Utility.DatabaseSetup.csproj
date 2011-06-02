@@ -125,11 +125,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SampleDb.edmx</DependentUpon>
     </Compile>
-    <Compile Include="SampleDbSecond.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SampleDbSecond.edmx</DependentUpon>
-    </Compile>
     <Compile Include="TestAppSessionControl.cs" />
     <EmbeddedResource Include="DbSetupMgr.resx">
       <DependentUpon>DbSetupMgr.cs</DependentUpon>
@@ -167,10 +162,6 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>SampleDb.Designer.cs</LastGenOutput>
       <CustomToolNamespace>B1.Utility.DatabaseSetup.Models</CustomToolNamespace>
-    </EntityDeploy>
-    <EntityDeploy Include="SampleDbSecond.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>SampleDbSecond.Designer.cs</LastGenOutput>
     </EntityDeploy>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +212,10 @@
     <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj">
       <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
       <Name>B1.TaskProcess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\B1.Utility.SecondEntities\B1.Utility.SecondEntities.csproj">
+      <Project>{23642148-7B7A-4682-8F6F-FA4BFA7C1296}</Project>
+      <Name>B1.Utility.SecondEntities</Name>
     </ProjectReference>
     <ProjectReference Include="..\B1.Utility.TestConsoleApp\B1.Utility.TestConsoleApp.csproj">
       <Project>{D4D42AC3-767A-4EBB-B028-0CD46A434D6E}</Project>

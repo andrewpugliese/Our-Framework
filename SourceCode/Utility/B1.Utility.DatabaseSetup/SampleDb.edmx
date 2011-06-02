@@ -8,7 +8,6 @@
         <EntityContainer Name="B1SampleModelStoreContainer">
           <EntitySet Name="AccessControlGroupRules" EntityType="B1SampleModel.Store.AccessControlGroupRules" store:Type="Tables" Schema="B1" />
           <EntitySet Name="AccessControlGroups" EntityType="B1SampleModel.Store.AccessControlGroups" store:Type="Tables" Schema="B1" />
-          <EntitySet Name="AppConfigParameters" EntityType="B1SampleModel.Store.AppConfigParameters" store:Type="Tables" Schema="B1" />
           <EntitySet Name="AppConfigSettings" EntityType="B1SampleModel.Store.AppConfigSettings" store:Type="Tables" Schema="B1" />
           <EntitySet Name="AppMaster" EntityType="B1SampleModel.Store.AppMaster" store:Type="Tables" Schema="B1" />
           <EntitySet Name="AppSessions" EntityType="B1SampleModel.Store.AppSessions" store:Type="Tables" Schema="B1" />
@@ -75,13 +74,6 @@
           <Property Name="AccessControlGroupName" Type="varchar" Nullable="false" MaxLength="64" />
           <Property Name="DefaultAccessDenied" Type="bit" />
           <Property Name="Remarks" Type="varchar" MaxLength="512" />
-        </EntityType>
-        <EntityType Name="AppConfigParameters">
-          <Key>
-            <PropertyRef Name="ParameterName" />
-          </Key>
-          <Property Name="ParameterName" Type="varchar" Nullable="false" MaxLength="48" />
-          <Property Name="ParameterValue" Type="varchar" Nullable="false" MaxLength="256" />
         </EntityType>
         <EntityType Name="AppConfigSettings">
           <Key>
@@ -332,7 +324,6 @@
     <edmx:ConceptualModels>
       <Schema Namespace="B1SampleModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
         <EntityContainer Name="SampleDbEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="AppConfigParameters" EntityType="B1SampleModel.AppConfigParameter" />
           <EntitySet Name="AppConfigSettings" EntityType="B1SampleModel.AppConfigSetting" />
           <EntitySet Name="TestSequences" EntityType="B1SampleModel.TestSequence" />
           <EntitySet Name="UIControls" EntityType="B1SampleModel.UIControl" />
@@ -382,13 +373,6 @@
           </AssociationSet>
           <EntitySet Name="TestDbSequenceIds" EntityType="B1SampleModel.TestDbSequenceId" />
         </EntityContainer>
-        <EntityType Name="AppConfigParameter">
-          <Key>
-            <PropertyRef Name="ParameterName" />
-          </Key>
-          <Property Name="ParameterName" Type="String" Nullable="false" MaxLength="48" Unicode="false" FixedLength="false" />
-          <Property Name="ParameterValue" Type="String" Nullable="false" MaxLength="256" Unicode="false" FixedLength="false" />
-        </EntityType>
         <EntityType Name="AppConfigSetting">
           <Key>
             <PropertyRef Name="ConfigSetName" />
@@ -677,10 +661,6 @@
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2008/09/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="B1SampleModelStoreContainer" CdmEntityContainer="SampleDbEntities">
-          <EntitySetMapping Name="AppConfigParameters"><EntityTypeMapping TypeName="B1SampleModel.AppConfigParameter"><MappingFragment StoreEntitySet="AppConfigParameters">
-            <ScalarProperty Name="ParameterName" ColumnName="ParameterName" />
-            <ScalarProperty Name="ParameterValue" ColumnName="ParameterValue" />
-          </MappingFragment></EntityTypeMapping></EntitySetMapping>
           <EntitySetMapping Name="AppConfigSettings"><EntityTypeMapping TypeName="B1SampleModel.AppConfigSetting"><MappingFragment StoreEntitySet="AppConfigSettings">
             <ScalarProperty Name="ConfigSetName" ColumnName="ConfigSetName" />
             <ScalarProperty Name="ConfigKey" ColumnName="ConfigKey" />
@@ -845,7 +825,6 @@
     <!-- Diagram content (shape and connector positions) -->
     <Diagrams>
       <Diagram Name="SampleDb">
-        <EntityTypeShape EntityType="B1SampleModel.AppConfigParameter" Width="1.5" PointX="0.75" PointY="0.75" Height="1.2636116536458335" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.AppConfigSetting" Width="1.5" PointX="7.75" PointY="0.75" Height="1.5923063151041674" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.TestSequence" Width="1.5" PointX="9.75" PointY="0.75" Height="2.2496956380208335" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UIControl" Width="1.5" PointX="5.25" PointY="4.75" Height="2.0853483072916674" IsExpanded="true" />

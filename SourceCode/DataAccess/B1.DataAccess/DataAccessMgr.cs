@@ -1335,6 +1335,38 @@ namespace B1.DataAccess
                     , new Dictionary<PropertyInfo, object>());
         }
 
+
+        public DbCommand BuildDeleteDbCommand(ObjectContext entityContext
+            , object deleteObject)
+        {
+            ObjectParser updateParser = new ObjectParser(entityContext, deleteObject, this);
+
+            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
+
+            Tuple<string, List<DbPredicateParameter>> deleteSqlandParams
+                    = updateParser.GeDeleteSqlAndParams(entityContext, deleteObject);
+
+            foreach (DbPredicateParameter param in deleteSqlandParams.Item2)
+            {
+                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
+                        updateParser.QualifiedTable.EntityName,
+                        param.ColumnName);
+
+                AddNewParameterToCollection(dbParams
+                    , param.ParameterName
+                    , column.DataTypeGenericDb
+                    , column.DataTypeNativeDb
+                    , column.MaxLength
+                    , ParameterDirection.Input
+                    , param.Value);
+            }
+
+            // return the new dbCommand
+            DbCommand cmdDelete = BuildNonQueryDbCommand(deleteSqlandParams.Item1, dbParams);
+            cmdDelete.Site = new ParameterSite(deleteSqlandParams.Item2);
+            return cmdDelete;
+        }
+
         private string BuildCaseStatementsForSelect(DbTableDmlMgr dmlSelect)
         {
             if(dmlSelect.CaseColumns.Count == 0)
@@ -3635,6 +3667,40 @@ namespace B1.DataAccess
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmdInsert);
         }
 
+        /// <summary>
+        /// Deletes the entity from the database, and removes the object from the context. 
+        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
+        /// value of the deleteObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
+        /// to the properties of the deleteObject instance.
+        /// </summary>
+        /// <param name="entityContext">Context to remove object from</param>
+        /// <param name="deleteObject">Object to remove from context</param>
+        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
+        /// <param name="dbCmdIn">Optional. See summary.</param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> DeleteEntity(ObjectContext entityContext, object deleteObject,
+                DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
+        {
+            DbCommand dbCmd = null;
+
+            if (dbCmdIn != null)
+            {
+                dbCmd = dbCmdIn;
+                // if the command is not new, then we need to bind the command's parameters
+                // to the new object
+                ObjectParser.RemapDbCommandParameters(dbCmd, deleteObject);
+            }
+            else
+            {
+                dbCmd = BuildDeleteDbCommand(entityContext, deleteObject);
+                ObjectParser entity = new ObjectParser(entityContext, deleteObject, this);
+            }
+
+            ExecuteNonQuery(dbCmd, dbTransaction, null);
+            entityContext.Detach(deleteObject);
+
+            return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
+        }
 
         
         /// <summary>
