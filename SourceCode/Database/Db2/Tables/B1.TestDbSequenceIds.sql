@@ -1,0 +1,22 @@
+--#SET TERMINATOR /
+--
+-- This table is used for testing and demoing the functionality
+-- of the DataAccessMgr class and the UniqueIds table and stored procedure.
+--  
+CREATE TABLE B1.TESTDBSEQUENCEIDS  (
+		  DBSEQUENCEID BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (  
+		    START WITH +1  
+		    INCREMENT BY +1  
+		    MINVALUE +1  
+		    MAXVALUE +9223372036854775807  
+		    NO CYCLE  
+		    NO CACHE  
+		    NO ORDER ) , 
+		  REMARKS VARCHAR(100),
+		  CONSTRAINT PK_TestDbSequenceIds_DBSEQUENCEID PRIMARY KEY(DBSEQUENCEID)
+) in B1Core index in B1CoreIdx
+/
+GRANT REFERENCES ON B1.TESTDBSEQUENCEIDS TO PUBLIC
+/
+GRANT ALL ON B1.TESTDBSEQUENCEIDS TO PUBLIC 
+/

@@ -363,7 +363,6 @@ namespace B1.DataAccess
         {
             Int16 i;
             Int16 columnIndex;
-            DbIndexColumnStructure indexColumn;
             Expression expr;
             Expression exprAnd;
             Expression exprWhere = null;
@@ -380,13 +379,9 @@ namespace B1.DataAccess
 
                 if (pagingDbCmd == PagingDbCmdEnum.First
                         || pagingDbCmd == PagingDbCmdEnum.Next)
-                    indexColumn = _daMgr.BuildIndexColumnAscending( column );
+                    dbTableDml.AddOrderByColumnAscending(column);
                 else
-                    indexColumn = _daMgr.BuildIndexColumnDescending( column );
-
-                dbTableDml.OrderByColumns.Add( columnIndex,
-                        new DbQualifiedObject<DbIndexColumnStructure>( dbTableDml.MainTable.SchemaName,
-                            dbTableDml.MainTable.TableName, indexColumn ) );
+                    dbTableDml.AddOrderByColumnDescending(column);
 
                 if (pagingDbCmd == PagingDbCmdEnum.Next || pagingDbCmd == PagingDbCmdEnum.Previous)
                 {

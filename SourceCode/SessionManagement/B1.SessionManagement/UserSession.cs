@@ -131,8 +131,8 @@ namespace B1.SessionManagement
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.AccessControlGroups);
-            string joinTable = dmlSelectMgr.AddJoin(Constants.AccessControlGroupRules
-                    , DataAccess.Constants.SCHEMA_CORE
+            string joinTable = dmlSelectMgr.AddJoin(DataAccess.Constants.SCHEMA_CORE
+                    , Constants.AccessControlGroupRules
                     , DbTableJoinType.Inner
                     , j => j.Column(Constants.AccessControlGroupCode)
                         == dmlSelectMgr.Column(Constants.AccessControlGroupCode)

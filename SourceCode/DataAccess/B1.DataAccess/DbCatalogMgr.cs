@@ -500,16 +500,17 @@ namespace B1.DataAccess
             {
                 case DataAccessMgr.EnumDbType.SqlServer:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Tables
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.Tables
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Name, Constants.TableName));
 
-                        joinSelect.AddJoin(Constants.Schemas, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Schemas, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Schemas, Constants.Schema_Id)
                                     == j.Column(Constants.Tables, Constants.Schema_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.SchemaName));
 
-                        joinSelect.AddJoin(Constants.Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Sys, Constants.Columns, Constants.Object_Id)
                                     == j.Column(Constants.Sys, Constants.Tables, Constants.Object_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.ColumnName)
@@ -518,7 +519,7 @@ namespace B1.DataAccess
                                     , joinSelect.ColumnsAs(Constants.Is_Computed, Constants.IsComputed)
                                     , joinSelect.ColumnsAs(Constants.Is_Identity, Constants.IsIdentity));
 
-                        string tAlias = joinSelect.AddJoin(Constants.Columns, Constants.Information_Schema, DbTableJoinType.Inner,
+                        string tAlias = joinSelect.AddJoin(Constants.Information_Schema, Constants.Columns, DbTableJoinType.Inner,
                                 (j) => j.Column(Constants.Information_Schema, Constants.Columns, Constants.Table_Schema)
                                     == j.Column(Constants.Sys, Constants.Schemas, Constants.Name)
                                 && j.Column(Constants.Information_Schema, Constants.Columns, Constants.Table_Name)
@@ -563,8 +564,9 @@ namespace B1.DataAccess
                     }
                  case DataAccessMgr.EnumDbType.Oracle:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.All_Tab_Columns
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.All_Tab_Columns
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Owner, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Data_Type, Constants.DataType)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Data_Default, Constants.ColumnDefault)
@@ -613,8 +615,9 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.Db2:
                     {
                         // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Columns
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.SysIbm
+                                , Constants.Columns
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Table_Name, Constants.TableName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Column_Name, Constants.ColumnName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Ordinal_Position, Constants.OrdinalPosition)
@@ -630,7 +633,7 @@ namespace B1.DataAccess
                                 , new DbConstValue(DbTableDmlMgr.SelectColumnsAs("0", Constants.IsRowGuidCol))
                                 , new DbConstValue(DbTableDmlMgr.SelectColumnsAs("0", Constants.IsComputed)));
 
-                        string tAlias = joinSelect.AddJoin(Constants.SQLColumns, Constants.SysIbm, DbTableJoinType.Inner
+                        string tAlias = joinSelect.AddJoin(Constants.SysIbm, Constants.SQLColumns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.SQLColumns, Constants.Column_Name)
                                     == j.Column(Constants.Columns, Constants.Column_Name)
                                     && j.Column(Constants.SQLColumns, Constants.Table_Name)
@@ -641,7 +644,7 @@ namespace B1.DataAccess
                                         , joinSelect.ColumnsAs(Constants.Type_Name, Constants.DataType)
                                         , joinSelect.ColumnsAs(Constants.Nullable, Constants.IsNullable));
 
-                        joinSelect.AddCaseColumn("2", Constants.IsIdentity,
+                        joinSelect.AddCaseColumn("0", Constants.IsIdentity,
                                 joinSelect.When(t => t.AliasedColumn(tAlias, Constants.Pseudo_Column) == 2, "1"));
 
                         joinSelect.SetWhereCondition((j) =>
@@ -688,11 +691,12 @@ namespace B1.DataAccess
             {
                 case DataAccessMgr.EnumDbType.SqlServer:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Name, Constants.PrimaryKeyName));
 
-                        joinSelect.AddJoin(Constants.Index_Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Index_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Index_Columns, Constants.Object_Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Index_Columns, Constants.Index_Id)
@@ -702,21 +706,21 @@ namespace B1.DataAccess
                                     , joinSelect.ColumnsAs(Constants.Is_Descending_Key, Constants.IsDescend)
                                     , joinSelect.ColumnsAs(Constants.Key_Ordinal, Constants.Ordinal));
 
-                        string c = joinSelect.AddJoin(Constants.SysColumns, Constants.Sys, DbTableJoinType.Inner
+                        string c = joinSelect.AddJoin(Constants.Sys, Constants.SysColumns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.SysColumns, Constants.Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Index_Columns, Constants.Column_Id)
                                     == j.Column(Constants.SysColumns, Constants.ColId)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.ColumnName));
 
-                        string t = joinSelect.AddJoin(Constants.Objects, Constants.Sys, DbTableJoinType.Inner
+                        string t = joinSelect.AddJoin(Constants.Sys, Constants.Objects, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Objects, Constants.Object_Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Objects, Constants.Type)
                                     == "U"
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.TableName));
 
-                        string s = joinSelect.AddJoin(Constants.Schemas, Constants.Sys, DbTableJoinType.Inner
+                        string s = joinSelect.AddJoin(Constants.Sys, Constants.Schemas, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Objects, Constants.Schema_Id)
                                     == j.Column(Constants.Schemas, Constants.Schema_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.SchemaName));
@@ -758,12 +762,13 @@ namespace B1.DataAccess
                     }
                 case DataAccessMgr.EnumDbType.Oracle:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.All_Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.All_Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Owner, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Index_Name, Constants.PrimaryKeyName));
 
-                        joinSelect.AddJoin(Constants.All_Ind_Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Ind_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.All_Indexes, Constants.Owner)
                                     == j.Column(Constants.All_Ind_Columns, Constants.Index_Owner)
                                     && j.Column(Constants.All_Indexes, Constants.Index_Name)
@@ -775,7 +780,7 @@ namespace B1.DataAccess
                         joinSelect.AddCaseColumn("0", Constants.IsDescend,
                                 joinSelect.When(t => t.Column(Constants.All_Ind_Columns, Constants.Descend) == "DESC", "1"));
 
-                        joinSelect.AddJoin(Constants.All_Constraints, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Constraints, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.All_Indexes, Constants.Owner)
                                     == j.Column(Constants.All_Constraints, Constants.Owner)
                                     && j.Column(Constants.All_Indexes, Constants.Index_Name)
@@ -818,13 +823,14 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.Db2:
                     {
                          // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.SysCat
+                                , Constants.Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.IndSchema, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.TabName, Constants.TableName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.IndName, Constants.PrimaryKeyName));
 
-                        string tAlias = joinSelect.AddJoin(Constants.IndexColUse, Constants.SysCat, DbTableJoinType.Inner
+                        string tAlias = joinSelect.AddJoin(Constants.SysCat, Constants.IndexColUse, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Indexes, Constants.IndSchema)
                                     == j.Column(Constants.IndexColUse, Constants.IndSchema)
                                     && j.Column(Constants.Indexes, Constants.IndName)
@@ -885,15 +891,16 @@ namespace B1.DataAccess
             {
                 case DataAccessMgr.EnumDbType.SqlServer:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Name, Constants.IndexName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Is_Unique, Constants.IsUnique)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Is_Primary_Key, Constants.IsPrimaryKey)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Type_Desc, Constants.TypeDescription)
                                 , new DbConstValue(DbTableDmlMgr.SelectColumnsAs("null", Constants.ColumnFunction)));
 
-                        joinSelect.AddJoin(Constants.Index_Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Index_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Index_Columns, Constants.Object_Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Index_Columns, Constants.Index_Id)
@@ -901,21 +908,21 @@ namespace B1.DataAccess
                                     , joinSelect.ColumnsAs(Constants.Is_Descending_Key, Constants.IsDescend)
                                     , joinSelect.ColumnsAs(Constants.Key_Ordinal, Constants.Ordinal));
 
-                        string c = joinSelect.AddJoin(Constants.SysColumns, Constants.Sys, DbTableJoinType.Inner
+                        string c = joinSelect.AddJoin(Constants.Sys, Constants.SysColumns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.SysColumns, Constants.Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Index_Columns, Constants.Column_Id)
                                     == j.Column(Constants.SysColumns, Constants.ColId)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.ColumnName));
 
-                        string t = joinSelect.AddJoin(Constants.Objects, Constants.Sys, DbTableJoinType.Inner
+                        string t = joinSelect.AddJoin(Constants.Sys, Constants.Objects, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Objects, Constants.Object_Id)
                                     == j.Column(Constants.Indexes, Constants.Object_Id)
                                     && j.Column(Constants.Objects, Constants.Type)
                                     == "U"
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.TableName));
 
-                        string s = joinSelect.AddJoin(Constants.Schemas, Constants.Sys, DbTableJoinType.Inner
+                        string s = joinSelect.AddJoin(Constants.Sys, Constants.Schemas, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Objects, Constants.Schema_Id)
                                     == j.Column(Constants.Schemas, Constants.Schema_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.SchemaName));
@@ -957,8 +964,9 @@ namespace B1.DataAccess
                     }
                 case DataAccessMgr.EnumDbType.Oracle:
                     {
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.All_Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.Sys
+                                , Constants.All_Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Owner, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.Index_Name, Constants.IndexName));
 
@@ -966,7 +974,7 @@ namespace B1.DataAccess
                                 joinSelect.When(t => t.AliasedColumn(joinSelect.MainTable.TableAlias
                                         , Constants.Uniqueness) == "UNIQUE", "1"));
 
-                        joinSelect.AddJoin(Constants.All_Ind_Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Ind_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.All_Indexes, Constants.Owner)
                                     == j.Column(Constants.All_Ind_Columns, Constants.Index_Owner)
                                     && j.Column(Constants.All_Indexes, Constants.Index_Name)
@@ -978,7 +986,7 @@ namespace B1.DataAccess
                         joinSelect.AddCaseColumn("0", Constants.IsDescend,
                                 joinSelect.When(t => t.Column(Constants.All_Ind_Columns, Constants.Descend) == "DESC", "1"));
 
-                        joinSelect.AddJoin(Constants.All_Ind_Expressions, Constants.Sys, DbTableJoinType.LeftOuter
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Ind_Expressions, DbTableJoinType.LeftOuter
                                 , (j) => j.Column(Constants.All_Indexes, Constants.Owner)
                                     == j.Column(Constants.All_Ind_Expressions, Constants.Index_Owner)
                                     && j.Column(Constants.All_Indexes, Constants.Index_Name)
@@ -987,7 +995,7 @@ namespace B1.DataAccess
                                     == j.Column(Constants.All_Ind_Expressions, Constants.Column_Position)
                                     , joinSelect.ColumnsAs(Constants.Column_Expression, Constants.ColumnFunction));
 
-                        joinSelect.AddJoin(Constants.All_Constraints, Constants.Sys, DbTableJoinType.LeftOuter
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Constraints, DbTableJoinType.LeftOuter
                                 , (j) => j.Column(Constants.All_Indexes, Constants.Owner)
                                     == j.Column(Constants.All_Constraints, Constants.Owner)
                                     && j.Column(Constants.All_Indexes, Constants.Index_Name)
@@ -1028,8 +1036,9 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.Db2:
                     {
                          // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Indexes
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.SysCat
+                                , Constants.Indexes
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.IndSchema, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.TabName, Constants.TableName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.IndName, Constants.IndexName)
@@ -1046,7 +1055,7 @@ namespace B1.DataAccess
                                 joinSelect.When(t => t.AliasedColumn(joinSelect.MainTable.TableAlias
                                         , Constants.UniqueRule) == "P", "1"));
 
-                        string tAlias = joinSelect.AddJoin(Constants.IndexColUse, Constants.SysCat, DbTableJoinType.Inner
+                        string tAlias = joinSelect.AddJoin(Constants.SysCat, Constants.IndexColUse, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Indexes, Constants.IndSchema)
                                     == j.Column(Constants.IndexColUse, Constants.IndSchema)
                                     && j.Column(Constants.Indexes, Constants.IndName)
@@ -1107,49 +1116,50 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.SqlServer:
                     {
                         // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.Tables
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                     , Constants.Sys
+                                    , Constants.Tables
                                     , DbTableDmlMgr.SelectColumnsAs(Constants.Name, Constants.TableName));
 
-                        joinSelect.AddJoin(Constants.Schemas, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Schemas, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Schemas, Constants.Schema_Id)
                                     == j.Column(Constants.Tables, Constants.Schema_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.SchemaName));
 
-                        joinSelect.AddJoin(Constants.Foreign_Keys, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Foreign_Keys, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Foreign_Keys, Constants.Parent_Object_Id)
                                     == j.Column(Constants.Tables, Constants.Object_Id)
                                     , DbTableDmlMgr.SelectColumnsAs(Constants.Name, Constants.ForeignKey));
 
-                        string fkc = joinSelect.AddJoin(Constants.Foreign_Key_Columns, Constants.Sys, DbTableJoinType.Inner
+                        string fkc = joinSelect.AddJoin(Constants.Sys, Constants.Foreign_Key_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Foreign_Key_Columns, Constants.Constraint_Object_Id)
                                     == j.Column(Constants.Foreign_Keys, Constants.Object_Id));
 
-                        joinSelect.AddJoin(Constants.Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Columns, Constants.Object_Id)
                                     == j.Column(Constants.Tables, Constants.Object_Id)
                                     && j.Column(Constants.Foreign_Key_Columns, Constants.Parent_Column_Id)
                                     == j.Column(Constants.Columns, Constants.Column_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.ColumnName));
 
-                        string refT = joinSelect.AddJoin(Constants.Tables, Constants.Sys, DbTableJoinType.Inner
+                        string refT = joinSelect.AddJoin(Constants.Sys, Constants.Tables, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Foreign_Keys, Constants.Referenced_Object_Id)
                                     == j.Column(Constants.Tables, Constants.Object_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.RefTable));
 
-                        joinSelect.AddJoin(Constants.Schemas, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Schemas, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Schemas, Constants.Schema_Id)
                                     == j.AliasedColumn(refT, Constants.Schema_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.RefSchema));
 
-                        joinSelect.AddJoin(Constants.Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Columns, Constants.Object_Id)
                                     == j.Column(Constants.Foreign_Keys, Constants.Referenced_Object_Id)
                                     && j.AliasedColumn(fkc, Constants.Referenced_Column_Id)
                                     == j.Column(Constants.Columns, Constants.Column_Id)
                                     , joinSelect.ColumnsAs(Constants.Name, Constants.ColumnName));
 
-                        joinSelect.AddJoin(Constants.Key_Column_Usage, Constants.Information_Schema, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Information_Schema, Constants.Key_Column_Usage, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.Key_Column_Usage, Constants.Table_Schema)
                                     == j.Column(Constants.Schemas, Constants.Name)
                                     && j.Column(Constants.Key_Column_Usage, Constants.Column_Name)
@@ -1193,13 +1203,14 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.Oracle:
                     {
                         // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.All_Constraints
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                     , Constants.Sys
+                                    , Constants.All_Constraints
                                     , DbTableDmlMgr.SelectColumnsAs(Constants.Owner, Constants.SchemaName)
                                     , DbTableDmlMgr.SelectColumnsAs(Constants.Table_Name, Constants.TableName)
                                     , DbTableDmlMgr.SelectColumnsAs(Constants.Constraint_Name, Constants.ForeignKey));
 
-                        string cc = joinSelect.AddJoin(Constants.All_Cons_Columns, Constants.Sys, DbTableJoinType.Inner
+                        string cc = joinSelect.AddJoin(Constants.Sys, Constants.All_Cons_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.All_Cons_Columns, Constants.Constraint_Name)
                                     == j.Column(Constants.All_Constraints, Constants.Constraint_Name)
                                     && j.Column(Constants.All_Cons_Columns, Constants.Owner)
@@ -1209,7 +1220,7 @@ namespace B1.DataAccess
                                     , joinSelect.ColumnsAs(Constants.Column_Name, Constants.ColumnName)
                                     , joinSelect.ColumnsAs(Constants.Position, Constants.Ordinal));
 
-                        joinSelect.AddJoin(Constants.All_Cons_Columns, Constants.Sys, DbTableJoinType.Inner
+                        joinSelect.AddJoin(Constants.Sys, Constants.All_Cons_Columns, DbTableJoinType.Inner
                                 , (j) => j.Column(Constants.All_Cons_Columns, Constants.Constraint_Name)
                                     == j.Column(Constants.All_Constraints, Constants.R_Constraint_Name)
                                     && j.Column(Constants.All_Cons_Columns, Constants.Owner)
@@ -1255,8 +1266,9 @@ namespace B1.DataAccess
                 case DataAccessMgr.EnumDbType.Db2:
                     {
                         // base table
-                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(Constants.SQLForeignKeys
+                        DbTableDmlMgr joinSelect = new DbTableDmlMgr(_daMgr
                                 , Constants.SysIbm
+                                , Constants.SQLForeignKeys
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.FKTable_Schem, Constants.SchemaName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.FKTable_Name, Constants.TableName)
                                 , DbTableDmlMgr.SelectColumnsAs(Constants.FK_Name, Constants.ForeignKey)

@@ -682,7 +682,7 @@ namespace B1.Utility.DatabaseSetup
     
             // INNER JOIN B1.TestSequence T2 ON T1.AppSequenceId <> T2.AppSequenceId 
             // AND T1.AppSequenceName = T2.AppSequenceName 
-            string t2Alias = dmlJoin.AddJoin(DataAccess.Constants.TABLE_TestSequence, DataAccess.Constants.SCHEMA_CORE, 
+            string t2Alias = dmlJoin.AddJoin(DataAccess.Constants.SCHEMA_CORE, DataAccess.Constants.TABLE_TestSequence, 
                     DbTableJoinType.Inner,
                     t => t.Column(DataAccess.Constants.SCHEMA_CORE,
                         DataAccess.Constants.TABLE_TestSequence, Constants.AppSequenceId) != 

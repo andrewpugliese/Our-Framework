@@ -204,8 +204,8 @@ namespace B1.SessionManagement
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.AppSessions);
-            string joinTable = dmlSelectMgr.AddJoin(Constants.SignonControl
-                    , DataAccess.Constants.SCHEMA_CORE
+            string joinTable = dmlSelectMgr.AddJoin(DataAccess.Constants.SCHEMA_CORE
+                    , Constants.SignonControl
                     , DbTableJoinType.Cross, null);
             string dateAdd = daMgr.FormatDateMathSql(EnumDateDiffInterval.Second
                     , dmlSelectMgr.AliasedColumn(joinTable, Constants.StatusSeconds),
@@ -219,7 +219,8 @@ namespace B1.SessionManagement
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.AppSessions);
-            string joinTable = dmlSelectMgr.AddJoin(Constants.SignonControl, DataAccess.Constants.SCHEMA_CORE
+            string joinTable = dmlSelectMgr.AddJoin(DataAccess.Constants.SCHEMA_CORE
+                    , Constants.SignonControl    
                     , DbTableJoinType.Cross, null);
             string dateAdd = daMgr.FormatDateMathSql(EnumDateDiffInterval.Second
                     , dmlSelectMgr.AliasedColumn(joinTable, Constants.StatusSeconds),
@@ -233,8 +234,8 @@ namespace B1.SessionManagement
         {
             DbTableDmlMgr dmlDeleteMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.AppSessions);
-            string joinTable = dmlDeleteMgr.AddJoin(Constants.SignonControl
-                    , DataAccess.Constants.SCHEMA_CORE, DbTableJoinType.Cross, null);
+            string joinTable = dmlDeleteMgr.AddJoin(DataAccess.Constants.SCHEMA_CORE
+                    , Constants.SignonControl, DbTableJoinType.Cross, null);
             string dateAdd = daMgr.FormatDateMathSql(EnumDateDiffInterval.Second
                     , dmlDeleteMgr.AliasedColumn(joinTable, Constants.StatusSeconds),
                 dmlDeleteMgr.Column(Constants.StatusDateTime));
