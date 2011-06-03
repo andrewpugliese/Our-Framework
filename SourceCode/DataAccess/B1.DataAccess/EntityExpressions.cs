@@ -1816,6 +1816,7 @@ namespace B1.DataAccess
                 param.MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(obj)
                             , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
+                param.Value = property.GetValue(obj, null);
             }
         }
 
