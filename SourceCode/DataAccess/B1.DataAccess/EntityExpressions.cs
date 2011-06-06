@@ -1824,6 +1824,9 @@ namespace B1.DataAccess
                             , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
 
                 dbCmd.Parameters[param.ParameterName].Value = param.MemberAccess.DynamicInvoke();
+
+                param.Value = dbCmd.Parameters[param.ParameterName].Value;
+
             }
         }
 
