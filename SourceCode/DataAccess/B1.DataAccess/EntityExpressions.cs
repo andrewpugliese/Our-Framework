@@ -1615,6 +1615,9 @@ namespace B1.DataAccess
                     string value = null;
                     if (!propertyDbFunctions.ContainsKey(prop.Name))
                     {
+                        Delegate memberAccess = Expression.Lambda(
+                                Expression.Property(Expression.Constant(_objRef), prop)).Compile();
+
                         DbPredicateParameter param = new DbPredicateParameter()
                         {
                             ColumnName = columnName,
@@ -1622,8 +1625,8 @@ namespace B1.DataAccess
                             SchemaName = _qualifiedTable.SchemaName,
                             ParameterName = LinqTableMgr.BuildParamName(prop.Name, parameters, _daMgr),
                             MemberPropertyName = prop.Name,
-                            MemberAccess = Expression.Lambda(
-                                Expression.Property(Expression.Constant(_objRef), prop)).Compile()
+                            MemberAccess = memberAccess,
+                            Value = memberAccess.DynamicInvoke()
                         };
 
                         parameters.Add(param);
@@ -1687,6 +1690,10 @@ namespace B1.DataAccess
                 object value = null;
                 if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(_entityType.GetProperty(propName)))
                 {
+                    Delegate memberAccess = Expression.Lambda(
+                            Expression.Property(Expression.Constant(_objRef)
+                            , _entityType.GetProperty(propName))).Compile();
+
                     DbPredicateParameter param = new DbPredicateParameter()
                     {
                         ColumnName = columnName,
@@ -1697,9 +1704,8 @@ namespace B1.DataAccess
                                 , _daMgr
                                 , ose.EntityKey.EntityKeyValues.Where( j => j.Key == propName).Count() > 0 ? true : false),
                         MemberPropertyName = propName,
-                        MemberAccess = Expression.Lambda(
-                            Expression.Property(Expression.Constant(_objRef)
-                            , _entityType.GetProperty(propName))).Compile()
+                        MemberAccess = memberAccess,
+                        Value = memberAccess.DynamicInvoke()
                     };
 
                     value = _daMgr.BuildBindVariableName(param.ParameterName);
@@ -1816,6 +1822,8 @@ namespace B1.DataAccess
                 param.MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(obj)
                             , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
+
+                dbCmd.Parameters[param.ParameterName].Value = param.MemberAccess.DynamicInvoke();
             }
         }
 

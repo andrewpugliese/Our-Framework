@@ -1244,8 +1244,9 @@ namespace B1.DataAccess
         /// <param name="entityContext"></param>
         /// <param name="insertObject"></param>
         /// <param name="propertyDbFunctions"></param>
+        /// <param name="getRowId"></param>
         /// <returns></returns>
-        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext
             , object insertObject
             , Dictionary<string, object> propertyDbFunctions, bool getRowId = false)
         {
@@ -1267,7 +1268,7 @@ namespace B1.DataAccess
                     , column.DataTypeNativeDb
                     , column.MaxLength
                     , ParameterDirection.Input
-                    , DBNull.Value);
+                    , param.Value);
             }
 
             string insertSql = insertSqlAndParams.Item1;
@@ -1286,10 +1287,10 @@ namespace B1.DataAccess
 
             dbCmd.Site = new ParameterSite(insertSqlAndParams.Item2);
 
-            return new Tuple<DbCommand,QualifiedEntity>(dbCmd, insertParser.QualifiedTable);
+            return dbCmd;
         }
 
-        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext, object insertObject, bool getRowId)
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject, bool getRowId)
         {
             return BuildInsertDbCommand(entityContext
                     , insertObject
@@ -1799,8 +1800,8 @@ namespace B1.DataAccess
 
             foreach (DbPredicateParameter parameter in parameters)
             {
-                if(parameter.Paramater != null)
-                    dbParams.Add(parameter.Paramater);
+                if(parameter.Parameter != null)
+                    dbParams.Add(parameter.Parameter);
                 else if(parameter.ColumnName != null && parameter.TableName != null)
                 {
                     DbColumnStructure column = DbCatalogGetColumn(parameter.SchemaName
@@ -3573,10 +3574,8 @@ namespace B1.DataAccess
 
                 bool getRowId = DatabaseType == EnumDbType.Oracle && bGetRowFromId;
 
-                Tuple<DbCommand, QualifiedEntity> insertResult = BuildInsertDbCommand(entityContext, insertObject,
+                dbCmdInsert = BuildInsertDbCommand(entityContext, insertObject,
                     propertyDbFunctions, getRowId);
-
-                dbCmdInsert = insertResult.Item1;
 
                 // If we already have all the data, and there is nothing to select, skip select creation.
                 if(selectColumns.Count > 0)

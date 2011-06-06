@@ -217,13 +217,14 @@
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnTestLINQQueries = new System.Windows.Forms.Button();
             this.btnTestDelete = new System.Windows.Forms.Button();
             this.btnTestEFInsert = new System.Windows.Forms.Button();
             this.btnTestEFUpdate = new System.Windows.Forms.Button();
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnTestLINQQueries = new System.Windows.Forms.Button();
+            this.btnTestCompound = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -2409,6 +2410,7 @@
             // 
             // tabTestEF
             // 
+            this.tabTestEF.Controls.Add(this.btnTestCompound);
             this.tabTestEF.Controls.Add(this.btnTestLINQQueries);
             this.tabTestEF.Controls.Add(this.btnTestDelete);
             this.tabTestEF.Controls.Add(this.btnTestEFInsert);
@@ -2419,6 +2421,17 @@
             this.tabTestEF.TabIndex = 8;
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnTestLINQQueries
+            // 
+            this.btnTestLINQQueries.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestLINQQueries.Location = new System.Drawing.Point(39, 162);
+            this.btnTestLINQQueries.Name = "btnTestLINQQueries";
+            this.btnTestLINQQueries.Size = new System.Drawing.Size(124, 24);
+            this.btnTestLINQQueries.TabIndex = 14;
+            this.btnTestLINQQueries.Text = "Test LINQ Queries";
+            this.btnTestLINQQueries.UseVisualStyleBackColor = true;
+            this.btnTestLINQQueries.Click += new System.EventHandler(this.btnTestLINQQueries_Click);
             // 
             // btnTestDelete
             // 
@@ -2468,16 +2481,16 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnTestLINQQueries
+            // btnTestCompound
             // 
-            this.btnTestLINQQueries.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnTestLINQQueries.Location = new System.Drawing.Point(39, 162);
-            this.btnTestLINQQueries.Name = "btnTestLINQQueries";
-            this.btnTestLINQQueries.Size = new System.Drawing.Size(124, 24);
-            this.btnTestLINQQueries.TabIndex = 14;
-            this.btnTestLINQQueries.Text = "Test LINQ Queries";
-            this.btnTestLINQQueries.UseVisualStyleBackColor = true;
-            this.btnTestLINQQueries.Click += new System.EventHandler(this.btnTestLINQQueries_Click);
+            this.btnTestCompound.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestCompound.Location = new System.Drawing.Point(39, 209);
+            this.btnTestCompound.Name = "btnTestCompound";
+            this.btnTestCompound.Size = new System.Drawing.Size(163, 24);
+            this.btnTestCompound.TabIndex = 15;
+            this.btnTestCompound.Text = "Test Compound Commands";
+            this.btnTestCompound.UseVisualStyleBackColor = true;
+            this.btnTestCompound.Click += new System.EventHandler(this.btnTestCompound_Click);
             // 
             // DbSetupMgr
             // 
@@ -2717,6 +2730,7 @@
         private System.Windows.Forms.Button btnRefreshRegTaskList;
         private System.Windows.Forms.Button btnTestDelete;
         private System.Windows.Forms.Button btnTestLINQQueries;
+        private System.Windows.Forms.Button btnTestCompound;
     }
 }
 

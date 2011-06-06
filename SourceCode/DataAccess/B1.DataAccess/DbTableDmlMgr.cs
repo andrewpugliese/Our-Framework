@@ -986,7 +986,7 @@ namespace B1.DataAccess
             return new DbPredicateStringParameter(new DbPredicateParameter()
                 {
                     ParameterName = parameter.ParameterName,
-                    Paramater = parameter
+                    Parameter = parameter
                 });
         }
         
@@ -1035,12 +1035,28 @@ namespace B1.DataAccess
         public string ParameterName { get; set; }
         public string TableName { get; set; }
         public string ColumnName { get; set; }
-        public DbParameter Paramater { get; set; }
+        public DbParameter Parameter { get; set; }
         public object Value { get; set; }
 
         // Fields used for member access in Linq and Entity Framework DML;
         public string MemberPropertyName { get; set; }
         public Delegate MemberAccess { get; set; }
+
+        public DbPredicateParameter()
+        {
+        }
+
+        public DbPredicateParameter(DbPredicateParameter param)
+        {
+            SchemaName = param.SchemaName;
+            ParameterName = param.ParameterName;
+            TableName = param.TableName;
+            ColumnName = param.ColumnName;
+            Parameter = param.Parameter;
+            Value = param.Value;
+            MemberPropertyName = param.MemberPropertyName;
+            MemberAccess = param.MemberAccess;
+        }
     }
 
     public class DbPredicateStringParameter : DbPredicateString
@@ -1299,7 +1315,7 @@ namespace B1.DataAccess
                      if(!Parameters.ContainsKey(param.ParameterName))
                         Parameters.Add(param.ParameterName, 
                                 new DbPredicateParameter() 
-                                { ParameterName = param.ParameterName, Paramater = param });
+                                { ParameterName = param.ParameterName, Parameter = param });
                     return daMgr.BuildBindVariableName(((DbParameter)member).ParameterName);
                 }
                 else

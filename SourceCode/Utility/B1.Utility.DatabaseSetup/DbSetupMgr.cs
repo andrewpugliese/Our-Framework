@@ -1967,5 +1967,111 @@ namespace B1.Utility.DatabaseSetup
             }
         }
 
+        /// <summary>
+        /// This method will insert 3 entites, delete 2, and update 1 in one compound command sent to the database.
+        /// The entire command will be one transaction.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnTestCompound_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            //Select top 3 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > 0 orderby a.AppSequenceId select a, 3);
+
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities).ToArray();
+
+            if(sequences.Count() < 3)
+            {
+                MessageBox.Show(
+                    "Not enough records for this test. Insert some more records through the test tab.",
+                    "Not enough records for this test.",
+                    MessageBoxButtons.OK);
+                return;
+
+            }
+
+            // the overloads collection is used for columns that require a database operation and are not known to the EF
+            // for example (getdate()).  So we show example with column DbServerTime
+            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+
+            Int64 appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
+
+            DbFunctionStructure autogenerate = new DbFunctionStructure();
+            if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.SqlServer
+                || _daMgr.DatabaseType == DataAccessMgr.EnumDbType.Db2)
+                autogenerate.AutoGenerate = true; // identity column
+            else
+            { // oracle sequence
+                autogenerate.AutoGenerate = false;
+                autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".DbSequenceId_Seq.nextVal";
+            }
+
+            overloads.Add(Constants.DbSequenceId, autogenerate);
+            Models.TestSequence newSeq1 = new Models.TestSequence()
+            {
+                AppSequenceId = appSequenceId,
+                AppSequenceName = "EF Insert",
+                AppLocalTime = DateTime.Now,
+                AppSynchTime = _daMgr.DbSynchTime,
+                Remarks = "Added by EF compound command"
+            };
+
+            appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
+            Models.TestSequence newSeq2 = new Models.TestSequence()
+            {
+                AppSequenceId = appSequenceId,
+                AppSequenceName = "EF Insert",
+                AppLocalTime = DateTime.Now,
+                AppSynchTime = _daMgr.DbSynchTime,
+                Remarks = "Added by EF compound command"
+            };
+
+            appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
+            Models.TestSequence newSeq3 = new Models.TestSequence()
+            {
+                AppSequenceId = appSequenceId,
+                AppSequenceName = "EF Insert",
+                AppLocalTime = DateTime.Now,
+                AppSynchTime = _daMgr.DbSynchTime,
+                Remarks = "Added by EF compound command"
+            };
+
+            DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
+            DbCommand dbInsertCmd = _daMgr.BuildInsertDbCommand(entities, newSeq1, overloads);
+            DbCommand dbDeleteCmd = _daMgr.BuildDeleteDbCommand(entities, sequences[0]);
+
+            //Start transaction block
+            cmdMgr.TransactionBeginBlock();
+
+            cmdMgr.AddDbCommand(dbInsertCmd);
+
+            cmdMgr.AddDbCommand(dbInsertCmd, newSeq2);
+
+            cmdMgr.AddDbCommand(dbInsertCmd, newSeq3);
+
+            //Delete first entity from select above
+            cmdMgr.AddDbCommand(dbDeleteCmd);
+
+            //Delete second entity from select above
+            cmdMgr.AddDbCommand(dbDeleteCmd, sequences[1]);
+
+            //Update second untity from select above
+            sequences[2].Remarks = "Updated via EF compound command.";
+            cmdMgr.AddDbCommand(_daMgr.BuildUpdateDbCommand(entities, sequences[2]));
+
+            //End transaction
+            cmdMgr.TransactionEndBlock();
+
+            cmdMgr.ExecuteNonQuery();
+        }
+
     }
 }
