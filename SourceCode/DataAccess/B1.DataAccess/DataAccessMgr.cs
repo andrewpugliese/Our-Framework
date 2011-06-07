@@ -3851,7 +3851,8 @@ namespace B1.DataAccess
 
             IDataReader rdr = cmdMgr.ExecuteReader();
 
-            List<object> addedAndChangedEntities = addedEntities.Select( d => d.Entity).Concat(changedEntities.Select( c => c.Entity)).ToList();
+            List<object> addedAndChangedEntities = addedEntities.Select(d => d.Entity).Concat(
+                    changedEntities.Select( c => c.Entity)).ToList();
 
             UpdateEntitiesFromReader(addedAndChangedEntities, rdr);
 
