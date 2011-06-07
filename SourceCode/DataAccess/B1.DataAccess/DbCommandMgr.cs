@@ -659,6 +659,18 @@ namespace B1.DataAccess
         }
 
         /// <summary>
+        /// Adds the given DbCommand and parameters to the current CommandBlock. Remaps the DbCommand for the
+        /// entity object.
+        /// </summary>
+        /// <param name="dbCommand">Given DAAB DbCommand object.</param>
+        /// <param name="entity">Entity instance for this DbCommand</param>
+        public void AddDbCommand(DbCommand dbCommand, object entity)
+        {
+            ObjectParser.RemapDbCommandParameters(dbCommand, entity);
+            AddDbCommand(dbCommand);
+        }
+
+        /// <summary>
         /// Adds the given DbCommand and parameters to the current CommandBlock.
         /// </summary>
         /// <param name="dbCommand">Given DAAB DbCommand object.</param>
@@ -677,25 +689,31 @@ namespace B1.DataAccess
 
             if(dbCommand.Site != null && dbCommand.Site is ParameterSite)
             {
-                List<DbPredicateParameter> newParams = new List<DbPredicateParameter>(
+                List<DbPredicateParameter> oldParams = new List<DbPredicateParameter>(
                             (List<DbPredicateParameter>)dbCommand.Site.GetService(null));
 
-                foreach(DbPredicateParameter param in newParams)
+                List<DbPredicateParameter> copiedParams = new List<DbPredicateParameter>();
+
+                foreach(DbPredicateParameter param in oldParams)
                 {
+                    DbPredicateParameter newParam = new DbPredicateParameter(param);
+
                     if(_paramAliases.ContainsKey(param.ParameterName))
                     {
                         string newName = _paramAliases[param.ParameterName].FirstOrDefault().ParameterName;
 
                         if(newName != null)
-                            param.ParameterName = newName;
+                            newParam.ParameterName = newName;
                     }
+
+                    copiedParams.Add(newParam);
                 }
 
                 if(_dbCommand.Site == null)
-                    _dbCommand.Site = new ParameterSite(newParams);
+                    _dbCommand.Site = new ParameterSite(copiedParams);
                 else if(_dbCommand.Site is ParameterSite)
                 {
-                    ((List<DbPredicateParameter>)dbCommand.Site.GetService(null)).AddRange(newParams);
+                    ((List<DbPredicateParameter>)_dbCommand.Site.GetService(null)).AddRange(copiedParams);
                 }
 
             }
