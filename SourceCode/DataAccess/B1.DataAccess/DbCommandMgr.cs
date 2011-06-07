@@ -136,6 +136,24 @@ namespace B1.DataAccess
             }
         }
 
+        /// <summary>
+        /// Returns a copy of the given DbCommand and parameter collection
+        /// </summary>
+        /// <param name="dbCmd">DbCommand object to copy</param>
+        /// <returns>A copy of the DbCommand object and parameter collection</returns>
+        internal DbCommand Clone(DbCommand dbCmd)
+        {
+            if (_commandCount > 0)
+            {
+                DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
+                return cmdMgr.Clone(dbCmd);
+            }
+            else
+            {
+                AddDbCommand(dbCmd);
+                return _dbCommand;
+            }
+        }
 
         /// <summary>
         /// Returns a  string of the DbCommandBlock expanded so that it can be

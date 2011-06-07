@@ -33,7 +33,8 @@ namespace B1.TaskProcessingEngine
     /// </summary>
     public class TaskProcessEngine : IDisposable
     {
-        public enum EngineStatusEnum { Off = 0, Started = 1, Running = 2, Paused = 3, Stopped = 4};
+        public enum EngineStatusEnum { Off = 0, Started = 1, Running = 2, Paused = 3, Stopped = 4 };
+        enum QueueStatusEnum { NotQueued = 0, Queued = 32, InProcess = 64, Failed = 128, Succeeded = 255 };
         DataAccessMgr _daMgr = null;
         EngineStatusEnum _engineStatus = EngineStatusEnum.Off;
         byte _maxTaskProcesses = 1;
@@ -46,6 +47,8 @@ namespace B1.TaskProcessingEngine
         SignonControl _signonControl = null;
         string _engineId = null;
         string _configId = null;
+        PagingMgr _queuedTasks = null;
+        PagingMgr _queuedTasksNoUsersOnly = null;
 
         CacheMgr<Thread> _taskProcessThreads = 
                 new CacheMgr<Thread>(StringComparer.CurrentCultureIgnoreCase);
@@ -53,6 +56,8 @@ namespace B1.TaskProcessingEngine
                 new CacheMgr<TaskProcess>(StringComparer.CurrentCultureIgnoreCase);
         CacheMgr<Assembly> _taskAssemblies =
                 new CacheMgr<Assembly>(StringComparer.CurrentCultureIgnoreCase);
+        CacheMgr<DbCommand> _engineDbCommands =
+                new CacheMgr<DbCommand>(StringComparer.CurrentCultureIgnoreCase);
 
 
         /// <summary>
@@ -77,6 +82,15 @@ namespace B1.TaskProcessingEngine
             _configId = configId;
             _signonControl = signonControl;
             _engineStatus = EngineStatusEnum.Started;
+        }
+
+        bool NoUsers
+        {
+            get
+            {
+                return _signonControl.SignonControlData.ForceSignoff
+                  && _signonControl.SignonControlData.RestrictSignon;
+            }
         }
 
         /// <summary>
@@ -216,21 +230,13 @@ namespace B1.TaskProcessingEngine
 
         TaskQueueStructure? DequeueTask()
         {
-            TaskQueueStructure tqs = new TaskQueueStructure();
-            tqs.Payload = "Sample Payload";
-            tqs.TaskId = "B1.Test.SampleTasks.SampleTaskRun1Minute";
-            tqs.AssemblyPath = @"C:\B1\Devel\Framework\SourceCode\Test\B1.Test.SampleTasks\bin\Debug";
-            tqs.AssemblyName = "B1.Test.SampleTasks";
-            return tqs;
-            DbCommand dbCmd = _daMgr.DbCmdCacheGetOrAdd(TaskProcessingEngine.Constants.QueuedTaskList
-                    , BuildCmdGetQueuedTasksList);
+            DbCommand dbCmd = _daMgr.CloneDbCommand(_engineDbCommands.Get(Constants.QueuedTaskList + NoUsers.ToString()));
             dbCmd.Parameters[_daMgr.BuildParamName(DataAccess.Constants.PageSize)].Value = 2 * _maxTaskProcesses;
             DataTable queuedTasks = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
             foreach (DataRow queuedTask in queuedTasks.Rows)
             {
                 if (Convert.ToBoolean(queuedTask[Constants.WaitForNoUsers])
-                    && (!_signonControl.SignonControlData.ForceSignoff
-                        || !_signonControl.SignonControlData.RestrictSignon))
+                    && !NoUsers)
                     continue;
                 if (_engineId != queuedTask[Constants.WaitForEngineId].ToString())
                     continue;
@@ -245,11 +251,11 @@ namespace B1.TaskProcessingEngine
                     return newTask.Value;
                 else continue;
             }
+            return null;
         }
 
         TaskQueueStructure? DequeueTask(Int64 taskQueueCode)
         {
-            // move to constructor
             DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
             DbTableDmlMgr dmlUpdate = new DbTableDmlMgr(_daMgr
                     , DataAccess.Constants.SCHEMA_CORE
@@ -257,10 +263,10 @@ namespace B1.TaskProcessingEngine
                     , Constants.StatusCode);
             dmlUpdate.AddColumn(Constants.StatusCode, _daMgr.BuildParamName(Constants.StatusCode));
 
-            DbCommand dbCmd = _daMgr.DbCmdCacheGetOrAdd(TaskProcessingEngine.Constants.QueuedTaskList
-                    , BuildCmdGetQueuedTasksList);
+            DbCommand dbCmd = _engineDbCommands.Get(TaskProcessingEngine.Constants.QueuedTaskList);
             dbCmd.Parameters[_daMgr.BuildParamName(DataAccess.Constants.PageSize)].Value = taskQueueCode;
             DataTable dequeuedTask = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
             if (dequeuedTask != null && dequeuedTask.Rows.Count > 0)
             {
                 TaskQueueStructure newTask = new TaskQueueStructure();
@@ -277,31 +283,35 @@ namespace B1.TaskProcessingEngine
             return false;
         }
 
-        static DbCommand BuildCmdGetQueuedTasksList(DataAccessMgr daMgr)
+        void CacheDbCommands()
         {
-            DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
+            _queuedTasks = BuildCmdGetQueuedTasksList(false);
+            _queuedTasksNoUsersOnly = BuildCmdGetQueuedTasksList(true);
+        }
+
+        PagingMgr BuildCmdGetQueuedTasksList(bool noUsersOnly)
+        {
+            DbTableDmlMgr dmlSelectMgr = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.TaskProcessingQueue
                      , Constants.WaitForDateTime
                      , Constants.WaitForConfigId
                      , Constants.WaitForEngineId
                      , Constants.WaitForTasks
                      , Constants.TaskQueueCode);
+            dmlSelectMgr.SetWhereCondition(w => w.Column(Constants.StatusCode) 
+                    == new DbConstValue(Convert.ToByte(QueueStatusEnum.Queued))
+                    && w.Column(Constants.WaitForDateTime) <= Core.EnumDateTimeLocale.UTC);
+            //if (noUsersOnly)
+            //{
+            //    dmlSelectMgr.AddToWhereCondition(System.Linq.Expressions.ExpressionType.AndAlso
+            //        , 
+            //        }
 
-            Int16 i = 0;
-            dmlSelectMgr.OrderByColumns.Add(i++, new DbQualifiedObject<DbIndexColumnStructure>(
-                    DataAccess.Constants.SCHEMA_CORE
-                    , TaskProcessingEngine.Constants.TaskProcessingQueue
-                    , daMgr.BuildIndexColumnAscending(Constants.StatusCode)));
-            dmlSelectMgr.OrderByColumns.Add(i++, new DbQualifiedObject<DbIndexColumnStructure>(
-                    DataAccess.Constants.SCHEMA_CORE
-                    , TaskProcessingEngine.Constants.TaskProcessingQueue
-                    , daMgr.BuildIndexColumnAscending(Constants.PriorityCode)));
-            dmlSelectMgr.OrderByColumns.Add(i++, new DbQualifiedObject<DbIndexColumnStructure>(
-                    DataAccess.Constants.SCHEMA_CORE
-                    , TaskProcessingEngine.Constants.TaskProcessingQueue
-                    , daMgr.BuildIndexColumnAscending(Constants.WaitForDateTime)));
+            dmlSelectMgr.AddOrderByColumnAscending(Constants.StatusCode);
+            dmlSelectMgr.AddOrderByColumnAscending(Constants.PriorityCode);
+            dmlSelectMgr.AddOrderByColumnAscending(Constants.WaitForDateTime);
 
-            return daMgr.BuildSelectDbCommand(dmlSelectMgr, DataAccess.Constants.PageSize);
+            return new PagingMgr(_daMgr, null, null, null, null, null);
         }
     }
 }

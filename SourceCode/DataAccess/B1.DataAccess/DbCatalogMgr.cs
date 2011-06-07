@@ -491,10 +491,10 @@ namespace B1.DataAccess
         DbCommand GetCatalogColumnsCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             DbParameter paramTableName = _daMgr.CreateParameter(Constants.TableName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             switch (_daMgr.DatabaseType)
             {
@@ -682,10 +682,10 @@ namespace B1.DataAccess
         DbCommand GetCatalogPrimaryKeysCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             DbParameter paramTableName = _daMgr.CreateParameter(Constants.TableName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             switch (_daMgr.DatabaseType)
             {
@@ -882,10 +882,10 @@ namespace B1.DataAccess
         DbCommand GetCatalogIndexesCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             DbParameter paramTableName = _daMgr.CreateParameter(Constants.TableName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             switch (_daMgr.DatabaseType)
             {
@@ -1106,10 +1106,10 @@ namespace B1.DataAccess
         DbCommand GetCatalogForeignKeysCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             DbParameter paramTableName = _daMgr.CreateParameter(Constants.TableName
-                    , DbType.String, null, 0, ParameterDirection.Input, null);
+                    , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
             switch (_daMgr.DatabaseType)
             {

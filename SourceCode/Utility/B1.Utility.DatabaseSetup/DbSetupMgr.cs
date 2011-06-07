@@ -696,9 +696,11 @@ namespace B1.Utility.DatabaseSetup
             dmlJoin.SetWhereCondition( t => t.Column(Constants.AppSequenceId) > 1 && 
                 t.Column(Constants.AppSequenceName) > 'A');
 
+            dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceName);
+            dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceId);
             return new PagingMgr(_daMgr
                     , dmlJoin
-                    , new List<string> { Constants.AppSequenceName, Constants.AppSequenceId }
+            ///        , new List<string> { Constants.AppSequenceName, Constants.AppSequenceId }
                     , DataAccess.Constants.PageSize
                     , Convert.ToInt16(numPageSize.Value)
                     , _lastPagingMgrJoinState);

@@ -22,6 +22,8 @@ namespace B1.IDataAccess
     {
         protected Database _database = null;
         protected string _serverVersion = null;
+        protected Int16 _serverMajorVersion = 0;
+        protected Int16 _serverMinorVersion = 0;
         protected string _dbName = null;
         protected string _version = null;
         protected DataTable _dbFactories = null;
@@ -37,6 +39,9 @@ namespace B1.IDataAccess
             {
                 con.Open();
                 _serverVersion = con.ServerVersion;
+                string[] serverVersion = _serverVersion.Split(new char[] { '.' });
+                _serverMajorVersion = Convert.ToInt16(serverVersion[0]);
+                _serverMinorVersion = Convert.ToInt16(serverVersion[1]);
                 _dbName = con.Database;
             }
             _dbFactories = DbProviderFactories.GetFactoryClasses();
@@ -46,6 +51,16 @@ namespace B1.IDataAccess
         /// Returns the database server version string.
         /// </summary>
         public string ServerVersion { get { return _serverVersion; } }
+
+        /// <summary>
+        /// Returns the database server major version number.
+        /// </summary>
+        public Int16 ServerMajorVersion { get { return _serverMajorVersion; } }
+
+        /// <summary>
+        /// Returns the database server minor version number.
+        /// </summary>
+        public Int16 ServerMinorVersion { get { return _serverMinorVersion; } }
 
         /// <summary>
         /// Returns the database provider dll version string.

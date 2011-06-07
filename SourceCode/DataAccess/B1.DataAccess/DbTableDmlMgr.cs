@@ -356,7 +356,6 @@ namespace B1.DataAccess
                 }
             }
             _daMgr = dmlMgr._daMgr;
-            _orderByColumnOffset = dmlMgr._orderByColumnOffset;
             CaseColumns = dmlMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
             ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
             GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(dmlMgr.GroupByColumns);
@@ -665,7 +664,7 @@ namespace B1.DataAccess
         /// <param name="tableName">Table Name which column belongs to</param>
         /// <param name="columnName">Column to group by</param>
         /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
-        public Int16 AddGroupByColumnAscending(string schemaName, string tableName, string columnName)
+        public Int16 AddGroupByColumn(string schemaName, string tableName, string columnName)
         {
             GroupByColumns.Add(_groupByColumnOffset, new DbQualifiedObject<string>(
                     schemaName
@@ -682,7 +681,7 @@ namespace B1.DataAccess
         /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
         public Int16 AddGroupByColumn(string columnName)
         {
-            return AddGroupByColumnAscending(MainTable.SchemaName, MainTable.TableName, columnName);
+            return AddGroupByColumn(MainTable.SchemaName, MainTable.TableName, columnName);
         }
 
         /// <summary>

@@ -360,6 +360,28 @@ namespace B1.DataAccess
         }
 
         /// <summary>
+        /// Major Version number for the database server.
+        /// </summary>
+        public Int16 DbServerMajorVersion
+        {
+            get
+            {
+                return _dbProviderLib.ServerMajorVersion;
+            }
+        }
+
+        /// <summary>
+        /// Minor Version number for the database server.
+        /// </summary>
+        public Int16 DbServerMinorVersion
+        {
+            get
+            {
+                return _dbProviderLib.ServerMinorVersion;
+            }
+        }
+
+        /// <summary>
         /// Name of the database data access manager refers to.
         /// </summary>
         public string DbName
@@ -461,8 +483,7 @@ namespace B1.DataAccess
         public DbCommand CloneDbCommand(DbCommand dbCmd)
         {
             DbCommandMgr cmdMgr = new DbCommandMgr(this);
-            cmdMgr.AddDbCommand(dbCmd);
-            return cmdMgr.DbCommandBlock;
+            return cmdMgr.Clone(dbCmd);
         }
 
 
@@ -2169,12 +2190,12 @@ namespace B1.DataAccess
         /// </summary>
         /// <param name="procedureName">Fully qualified procedure name</param>
         /// <param name="removeReturnValue">Indicates whether to remove ReturnValue parameter</param>
-        /// <returns>DbParameterCollection of paramters</returns>
-        public DbParameterCollection DiscoverParameters(string procedureName, bool removeReturnValue)
+        /// <returns>DbCommand object with parameters</returns>
+        public DbCommand DiscoverParameters(string procedureName, bool removeReturnValue)
         {
             DbCommand dbCmd = _database.GetStoredProcCommand(procedureName);
             DiscoverParameters(dbCmd, removeReturnValue);
-            return CloneDbCommand(dbCmd).Parameters;
+            return dbCmd;
         }
 
         /// <summary>
