@@ -1868,8 +1868,8 @@ namespace B1.Utility.DatabaseSetup
 
             // the overloads collection is used for columns that require a database operation and are not known to the EF
             // for example (getdate()).  So we show example with column DbServerTime
-            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            Dictionary<PropertyInfo, object> propFunctions = new Dictionary<PropertyInfo, object>();
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbServerTime), _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
 
             Int64 appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
 
@@ -1883,7 +1883,7 @@ namespace B1.Utility.DatabaseSetup
                 autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".DbSequenceId_Seq.nextVal";
             }
 
-            overloads.Add(Constants.DbSequenceId, autogenerate);
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbSequenceId), autogenerate);
 
             Models.TestSequence seq = new Models.TestSequence()
             {
@@ -1894,17 +1894,17 @@ namespace B1.Utility.DatabaseSetup
                 Remarks = "Added by EF Test Insert"
             };
 
-            _daMgr.InsertEntity(entities, seq, overloads, null);
+            _daMgr.InsertEntity(entities, seq, propFunctions, null);
 
-            overloads.Clear();
+            propFunctions.Clear();
             if (_daMgr.DatabaseType == DataAccessMgr.EnumDbType.Oracle)
             {
                 autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".TESTDBSEQUENCEID_SEQ.nextVal";
-                overloads.Add(Constants.DbSequenceId, autogenerate);
+                propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbSequenceId), autogenerate);
             }
 
             _daMgr.InsertEntity(entities, new Models.TestDbSequenceId() { Remarks = "Added by EF Test Insert" },
-                    overloads, null);      
+                    propFunctions, null);      
             
         }
 
@@ -1990,17 +1990,18 @@ namespace B1.Utility.DatabaseSetup
             if(sequences.Count() < 3)
             {
                 MessageBox.Show(
-                    "Not enough records for this test. Insert some more records through the test tab.",
+                    "Not enough records for this test. Insert some more records through the 'Test DataAccessMgr' tab.",
                     "Not enough records for this test.",
                     MessageBoxButtons.OK);
-                return;
 
+                return;
             }
 
             // the overloads collection is used for columns that require a database operation and are not known to the EF
             // for example (getdate()).  So we show example with column DbServerTime
-            Dictionary<string, object> overloads = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            overloads.Add(Constants.DbServerTime, _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
+            Dictionary<PropertyInfo, object> propFunctions = new Dictionary<PropertyInfo, object>();
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbServerTime), 
+                    _daMgr.GetDbTimeAs(EnumDateTimeLocale.UTC, null));
 
             Int64 appSequenceId = _daMgr.GetNextSequenceNumber(Constants.AppSequenceId);
 
@@ -2014,7 +2015,8 @@ namespace B1.Utility.DatabaseSetup
                 autogenerate.FunctionBody = DataAccess.Constants.SCHEMA_CORE + ".DbSequenceId_Seq.nextVal";
             }
 
-            overloads.Add(Constants.DbSequenceId, autogenerate);
+            propFunctions.Add(typeof(Models.TestSequence).GetProperty(Constants.DbSequenceId), autogenerate);
+
             Models.TestSequence newSeq1 = new Models.TestSequence()
             {
                 AppSequenceId = appSequenceId,
@@ -2045,7 +2047,7 @@ namespace B1.Utility.DatabaseSetup
             };
 
             DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
-            DbCommand dbInsertCmd = _daMgr.BuildInsertDbCommand(entities, newSeq1, overloads);
+            DbCommand dbInsertCmd = _daMgr.BuildInsertDbCommand(entities, newSeq1, propFunctions);
             DbCommand dbDeleteCmd = _daMgr.BuildDeleteDbCommand(entities, sequences[0]);
 
             //Start transaction block
@@ -2071,6 +2073,44 @@ namespace B1.Utility.DatabaseSetup
             cmdMgr.TransactionEndBlock();
 
             cmdMgr.ExecuteNonQuery();
+        }
+
+        private void btnSaveContext_Click(object sender, EventArgs e)
+        {
+            if(_daMgr == null)
+                CreateDbMgr();
+
+            Models.SampleDbEntities entities = new Models.SampleDbEntities();
+
+            //Select top 3 entities ordered by appsequenceid
+            // build a select dbCommand based upon the LINQ statement
+            DbCommand cmdSelect = _daMgr.BuildSelectDbCommand(
+                    from a in entities.TestSequences where a.AppSequenceId > 0 orderby a.AppSequenceId select a, 3);
+
+            var sequences = _daMgr.ExecuteContext<Models.TestSequence>(cmdSelect, null, entities).ToArray();
+
+            if(sequences.Count() < 3)
+            {
+                MessageBox.Show(
+                    "Not enough records for this test. Insert some more records through the 'Test DataAccessMgr' tab.",
+                    "Not enough records for this test.",
+                    MessageBoxButtons.OK);
+
+                return;
+            }
+
+            //delete 1st entity from select above
+            entities.DeleteObject(sequences[0]);
+
+            //update 2nd entity from select above
+            sequences[1].Remarks = "Modify 1 for save context test";
+            sequences[1].AppLocalTime = DateTime.Now;
+
+            //update 3rd entity from select above
+            sequences[2].Remarks = "Modify 2 for save context test";
+            sequences[2].AppLocalTime = DateTime.Now;
+
+            _daMgr.SaveContext(entities, true);
         }
 
     }
