@@ -360,6 +360,28 @@ namespace B1.DataAccess
         }
 
         /// <summary>
+        /// Major Version number for the database server.
+        /// </summary>
+        public Int16 DbServerMajorVersion
+        {
+            get
+            {
+                return _dbProviderLib.ServerMajorVersion;
+            }
+        }
+
+        /// <summary>
+        /// Minor Version number for the database server.
+        /// </summary>
+        public Int16 DbServerMinorVersion
+        {
+            get
+            {
+                return _dbProviderLib.ServerMinorVersion;
+            }
+        }
+
+        /// <summary>
         /// Name of the database data access manager refers to.
         /// </summary>
         public string DbName
@@ -461,8 +483,7 @@ namespace B1.DataAccess
         public DbCommand CloneDbCommand(DbCommand dbCmd)
         {
             DbCommandMgr cmdMgr = new DbCommandMgr(this);
-            cmdMgr.AddDbCommand(dbCmd);
-            return cmdMgr.DbCommandBlock;
+            return cmdMgr.Clone(dbCmd);
         }
 
 
@@ -1244,10 +1265,11 @@ namespace B1.DataAccess
         /// <param name="entityContext"></param>
         /// <param name="insertObject"></param>
         /// <param name="propertyDbFunctions"></param>
+        /// <param name="getRowId"></param>
         /// <returns></returns>
-        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext
             , object insertObject
-            , Dictionary<string, object> propertyDbFunctions, bool getRowId = false)
+            , Dictionary<PropertyInfo, object> propertyDbFunctions, bool getRowId = false)
         {
             ObjectParser insertParser = new ObjectParser(entityContext, insertObject, this);
 
@@ -1267,7 +1289,7 @@ namespace B1.DataAccess
                     , column.DataTypeNativeDb
                     , column.MaxLength
                     , ParameterDirection.Input
-                    , DBNull.Value);
+                    , param.Value);
             }
 
             string insertSql = insertSqlAndParams.Item1;
@@ -1286,16 +1308,30 @@ namespace B1.DataAccess
 
             dbCmd.Site = new ParameterSite(insertSqlAndParams.Item2);
 
-            return new Tuple<DbCommand,QualifiedEntity>(dbCmd, insertParser.QualifiedTable);
+            return dbCmd;
         }
-
-        internal Tuple<DbCommand, QualifiedEntity> BuildInsertDbCommand(ObjectContext entityContext, object insertObject, bool getRowId)
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="insertObject"></param>
+        /// <param name="getRowId"></param>
+        /// <returns></returns>
+        public DbCommand BuildInsertDbCommand(ObjectContext entityContext, object insertObject, bool getRowId)
         {
             return BuildInsertDbCommand(entityContext
                     , insertObject
-                    , new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase), getRowId);
+                    , new Dictionary<PropertyInfo, object>(), getRowId);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="updateObject"></param>
+        /// <param name="propertyDbFunctions"></param>
+        /// <returns></returns>
         public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
             , object updateObject
             , Dictionary<PropertyInfo, object> propertyDbFunctions)
@@ -1328,6 +1364,12 @@ namespace B1.DataAccess
             return cmdUpdate;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="updateObject"></param>
+        /// <returns></returns>
         public DbCommand BuildUpdateDbCommand(ObjectContext entityContext, object updateObject)
         {
             return BuildUpdateDbCommand(entityContext
@@ -1335,7 +1377,12 @@ namespace B1.DataAccess
                     , new Dictionary<PropertyInfo, object>());
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="deleteObject"></param>
+        /// <returns></returns>
         public DbCommand BuildDeleteDbCommand(ObjectContext entityContext
             , object deleteObject)
         {
@@ -1799,8 +1846,8 @@ namespace B1.DataAccess
 
             foreach (DbPredicateParameter parameter in parameters)
             {
-                if(parameter.Paramater != null)
-                    dbParams.Add(parameter.Paramater);
+                if(parameter.Parameter != null)
+                    dbParams.Add(parameter.Parameter);
                 else if(parameter.ColumnName != null && parameter.TableName != null)
                 {
                     DbColumnStructure column = DbCatalogGetColumn(parameter.SchemaName
@@ -2169,12 +2216,12 @@ namespace B1.DataAccess
         /// </summary>
         /// <param name="procedureName">Fully qualified procedure name</param>
         /// <param name="removeReturnValue">Indicates whether to remove ReturnValue parameter</param>
-        /// <returns>DbParameterCollection of paramters</returns>
-        public DbParameterCollection DiscoverParameters(string procedureName, bool removeReturnValue)
+        /// <returns>DbCommand object with parameters</returns>
+        public DbCommand DiscoverParameters(string procedureName, bool removeReturnValue)
         {
             DbCommand dbCmd = _database.GetStoredProcCommand(procedureName);
             DiscoverParameters(dbCmd, removeReturnValue);
-            return CloneDbCommand(dbCmd).Parameters;
+            return dbCmd;
         }
 
         /// <summary>
@@ -3440,37 +3487,7 @@ namespace B1.DataAccess
                     , "tableName cannot be null or empty.");
         }
 
-        /// <summary>
-        /// Updates the entity in the database, and sets the object to unchanged in the context. 
-        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
-        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
-        /// to the properties of the updateObject instance.
-        /// </summary>
-        /// <param name="entityContext">Context to update</param>
-        /// <param name="updateObject">Entity to update</param>
-        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
-        /// <param name="dbCmdIn">Optional. See summary.</param>
-        /// <returns></returns>
-        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
-                DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
-        {
-            return UpdateEntity(entityContext, updateObject,
-                    new Dictionary<PropertyInfo, object>(), dbTransaction, dbCmdIn);
-        }
-
-        /// <summary>
-        /// Updates the entity in the database, and sets the object to unchanged in the context. 
-        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
-        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
-        /// to the properties of the updateObject instance.
-        /// </summary>
-        /// <param name="entityContext">Context to update</param>
-        /// <param name="updateObject">Entity to update</param>
-        /// <param name="propertyDbFunctions">DB Functions to be evaluated for that particular column</param>
-        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
-        /// <param name="dbCmdIn">Optional. See summary.</param>
-        /// <returns></returns>
-        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
+        internal DbCommand BuildUpdateEntityCmd(ObjectContext entityContext, object updateObject,
                 Dictionary<PropertyInfo, object> propertyDbFunctions, DbTransaction dbTransaction = null, 
                 DbCommand dbCmdIn = null)
         {
@@ -3513,22 +3530,56 @@ namespace B1.DataAccess
                 dbCmd = cmdMgr.DbCommandBlock;
             }
 
+            return dbCmd;
+        }
+
+        /// <summary>
+        /// Updates the entity in the database, and sets the object to unchanged in the context. 
+        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
+        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
+        /// to the properties of the updateObject instance.
+        /// </summary>
+        /// <param name="entityContext">Context to update</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
+        /// <param name="dbCmdIn">Optional. See summary.</param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
+                DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
+        {
+            return UpdateEntity(entityContext, updateObject,
+                    new Dictionary<PropertyInfo, object>(), dbTransaction, dbCmdIn);
+        }
+
+        
+
+        /// <summary>
+        /// Updates the entity in the database, and sets the object to unchanged in the context. 
+        /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
+        /// value of the updateObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
+        /// to the properties of the updateObject instance.
+        /// </summary>
+        /// <param name="entityContext">Context to update</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <param name="propertyDbFunctions">DB Functions to be evaluated for that particular column</param>
+        /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
+        /// <param name="dbCmdIn">Optional. See summary.</param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> UpdateEntity(ObjectContext entityContext, object updateObject,
+                Dictionary<PropertyInfo, object> propertyDbFunctions, DbTransaction dbTransaction = null, 
+                DbCommand dbCmdIn = null)
+        {
+            DbCommand dbCmd = BuildUpdateEntityCmd(entityContext, updateObject, propertyDbFunctions, dbTransaction, 
+                    dbCmdIn);
+           
             UpdateEntitiesFromReader(updateObject, ExecuteReader(dbCmd, dbTransaction));
             entityContext.ObjectStateManager.ChangeObjectState(updateObject, EntityState.Unchanged);
-
+           
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
         }
 
-       
-
-        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
-                 DbTransaction dbTransaction, DbCommand dbCmdIn = null)
-        {
-            return InsertEntity(entityContext, insertObject, new Dictionary<string, object>(), dbTransaction, dbCmdIn);
-        }
-
-        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
-                Dictionary<string, object> propertyDbFunctions, DbTransaction dbTransaction, DbCommand dbCmdIn = null)
+        internal DbCommand BuildInsertEntityCmd(ObjectContext entityContext, object insertObject,
+                Dictionary<PropertyInfo, object> propertyDbFunctions, DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
             DbCommand dbCmdInsert = null;
 
@@ -3548,7 +3599,8 @@ namespace B1.DataAccess
                 List<string> autoGeneratedColumns = new List<string>();
                 List<string> selectColumns = new List<string>();
                 List<string> functionColumns = propertyDbFunctions.Select(
-                        kvp => qualifiedEntity.GetColumnName(kvp.Key)).ToList();
+                        kvp => qualifiedEntity.GetColumnName(kvp.Key.Name)).ToList();
+
                 foreach(var propColumnName in qualifiedEntity._propertyToColumnMap)
                 {
                     string columnName = propColumnName.Value;
@@ -3558,7 +3610,7 @@ namespace B1.DataAccess
                             columnName);
 
                     if(table.PrimaryKeyColumns.ContainsKey(columnName) && (column.IsAutoGenerated || column.IsComputed 
-                            || propertyDbFunctions.ContainsKey(propertyName)))
+                            || propertyDbFunctions.Keys.Count( p => p.Name.ToLower() == propertyName.ToLower()) > 0))
                     {
                         bGetRowFromId = true;
                     }
@@ -3573,10 +3625,8 @@ namespace B1.DataAccess
 
                 bool getRowId = DatabaseType == EnumDbType.Oracle && bGetRowFromId;
 
-                Tuple<DbCommand, QualifiedEntity> insertResult = BuildInsertDbCommand(entityContext, insertObject,
+                dbCmdInsert = BuildInsertDbCommand(entityContext, insertObject,
                     propertyDbFunctions, getRowId);
-
-                dbCmdInsert = insertResult.Item1;
 
                 // If we already have all the data, and there is nothing to select, skip select creation.
                 if(selectColumns.Count > 0)
@@ -3657,7 +3707,40 @@ namespace B1.DataAccess
                     dbCmdInsert = cmdMgr.DbCommandBlock;
                 }
             }
-            
+
+            return dbCmdInsert;
+        }
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="insertObject"></param>
+        /// <param name="dbTransaction"></param>
+        /// <param name="dbCmdIn"></param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+                 DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
+        {
+            return InsertEntity(entityContext, insertObject, new Dictionary<PropertyInfo, object>(), dbTransaction, dbCmdIn);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="insertObject"></param>
+        /// <param name="propertyDbFunctions"></param>
+        /// <param name="dbTransaction"></param>
+        /// <param name="dbCmdIn"></param>
+        /// <returns></returns>
+        public Tuple<ObjectContext, DbCommand> InsertEntity(ObjectContext entityContext, object insertObject,
+                Dictionary<PropertyInfo, object> propertyDbFunctions, DbTransaction dbTransaction = null, 
+                DbCommand dbCmdIn = null)
+        {
+            DbCommand dbCmdInsert = BuildInsertEntityCmd(entityContext, insertObject, propertyDbFunctions, dbTransaction, 
+                    dbCmdIn);
+
             UpdateEntitiesFromReader(insertObject, ExecuteReader(dbCmdInsert, dbTransaction));
 
             entityContext.AttachTo(ObjectParser.GetEntitySetName(entityContext, insertObject), insertObject);
@@ -3702,6 +3785,102 @@ namespace B1.DataAccess
             return new Tuple<ObjectContext, DbCommand>(entityContext, dbCmd);
         }
 
+
+        /// <summary>
+        /// Generates and executes the SQL for all of the updates, inserts, and deletes that are pending
+        /// within the context. Updates the context to be unmodified. The SQL will be created as one compound
+        /// command and sent as one database call. Any updated or inserted entities will be updated in memory to 
+        /// reflect any DB generated fields such as identites or defualt values. 
+        /// Currently does not support columns that are db functions.
+        /// </summary>
+        /// <param name="entityContext"></param>
+        /// <param name="oneTransaction">If true the compound command will be one database transcation.</param>
+        /// <returns></returns>
+        public ObjectContext SaveContext(ObjectContext entityContext, bool oneTransaction)
+        {
+            IEnumerable<ObjectStateEntry> addedEntities = entityContext.ObjectStateManager.GetObjectStateEntries(
+                    EntityState.Added);
+            IEnumerable<ObjectStateEntry> changedEntities = entityContext.ObjectStateManager.GetObjectStateEntries(
+                    EntityState.Modified);
+            IEnumerable<ObjectStateEntry> deletedEntities = entityContext.ObjectStateManager.GetObjectStateEntries(
+                    EntityState.Deleted);
+
+            DbCommandMgr cmdMgr = new DbCommandMgr(this);
+
+            if(oneTransaction)
+                cmdMgr.TransactionBeginBlock();
+
+            Dictionary<Type, DbCommand> typeInsertCmds = new Dictionary<Type,DbCommand>();
+            Dictionary<Type, DbCommand> typeUpdateCmds = new Dictionary<Type,DbCommand>();
+            Dictionary<Type, DbCommand> typeDeleteCmds = new Dictionary<Type,DbCommand>();
+
+            foreach(ObjectStateEntry entry in addedEntities)
+            {
+                Type entityType = entry.Entity.GetType();
+
+                if(!typeInsertCmds.ContainsKey(entityType))
+                {
+                    DbCommand cmdInsert = BuildInsertEntityCmd(entityContext, entry.Entity,
+                            new Dictionary<PropertyInfo,object>());
+
+                    typeInsertCmds.Add(entityType, cmdInsert);
+                    cmdMgr.AddDbCommand(cmdInsert);
+                }
+                else
+                {
+                    cmdMgr.AddDbCommand(typeInsertCmds[entityType], entry.Entity);
+                }
+            }
+
+            foreach(ObjectStateEntry entry in changedEntities)
+            {
+                Type entityType = entry.Entity.GetType();
+
+                if(!typeUpdateCmds.ContainsKey(entityType))
+                {
+                    DbCommand cmdUpdate = BuildUpdateEntityCmd(entityContext, entry.Entity, 
+                            new Dictionary<PropertyInfo,object>());
+
+                    typeUpdateCmds.Add(entityType, cmdUpdate);
+                    cmdMgr.AddDbCommand(cmdUpdate);
+                }
+                else
+                {
+                    cmdMgr.AddDbCommand(BuildUpdateEntityCmd(entityContext, entry.Entity, new Dictionary<PropertyInfo,
+                            object>(), null, typeUpdateCmds[entityType]), entry.Entity);
+                }
+            }
+
+            foreach(ObjectStateEntry entry in deletedEntities)
+            {
+                Type entityType = entry.Entity.GetType();
+
+                if(!typeDeleteCmds.ContainsKey(entityType))
+                {
+                    DbCommand cmdDelete = BuildDeleteDbCommand(entityContext, entry.Entity);
+                    typeDeleteCmds.Add(entityType, cmdDelete);
+                    cmdMgr.AddDbCommand(cmdDelete);
+                }
+                else
+                {
+                    cmdMgr.AddDbCommand(typeDeleteCmds[entityType], entry.Entity);
+                }
+            }
+
+            if(oneTransaction)
+                cmdMgr.TransactionEndBlock();
+
+            IDataReader rdr = cmdMgr.ExecuteReader();
+
+            List<object> addedAndChangedEntities = addedEntities.Select(d => d.Entity).Concat(
+                    changedEntities.Select( c => c.Entity)).ToList();
+
+            UpdateEntitiesFromReader(addedAndChangedEntities, rdr);
+
+            entityContext.AcceptAllChanges();
+
+            return entityContext;
+        }
         
         /// <summary>
         /// Updates the entity object with FIRST ROW of data from the data reader.
@@ -3752,7 +3931,14 @@ namespace B1.DataAccess
                     }
                 }
 
-                if(reader.Read())
+                bool recordRead = true;
+                if(!reader.Read())
+                {
+                    reader.NextResult();
+                    recordRead = reader.Read();
+                }
+
+                if(recordRead)
                 {
                     props.ForEach(kv => kv.Value.SetValue(entity,
                             GetValueOrNull(Convert.ChangeType(reader.GetValue(kv.Key), kv.Value.PropertyType)), null));

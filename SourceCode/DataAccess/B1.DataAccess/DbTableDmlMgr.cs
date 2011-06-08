@@ -356,7 +356,6 @@ namespace B1.DataAccess
                 }
             }
             _daMgr = dmlMgr._daMgr;
-            _orderByColumnOffset = dmlMgr._orderByColumnOffset;
             CaseColumns = dmlMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
             ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
             GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(dmlMgr.GroupByColumns);
@@ -665,7 +664,7 @@ namespace B1.DataAccess
         /// <param name="tableName">Table Name which column belongs to</param>
         /// <param name="columnName">Column to group by</param>
         /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
-        public Int16 AddGroupByColumnAscending(string schemaName, string tableName, string columnName)
+        public Int16 AddGroupByColumn(string schemaName, string tableName, string columnName)
         {
             GroupByColumns.Add(_groupByColumnOffset, new DbQualifiedObject<string>(
                     schemaName
@@ -682,7 +681,7 @@ namespace B1.DataAccess
         /// <returns>The offset of the column in the group by container (0, 1, 2)</returns>
         public Int16 AddGroupByColumn(string columnName)
         {
-            return AddGroupByColumnAscending(MainTable.SchemaName, MainTable.TableName, columnName);
+            return AddGroupByColumn(MainTable.SchemaName, MainTable.TableName, columnName);
         }
 
         /// <summary>
@@ -986,7 +985,7 @@ namespace B1.DataAccess
             return new DbPredicateStringParameter(new DbPredicateParameter()
                 {
                     ParameterName = parameter.ParameterName,
-                    Paramater = parameter
+                    Parameter = parameter
                 });
         }
         
@@ -1035,12 +1034,28 @@ namespace B1.DataAccess
         public string ParameterName { get; set; }
         public string TableName { get; set; }
         public string ColumnName { get; set; }
-        public DbParameter Paramater { get; set; }
+        public DbParameter Parameter { get; set; }
         public object Value { get; set; }
 
         // Fields used for member access in Linq and Entity Framework DML;
         public string MemberPropertyName { get; set; }
         public Delegate MemberAccess { get; set; }
+
+        public DbPredicateParameter()
+        {
+        }
+
+        public DbPredicateParameter(DbPredicateParameter param)
+        {
+            SchemaName = param.SchemaName;
+            ParameterName = param.ParameterName;
+            TableName = param.TableName;
+            ColumnName = param.ColumnName;
+            Parameter = param.Parameter;
+            Value = param.Value;
+            MemberPropertyName = param.MemberPropertyName;
+            MemberAccess = param.MemberAccess;
+        }
     }
 
     public class DbPredicateStringParameter : DbPredicateString
@@ -1299,7 +1314,7 @@ namespace B1.DataAccess
                      if(!Parameters.ContainsKey(param.ParameterName))
                         Parameters.Add(param.ParameterName, 
                                 new DbPredicateParameter() 
-                                { ParameterName = param.ParameterName, Paramater = param });
+                                { ParameterName = param.ParameterName, Parameter = param });
                     return daMgr.BuildBindVariableName(((DbParameter)member).ParameterName);
                 }
                 else
