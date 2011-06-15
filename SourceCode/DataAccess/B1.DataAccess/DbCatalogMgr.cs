@@ -1365,33 +1365,32 @@ namespace B1.DataAccess
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
                             , "fullyQualifiedTableName");
 
-            if (!_tableCache.Exists(fullyQualifiedTableName))
-                LoadCache(fullyQualifiedTableName);
-            DbTableStructure cacheRef = _tableCache.Get(fullyQualifiedTableName);
+            DbTableStructure cacheRef = _tableCache.GetOrAdd(fullyQualifiedTableName,
+                () => GetTableMetaData(fullyQualifiedTableName));
             return new DbTableStructure(cacheRef);
         }
 
 
         
         /// <summary>
-        /// Loads cache For a table by fully qualified table name
+        /// Creates the table meta data structure for a given fully qualified table name.
         /// (Schema and table Name)
         /// </summary>
         /// <param name="fullyQualifiedTableName"></param>
-        void LoadCache(string fullyQualifiedTableName)
+        DbTableStructure GetTableMetaData(string fullyQualifiedTableName)
         {
-            DataSet tableCache = GetCatalogData(fullyQualifiedTableName.ToUpper());
+            DataSet catalogDataSet = GetCatalogData(fullyQualifiedTableName.ToUpper());
             // see if table was found
-            if (tableCache.Tables[Constants.Columns].Rows.Count == 0)
+            if (catalogDataSet.Tables[Constants.Columns].Rows.Count == 0)
                 throw new ExceptionEvent(enumExceptionEventCodes.InvalidParameterValue
                             , string.Format("{0}: {1} was not found in Database"
                                     , DataAccess.Constants.TableName, fullyQualifiedTableName));
 
             // otherwise populate the cache
-            PopulateCache(tableCache.Tables[Constants.PrimaryKeys]
-                        , tableCache.Tables[Constants.Columns]
-                        , tableCache.Tables[Constants.Indexes]
-                        , tableCache.Tables[Constants.ForeignKeys]);
+            return CreateTableMetaData(catalogDataSet.Tables[Constants.PrimaryKeys]
+                        , catalogDataSet.Tables[Constants.Columns]
+                        , catalogDataSet.Tables[Constants.Indexes]
+                        , catalogDataSet.Tables[Constants.ForeignKeys]);
         }
 
         /// <summary>
@@ -1466,14 +1465,14 @@ namespace B1.DataAccess
             return dbCmdMgr.ExecuteDataSet(tableNames);
         }
 
-        void PopulateCache(DataTable primaryKey, DataTable columns, DataTable indexes, DataTable foreignKeys)
+        DbTableStructure CreateTableMetaData(DataTable primaryKey, DataTable columns, DataTable indexes, DataTable foreignKeys)
         {
             DbTableStructure table = PopulateColumnCache(columns);
             table.PrimaryKeyColumns = GetPrimaryKeyColumns(table.SchemaName, table.TableName, primaryKey);
             table.PrimaryKey = GetPrimaryKey(table.SchemaName, table.TableName, primaryKey);
             table.Indexes = GetIndexes(table.SchemaName, table.TableName, table.Columns, indexes);
             table.ForeignKeys = GetForeignKeys(table.SchemaName, table.TableName, foreignKeys);
-            _tableCache.Add(table.FullyQualifiedName, table);
+            return table;
         }
 
         Dictionary<string, DbIndexStructure> GetIndexes(string tableSchema

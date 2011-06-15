@@ -60,7 +60,7 @@ namespace B1.DataAccess
         Int16 _pageSize = CONST_DefaultPageSize;
         string _pageSizeParam = null;
         int _paramOffset = 0;
-        enum PagingDbCmdEnum { First, Last, Next, Previous };
+        public enum PagingDbCmdEnum { First, Last, Next, Previous };
 
         DbCommand _dbCmdFirstPage = null;
         DbCommand _dbCmdLastPage = null;
@@ -291,6 +291,108 @@ namespace B1.DataAccess
                     , dbCmdPreviousPage);
         }
 
+        public PagingMgr(DataAccessMgr dataAccessManager
+            , IQueryable queryable
+            , string pageSizeParam
+            , Int16? pageSize
+            , string pagingState = null) : this (dataAccessManager, pageSizeParam, pageSize, pagingState)
+        {
+            LinqQueryParser parser = new LinqQueryParser(queryable, dataAccessManager, null);
+
+            // Get the base table (main "from" table)
+            var baseTableInfo = parser.GetBaseTableInfo(); // Returns "B1", "T0", "TestSequence"
+            string schemaName = baseTableInfo[0];
+            string aliasName = baseTableInfo[1];
+            string tableName = baseTableInfo[2];
+
+            // Check the orderby columns if they are in the base table index
+            var orderByColumns = parser.GetOrderByColumnList();
+            var indexColumns = VerifyIndexColumns(
+                dataAccessManager.DbCatalogGetTable(string.Format("{0}.{1}", schemaName, tableName)),
+                orderByColumns.Select(col => col.Item1).ToList());
+
+            //?? If no orderby use the primary key of the base table
+            
+            string select = parser.GetOuterSelect();
+            string from = parser.GetOuterFrom();
+            if (from == null)
+                from = parser.GetDefaultFrom();
+
+            string whereClause = parser.GetWhereClause();
+            string orderBy = parser.GetOuterOrderBy();
+            string groupBy = parser.GetOuterGroupBy();
+
+            DbTableDmlMgr dbTableDmlMgr = new DbTableDmlMgr(dataAccessManager, schemaName, tableName);
+
+            Func<Expression, DbCommand> func = pagingWhereExpression =>
+            {
+                IEnumerable<DbPredicateParameter> parameters = parser.Parameters ?? new List<DbPredicateParameter>();
+
+                // Construct the select command: SELECT ... FROM ... INNER JOIN ...
+                StringBuilder selectCmd = new StringBuilder(
+                    string.Format("{0}{1} FROM {2}", select, Environment.NewLine, from));
+
+                // Create a paging WHERE clause
+                string pagingWhereClause = null;
+                if (pagingWhereExpression != null)
+                {
+                    DbPredicate dbPredicate = new DbPredicate(
+                        Expression.Lambda<Func<DbTableDmlMgr, bool>>(pagingWhereExpression,
+                        Expression.Parameter(typeof(DbTableDmlMgr), "j")), dbTableDmlMgr);
+                    pagingWhereClause = dbPredicate.ToString(dataAccessManager);
+                    parameters = parameters.Concat(dbPredicate.Parameters.Select(kv => kv.Value));
+                }
+
+                if (!string.IsNullOrWhiteSpace(whereClause) || !string.IsNullOrWhiteSpace(pagingWhereClause))
+                {
+                    selectCmd.AppendFormat("{0}WHERE ({1}) AND ({2})",
+                        Environment.NewLine,
+                        string.IsNullOrWhiteSpace(whereClause) ? "1=1" : whereClause,
+                        string.IsNullOrWhiteSpace(pagingWhereClause) ? "1=1" : pagingWhereClause);
+                }
+
+                if (!string.IsNullOrWhiteSpace(groupBy))
+                    selectCmd.AppendFormat("{0}{1}",
+                            Environment.NewLine, groupBy);
+
+                //?? Currently the order by should exist in the LINQ query
+                if (!string.IsNullOrWhiteSpace(orderBy))
+                    selectCmd.AppendFormat("{0}{1}",
+                            Environment.NewLine, orderBy);
+
+                DbParameterCollection dbParams = dataAccessManager.BuildWhereClauseParams(parameters);
+                string cmdText = dataAccessManager.FormatSQLSelectWithMaxRows(selectCmd.ToString(), pageSizeParam);
+                // Add pageSize parameter to the parameter collection
+                if (dbParams == null)
+                    dbParams = dataAccessManager.CreateNewParameterAndCollection(pageSizeParam
+                                        , DbType.Int32
+                                        , null
+                                        , 0
+                                        , ParameterDirection.Input
+                                        , DBNull.Value);
+                else dataAccessManager.AddNewParameterToCollection(dbParams
+                                        , pageSizeParam
+                                        , DbType.Int32
+                                        , null
+                                        , 0
+                                        , ParameterDirection.Input
+                                        , DBNull.Value);
+                DbCommand dbCmd = dataAccessManager.BuildSelectDbCommand(cmdText, dbParams);
+                dbCmd.Site = new ParameterSite(parser.Parameters);
+                return dbCmd;
+            };
+
+            // Create the where clause flavors for the first, next, previous and last page
+            Expression firstWhereClause = GetPagingWhereClause(PagingDbCmdEnum.Next, tableName, indexColumns);
+
+            DbCommand dbCmdFirstPage = func(GetPagingWhereClause(PagingDbCmdEnum.First, tableName, indexColumns));
+            DbCommand dbCmdLastPage = func(GetPagingWhereClause(PagingDbCmdEnum.Last, tableName, indexColumns));
+            DbCommand dbCmdNextPage = func(GetPagingWhereClause(PagingDbCmdEnum.Next, tableName, indexColumns));
+            DbCommand dbCmdPreviousPage = func(GetPagingWhereClause(PagingDbCmdEnum.Previous, tableName, indexColumns));
+
+            Initialize(dbCmdFirstPage, dbCmdLastPage, dbCmdNextPage, dbCmdPreviousPage);
+        }
+
         List<string> VerifyIndexColumns(DbTableStructure dbTable
                 , List<string> indexColumns)
         {
@@ -358,6 +460,82 @@ namespace B1.DataAccess
             return GetPageDbCmd(pagingDbCmd, 
                     _daMgr.DbCatalogGetTableDmlMgr( dbTable.FullyQualifiedName, dbTable.Columns.Keys.ToArray() ),
                     indexColumns);
+        }
+
+        Expression GetPagingWhereClause(PagingDbCmdEnum pagingDbCmd,
+            string tableName, List<string> indexColumns)
+        {
+            Int16 i;
+            Int16 columnIndex;
+            Expression expr;
+            Expression exprAnd;
+            Expression exprWhere = null;
+            //DbTableDmlMgr dbTableDml = new DbTableDmlMgr(dbTableDmlSelect);
+            //dbTableDml.OrderByColumns.Clear();
+
+            columnIndex = -1;
+            foreach (string column in indexColumns)
+            {
+                columnIndex++;
+
+                if (!_pageKeys.ContainsKey(column))
+                    _pageKeys.Add(column, column);
+
+                //if (pagingDbCmd == PagingDbCmdEnum.First
+                //        || pagingDbCmd == PagingDbCmdEnum.Next)
+                //    dbTableDml.AddOrderByColumnAscending(column);
+                //else
+                //    dbTableDml.AddOrderByColumnDescending(column);
+
+                if (pagingDbCmd == PagingDbCmdEnum.Next || pagingDbCmd == PagingDbCmdEnum.Previous)
+                {
+                    expr = null;
+                    exprAnd = null;
+
+                    // Build AND clause for preceding columns
+                    for (i = 0; i < columnIndex; i++)
+                    {
+                        expr = DbPredicate.CreatePredicatePart(tableName,
+                            indexColumns[i], _daMgr.BuildParamName(indexColumns[i]), ComparisonOperatorEnum.Equals);
+
+                        if (exprAnd == null)
+                            exprAnd = expr;
+                        else
+                            exprAnd = Expression.AndAlso(exprAnd, expr);
+                    }
+
+                    // Build AND clause for current column
+                    if (pagingDbCmd == PagingDbCmdEnum.Next)
+                    {
+                        expr = DbPredicate.CreatePredicatePart(tableName,
+                                column, _daMgr.BuildParamName(column), ComparisonOperatorEnum.Greater);
+                    }
+                    else
+                    {
+                        expr = DbPredicate.CreatePredicatePart(tableName,
+                                column, _daMgr.BuildParamName(column), ComparisonOperatorEnum.Less);
+                    }
+
+                    if (exprAnd == null)
+                        exprAnd = expr;
+                    else
+                        exprAnd = Expression.AndAlso(exprAnd, expr);
+
+                    // Append current expression group as OR clause into the WHERE condition
+                    if (exprWhere == null)
+                        exprWhere = exprAnd;
+                    else
+                        exprWhere = Expression.OrElse(exprWhere, exprAnd);
+                }
+            }
+
+            return exprWhere;
+            //if (exprWhere != null && dbTableDml._whereCondition == null)
+            //    dbTableDml.SetWhereCondition(exprWhere);
+            //else if (exprWhere != null)
+            //    dbTableDml.AddToWhereCondition(ExpressionType.AndAlso, exprWhere);
+
+            //return _daMgr.BuildSelectDbCommand(dbTableDml, _pageSizeParam);
         }
 
         DbCommand GetPageDbCmd( PagingDbCmdEnum pagingDbCmd
@@ -480,6 +658,40 @@ namespace B1.DataAccess
                     StringComparer.CurrentCultureIgnoreCase);
 
             SetKeyItemValues(pageItem, propertyDic, rowObject);
+        }
+
+        public DataTable GetPage(PagingDbCmdEnum pagingDirection, Int16? pageSize = null)
+        {
+            switch (pagingDirection)
+            {
+                case PagingDbCmdEnum.First:
+                    return pageSize == null ? GetFirstPage() : GetFirstPage(pageSize.Value);
+                case PagingDbCmdEnum.Next:
+                    return pageSize == null ? GetNextPage() : GetNextPage(pageSize.Value);
+                case PagingDbCmdEnum.Previous:
+                    return pageSize == null ? GetPreviousPage() : GetPreviousPage(pageSize.Value);
+                case PagingDbCmdEnum.Last:
+                    return pageSize == null ? GetLastPage() : GetLastPage(pageSize.Value);
+            }
+
+            return null;
+        }
+
+        public IEnumerable<T> GetPage<T>(PagingDbCmdEnum pagingDirection, Int16? pageSize = null) where T : new()
+        {
+            switch (pagingDirection)
+            {
+                case PagingDbCmdEnum.First:
+                    return pageSize == null ? GetFirstPage<T>() : GetFirstPage<T>(pageSize.Value);
+                case PagingDbCmdEnum.Next:
+                    return pageSize == null ? GetNextPage<T>() : GetNextPage<T>(pageSize.Value);
+                case PagingDbCmdEnum.Previous:
+                    return pageSize == null ? GetPreviousPage<T>() : GetPreviousPage<T>(pageSize.Value);
+                case PagingDbCmdEnum.Last:
+                    return pageSize == null ? GetLastPage<T>() : GetLastPage<T>(pageSize.Value);
+            }
+
+            return null;
         }
 
         /// <summary>

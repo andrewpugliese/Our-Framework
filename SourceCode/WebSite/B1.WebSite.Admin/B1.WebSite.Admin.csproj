@@ -147,6 +147,10 @@
       <Project>{59DB291F-59BD-4090-94B6-D502A6972874}</Project>
       <Name>B1.SessionManagement</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Web\B1.Web\B1.Web.csproj">
+      <Project>{2A665805-51F5-42D8-849D-60329250F3F4}</Project>
+      <Name>B1.Web</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Grid\_AppSessions.cshtml" />
@@ -159,6 +163,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Grid\_UserEdit.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Grid\_TestSequences.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

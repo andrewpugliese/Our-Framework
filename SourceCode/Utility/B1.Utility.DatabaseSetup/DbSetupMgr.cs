@@ -1969,6 +1969,26 @@ namespace B1.Utility.DatabaseSetup
             }
         }
 
+
+        private void btnTestPageMgrLINQ_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            try
+            {
+                TestDataAccessMgr.TestPagingMgrWithLINQ(_daMgr);
+
+                MessageBox.Show("PagingMgr with LINQ queries ran without any exception being thrown");
+            }
+            catch (Exception ex)
+            {
+                _loggingMgr.WriteToLog(ex);
+                MessageBox.Show(ex.Message + ex.StackTrace);
+            }
+        }
+
+
         /// <summary>
         /// This method will insert 3 entites, delete 2, and update 1 in one compound command sent to the database.
         /// The entire command will be one transaction.

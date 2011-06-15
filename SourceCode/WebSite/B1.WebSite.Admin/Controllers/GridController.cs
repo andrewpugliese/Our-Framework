@@ -9,6 +9,8 @@ using System.Data.Common;
 using B1.DataAccess;
 using B1.Data.Models;
 
+using B1.Web;
+
 namespace B1.WebSite.Admin.Controllers
 {
     public class GridController : Controller
@@ -55,13 +57,22 @@ namespace B1.WebSite.Admin.Controllers
 
         public ActionResult Users()
         {
-            B1SampleEntities entities = new B1SampleEntities();
             DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
-
+            B1SampleEntities entities = new B1SampleEntities();
             var query = from a in entities.UserMasters
                         select new { a.UserCode, a.UserId, a.FirstName };
             DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
             return PartialView("_Users", daMgr.ExecuteCollection<UserMaster>(dbCmd, null));
+        }
+
+        public string TestSequences()
+        {
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr
+                , DataAccess.Constants.SCHEMA_CORE + "." + DataAccess.Constants.TABLE_TestSequence
+                , DataAccess.Constants.PageSize
+                , 5);
+            return testSequenceMgr.View(PagingMgr.PagingDbCmdEnum.First).ToHtmlString();
         }
 
         public ActionResult UserEditForm(int userCode)

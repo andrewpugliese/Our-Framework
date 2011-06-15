@@ -217,6 +217,7 @@
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnSaveContext = new System.Windows.Forms.Button();
             this.btnTestCompound = new System.Windows.Forms.Button();
             this.btnTestLINQQueries = new System.Windows.Forms.Button();
             this.btnTestDelete = new System.Windows.Forms.Button();
@@ -225,7 +226,7 @@
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnSaveContext = new System.Windows.Forms.Button();
+            this.btnTestPageMgrLINQ = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -2411,6 +2412,7 @@
             // 
             // tabTestEF
             // 
+            this.tabTestEF.Controls.Add(this.btnTestPageMgrLINQ);
             this.tabTestEF.Controls.Add(this.btnSaveContext);
             this.tabTestEF.Controls.Add(this.btnTestCompound);
             this.tabTestEF.Controls.Add(this.btnTestLINQQueries);
@@ -2423,6 +2425,17 @@
             this.tabTestEF.TabIndex = 8;
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnSaveContext
+            // 
+            this.btnSaveContext.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnSaveContext.Location = new System.Drawing.Point(39, 255);
+            this.btnSaveContext.Name = "btnSaveContext";
+            this.btnSaveContext.Size = new System.Drawing.Size(124, 24);
+            this.btnSaveContext.TabIndex = 16;
+            this.btnSaveContext.Text = "Test Save Context";
+            this.btnSaveContext.UseVisualStyleBackColor = true;
+            this.btnSaveContext.Click += new System.EventHandler(this.btnSaveContext_Click);
             // 
             // btnTestCompound
             // 
@@ -2494,16 +2507,16 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnSaveContext
+            // btnTestPageMgrLINQ
             // 
-            this.btnSaveContext.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnSaveContext.Location = new System.Drawing.Point(39, 255);
-            this.btnSaveContext.Name = "btnSaveContext";
-            this.btnSaveContext.Size = new System.Drawing.Size(124, 24);
-            this.btnSaveContext.TabIndex = 16;
-            this.btnSaveContext.Text = "Test Save Context";
-            this.btnSaveContext.UseVisualStyleBackColor = true;
-            this.btnSaveContext.Click += new System.EventHandler(this.btnSaveContext_Click);
+            this.btnTestPageMgrLINQ.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestPageMgrLINQ.Location = new System.Drawing.Point(39, 305);
+            this.btnTestPageMgrLINQ.Name = "btnTestPageMgrLINQ";
+            this.btnTestPageMgrLINQ.Size = new System.Drawing.Size(194, 24);
+            this.btnTestPageMgrLINQ.TabIndex = 17;
+            this.btnTestPageMgrLINQ.Text = "Test PageMgr with LINQ Queries";
+            this.btnTestPageMgrLINQ.UseVisualStyleBackColor = true;
+            this.btnTestPageMgrLINQ.Click += new System.EventHandler(this.btnTestPageMgrLINQ_Click);
             // 
             // DbSetupMgr
             // 
@@ -2745,6 +2758,7 @@
         private System.Windows.Forms.Button btnTestLINQQueries;
         private System.Windows.Forms.Button btnTestCompound;
         private System.Windows.Forms.Button btnSaveContext;
+        private System.Windows.Forms.Button btnTestPageMgrLINQ;
     }
 }
 

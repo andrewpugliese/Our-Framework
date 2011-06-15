@@ -435,6 +435,13 @@ namespace B1.DataAccess
                 return null;
         }
 
+        internal string[] GetBaseTableInfo()
+        {
+            string schema = _tableMgr._schemaTables.First().Key;
+            var aliasAndTable = _tableMgr._schemaTables.First().Value.First();
+            return new string[] { schema, aliasAndTable.Key, aliasAndTable.Value };
+        }
+
         internal string GetDefaultFrom()
         {
             string joinFrom = GetJoinFrom();
@@ -452,16 +459,22 @@ namespace B1.DataAccess
 
         internal string GetOuterWhere()
         {
-            if(_whereParser != null && _whereParser._sqlPredicate.Length > 0)
-                return "WHERE " + _whereParser._sqlPredicate;
-            else if(_selectParser != null && _selectParser._parser != null)
-                return _selectParser._parser.GetOuterWhere();
-            else if(_distinctParser != null && _distinctParser._parser != null)
-                return _distinctParser._parser.GetOuterWhere();
-            else if(_groupByParser != null && _groupByParser._parser != null)
-                return _groupByParser._parser.GetOuterWhere();
-            else if(_orderByParser != null && _orderByParser._parser != null)
-                return _orderByParser._parser.GetOuterWhere();
+            string whereClause = GetWhereClause();
+            return whereClause != null ? "WHERE " + whereClause : null;
+        }
+
+        internal string GetWhereClause()
+        {
+            if (_whereParser != null && _whereParser._sqlPredicate.Length > 0)
+                return _whereParser._sqlPredicate.ToString();
+            else if (_selectParser != null && _selectParser._parser != null)
+                return _selectParser._parser.GetWhereClause();
+            else if (_distinctParser != null && _distinctParser._parser != null)
+                return _distinctParser._parser.GetWhereClause();
+            else if (_groupByParser != null && _groupByParser._parser != null)
+                return _groupByParser._parser.GetWhereClause();
+            else if (_orderByParser != null && _orderByParser._parser != null)
+                return _orderByParser._parser.GetWhereClause();
             else
                 return null;
         }
@@ -478,6 +491,22 @@ namespace B1.DataAccess
                 return _whereParser._parser.GetOuterOrderBy();
             else if(_groupByParser != null && _groupByParser._parser != null)
                 return _groupByParser._parser.GetOuterOrderBy();
+            else
+                return null;
+        }
+
+        internal List<Tuple<string, string>> GetOrderByColumnList()
+        {
+            if (_orderByParser != null)
+                return _orderByParser.GetSelectList();
+            else if (_selectParser != null && _selectParser._parser != null)
+                return _selectParser._parser.GetOrderByColumnList();
+            else if (_distinctParser != null && _distinctParser._parser != null)
+                return _distinctParser._parser.GetOrderByColumnList();
+            else if (_whereParser != null && _whereParser._parser != null)
+                return _whereParser._parser.GetOrderByColumnList();
+            else if (_groupByParser != null && _groupByParser._parser != null)
+                return _groupByParser._parser.GetOrderByColumnList();
             else
                 return null;
         }

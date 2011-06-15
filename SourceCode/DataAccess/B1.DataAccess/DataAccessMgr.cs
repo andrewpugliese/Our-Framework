@@ -1838,7 +1838,7 @@ namespace B1.DataAccess
             return DbParams;
         }
 
-        private DbParameterCollection BuildWhereClauseParams(IEnumerable<DbPredicateParameter> parameters, 
+        internal DbParameterCollection BuildWhereClauseParams(IEnumerable<DbPredicateParameter> parameters, 
                 DbParameterCollection dbParams = null)
         {
             if(dbParams == null)

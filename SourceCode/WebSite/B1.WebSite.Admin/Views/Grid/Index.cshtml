@@ -12,6 +12,7 @@ function showControllerView(action) {
         cache: false,
         data: null,
         success: function (result) {
+            alert(result);
             $("#gridContainer").html(result);
         },
         error: function (xhr, status, error) {
@@ -27,7 +28,8 @@ function showControllerView(action) {
 
 <a href="javascript: showControllerView('@Url.Action("AppSessions")');">App Sessions</a>&nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="javascript: showControllerView('@Url.Action("UserSessions")');">User Sessions</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="javascript: showControllerView('@Url.Action("Users")');">Users</a>
+<a href="javascript: showControllerView('@Url.Action("Users")');">Users</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="javascript: showControllerView('@Url.Action("TestSequences")');">Test Sequence</a>
 
 @* Show the grid here *@
 <div id="gridContainer">
