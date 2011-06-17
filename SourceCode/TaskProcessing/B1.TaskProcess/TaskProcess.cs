@@ -15,7 +15,7 @@ namespace B1.TaskProcessingFunctions
         public delegate void TaskCompletedDelegate(string taskId, ProcessStatusEnum processStatus);
         protected DataAccessMgr _daMgr = null;
         protected ProcessStatusEnum _processStatus = ProcessStatusEnum.Ready;
-        protected string _payload = null;
+        protected string _parameters = null;
         ManualResetEvent _stopEvent = new ManualResetEvent(false);
         ManualResetEvent _resumeEvent = new ManualResetEvent(false);
         TaskCompletedDelegate _taskCompletedHandler = null;
@@ -23,12 +23,12 @@ namespace B1.TaskProcessingFunctions
 
         public TaskProcess(DataAccessMgr daMgr
             , string taskId
-            , string payload
+            , string parameters
             , TaskCompletedDelegate taskCompletedHandler)
         {
             _daMgr = daMgr;
             _taskId = taskId;
-            _payload = payload;
+            _parameters = parameters;
             _taskCompletedHandler = taskCompletedHandler;
             _processStatus = ProcessStatusEnum.Ready;
         }
@@ -51,7 +51,7 @@ namespace B1.TaskProcessingFunctions
                             _resumeEvent.Reset();
                     }
 
-                    TaskStatusEnum taskStatus = TaskFunctionBody(_payload);
+                    TaskStatusEnum taskStatus = TaskFunctionBody(_parameters);
                     if (taskStatus == TaskStatusEnum.Completed
                         || taskStatus == TaskStatusEnum.Failed)
                     {
@@ -74,7 +74,7 @@ namespace B1.TaskProcessingFunctions
             }
         }
 
-        public abstract TaskStatusEnum TaskFunctionBody(string payload);
+        public abstract TaskStatusEnum TaskFunctionBody(string parameters);
         public abstract string TaskDescription();
         public abstract string TaskStatus();
 

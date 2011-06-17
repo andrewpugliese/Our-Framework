@@ -59,6 +59,10 @@ namespace B1.DataAccess
         /// </summary>
         public string SchemaName;
         /// <summary>
+        /// When the join is an inline view expression, this returns the reference to it
+        /// </summary>
+        public DbTableDmlMgr InlineView = null;
+        /// <summary>
         /// Type of join
         /// </summary>
         public DbTableJoinType JoinType;
@@ -85,6 +89,31 @@ namespace B1.DataAccess
         public SortedSet<object> SelectColumns;
 
         /// <summary>
+        /// Instantiate a DbTableJoin class for defining a join to an inline view or query.
+        /// </summary>
+        /// <param name="inlineView">DbTableDmlMgr instance for a inline view or query</param>
+        /// <param name="joinType">Type of join</param>
+        /// <param name="joinPredicate">Join predicate, i.e, SQL ON conditions</param>
+        public DbTableJoin(DbTableDmlMgr inlineView, string alias, DbTableJoinType joinType, 
+                DbPredicate joinPredicate)
+        {
+            SchemaName = inlineView.MainTable.SchemaName;
+            TableName = inlineView.MainTable.TableName;
+            TableAlias = alias;
+            JoinType = joinType;
+            JoinPredicate = joinPredicate;
+            if(JoinPredicate != null)
+                JoinPredicate._newJoinTable = this;
+            InlineView = new DbTableDmlMgr(inlineView);
+            Columns = new Dictionary<string,object>(StringComparer.CurrentCultureIgnoreCase);
+            object[] selectColumns = new object[inlineView.QualifiedColumns.Count()];
+            int i = 0;
+            foreach (string qualifiedColumn in inlineView.QualifiedColumns.ToList<string>())
+                selectColumns[i++] = qualifiedColumn.Split(new char[] { '.' })[1];
+            SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
+        }
+
+        /// <summary>
         /// Instantiate a DbTableJoin class for defining a join to a another table.
         /// </summary>
         /// <param name="schemaName">Schema of table to join</param>
@@ -93,7 +122,7 @@ namespace B1.DataAccess
         /// <param name="joinType">Type of join</param>
         /// <param name="joinPredicate">Join predicate, i.e, SQL ON conditions</param>
         /// <param name="selectColumns">Columns for select.</param>
-        public DbTableJoin(string schemaName, string tableName, string alias, DbTableJoinType joinType, 
+        public DbTableJoin(string schemaName, string tableName, string alias, DbTableJoinType joinType,
                 DbPredicate joinPredicate, params object[] selectColumns)
         {
             TableName = tableName;
@@ -101,12 +130,11 @@ namespace B1.DataAccess
             SchemaName = schemaName;
             JoinType = joinType;
             JoinPredicate = joinPredicate;
-            if(JoinPredicate != null)
+            if (JoinPredicate != null)
                 JoinPredicate._newJoinTable = this;
 
-            Columns = new Dictionary<string,object>(StringComparer.CurrentCultureIgnoreCase);
-            SelectColumns = selectColumns != null ? new SortedSet<object>(selectColumns, _columnComparer)
-                : new SortedSet<object>();
+            Columns = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
+            SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
         }
 
         /// <summary>
@@ -123,7 +151,8 @@ namespace B1.DataAccess
             TableAlias = alias;
             TableName = tableStruct.TableName;
             SchemaName = tableStruct.SchemaName;
-            Columns = tableStruct.Columns.ToDictionary(kvp => kvp.Key, new Func<KeyValuePair<string, short>, object>(kvp => null));
+            Columns = tableStruct.Columns.ToDictionary(kvp => kvp.Key
+                    , new Func<KeyValuePair<string, short>, object>(kvp => null));
             JoinType = joinType;
             JoinPredicate = joinPredicate;
             if(JoinPredicate != null)
@@ -179,6 +208,12 @@ namespace B1.DataAccess
                 new Dictionary<string, List<DbTableJoin>>(StringComparer.CurrentCultureIgnoreCase);
 
         /// <summary>
+        /// Alias to InLineView
+        /// </summary>
+        internal Dictionary<string, DbTableDmlMgr> InLineViews =
+                new Dictionary<string, DbTableDmlMgr>(StringComparer.CurrentCultureIgnoreCase);
+
+        /// <summary>
         /// Dictionary of Qualified Column/ column value
         /// </summary>
         internal Dictionary<DbQualifiedObject<string>, object> ColumnsForUpdateOrInsert = 
@@ -214,6 +249,10 @@ namespace B1.DataAccess
         }
      
         internal DbPredicate _whereCondition;
+        Int16 _orderByColumnOffset = 0;
+        Int16 _groupByColumnOffset = 0;
+        DataAccessMgr _daMgr = null;
+        string _joinAlias = null;
                       
         /// <summary>
         /// Main table.
@@ -221,6 +260,14 @@ namespace B1.DataAccess
         public DbTableJoin MainTable
         {
             get { return Tables.First().Value.First(); }
+        }
+
+        /// <summary>
+        /// Returns the alias assign to the current join
+        /// </summary>
+        public DbPredicateString JoinAlias
+        {
+            get { return _joinAlias; }
         }
 
         /// <summary>
@@ -303,10 +350,6 @@ namespace B1.DataAccess
             throw new KeyNotFoundException("Could not find table " + tableName);
         }
 
-        Int16 _orderByColumnOffset = 0;
-        Int16 _groupByColumnOffset = 0;
-        DataAccessMgr _daMgr = null;
-
         /// <summary>
         /// Creates instance of DbTableDmlMgr
         /// </summary>
@@ -314,23 +357,60 @@ namespace B1.DataAccess
         /// <param name="schemaName">Schema Name of Main table</param>
         /// <param name="tableName">Main table name</param>
         /// <param name="selectColumns">Columns for select. </param>
-        public DbTableDmlMgr(DataAccessMgr daMgr, string schemaName, string tableName, params object[] selectColumns)
+        public DbTableDmlMgr(DataAccessMgr daMgr
+                , string schemaName
+                , string tableName
+                , params object[] selectColumns)
+            : this(daMgr, schemaName, tableName, null, DbTableJoinType.None, null, selectColumns)
         {
-            _daMgr = daMgr;
-            AddJoin(schemaName, tableName, DbTableJoinType.None, null, selectColumns);
         }
 
 
         /// <summary>
-        /// Creates instance of DbTableDmlMgr
+        /// Creates instance of DbTableDmlMgr for the given table, alias and columns for select
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr Object</param>
+        /// <param name="schemaName">Schema table belongs to</param>
+        /// <param name="tableName">Table name</param>
+        /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
+        public DbTableDmlMgr(DataAccessMgr daMgr
+                   , string schemaName
+                   , string tableName
+                   , string alias
+                   , params object[] selectColumns)
+        {
+            _daMgr = daMgr;
+            AddJoin(schemaName, tableName, alias, DbTableJoinType.None, null, selectColumns);
+        }
+
+        /// <summary>
+        /// Creates instance of DbTableDmlMgr with the given table structure and columns for select
         /// </summary>
         /// <param name="daMgr">DataAccessMgr Object</param>
         /// <param name="table">Main DbTableStructure</param>
         /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
-        public DbTableDmlMgr(DataAccessMgr daMgr, DbTableStructure table, params object[] selectColumns)
+        public DbTableDmlMgr(DataAccessMgr daMgr
+                , DbTableStructure table
+                , params object[] selectColumns)
+            : this(daMgr, table, null, selectColumns)
+        {
+        }
+
+        /// <summary>
+        /// Creates instance of DbTableDmlMgr with the given table structure, alias and columns for select
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr Object</param>
+        /// <param name="table">Main DbTableStructure</param>
+        /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
+        public DbTableDmlMgr(DataAccessMgr daMgr
+                , DbTableStructure table
+                , string alias
+                , params object[] selectColumns)
         {
             _daMgr = daMgr;
-            AddJoin(table, DbTableJoinType.None, null, selectColumns);
+            AddJoin(table, alias, DbTableJoinType.None, null, selectColumns);
         }
 
 
@@ -350,16 +430,22 @@ namespace B1.DataAccess
                 {
                     object[] selectColumns = table.SelectColumns.ToArray();
 
-                    newTableList.Add(new DbTableJoin(table.SchemaName, table.TableName, table.TableAlias, table.JoinType,
-                            table.JoinPredicate == null ? null : new DbPredicate(table.JoinPredicate._predicate, this), 
+                    newTableList.Add(new DbTableJoin(table.SchemaName
+                            , table.TableName
+                            , table.TableAlias
+                            , table.JoinType
+                            , table.JoinPredicate == null ? null 
+                                : new DbPredicate(table.JoinPredicate._predicate, this), 
                             selectColumns));
                 }
             }
             _daMgr = dmlMgr._daMgr;
             CaseColumns = dmlMgr.CaseColumns.Select(c => new DbCase(c)).ToList();
-            ColumnsForUpdateOrInsert = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
+            ColumnsForUpdateOrInsert 
+                    = new Dictionary<DbQualifiedObject<string>,object>(dmlMgr.ColumnsForUpdateOrInsert);
             GroupByColumns = new SortedDictionary<short,DbQualifiedObject<string>>(dmlMgr.GroupByColumns);
-            OrderByColumns = new SortedDictionary<short,DbQualifiedObject<DbIndexColumnStructure>>(dmlMgr.OrderByColumns);
+            OrderByColumns 
+                    = new SortedDictionary<short,DbQualifiedObject<DbIndexColumnStructure>>(dmlMgr.OrderByColumns);
             SelectDistinct = dmlMgr.SelectDistinct;
             _whereCondition = dmlMgr._whereCondition == null ? null : 
                     new DbPredicate(dmlMgr._whereCondition._predicate, this);
@@ -388,13 +474,13 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// 
+        /// Adds the given table and join expression to the current expression
         /// </summary>
-        /// <param name="schemaName"></param>
-        /// <param name="tableName"></param>
-        /// <param name="type"></param>
-        /// <param name="predicate"></param>
-        /// <param name="selectColumns">Columns for select.</param>
+        /// <param name="schemaName">Schema for the given table</param>
+        /// <param name="tableName">Table name</param>
+        /// <param name="type">Join type (inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">Columns for select</param>
         /// <returns>Newly joined table alias.</returns>
         public string AddJoin(string schemaName
                 , string tableName
@@ -402,57 +488,146 @@ namespace B1.DataAccess
                 , Expression<Func<DbTableDmlMgr, bool>> predicate
                 , params object[] selectColumns)
         {
-            string alias = "T" + (TableCount + 1).ToString();
+            return AddJoin(schemaName, tableName, null, type, predicate, selectColumns);
+        }
+
+        /// <summary>
+        /// Adds the given table and join expression to the current expression
+        /// </summary>
+        /// <param name="schemaName">Schema for the given table</param>
+        /// <param name="tableName">Table name</param>
+        /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="type">Join type (inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">Columns for select</param>
+        /// <returns>Newly joined table alias.</returns>
+        public string AddJoin(string schemaName
+                , string tableName
+                , string alias
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
+        {
+            _joinAlias = string.IsNullOrEmpty(alias) ? "T" + (TableCount + 1).ToString() : alias;
             Add(schemaName, tableName,
-                    new DbTableJoin(schemaName, tableName, alias, type, 
+                    new DbTableJoin(schemaName, tableName, _joinAlias, type,
                     predicate == null ? null : new DbPredicate(predicate, this), selectColumns));
 
-            return alias;
+            return _joinAlias;
         }
-        
+
         /// <summary>
-        /// 
+        /// Adds the given table and join expression to the current expression
         /// </summary>
-        /// <param name="table"></param>
-        /// <param name="type"></param>
-        /// <param name="predicate"></param>
-        /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param>
+        /// <param name="table">Table meta data</param>
+        /// <param name="type">Join type (inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">Columns for select; If none provided, all will be selected</param>
         /// <returns>Newly joined table alias.</returns>
         public string AddJoin(DbTableStructure table
                 , DbTableJoinType type
                 , Expression<Func<DbTableDmlMgr, bool>> predicate
                 , params object[] selectColumns)
         {
-            string alias = "T" + (TableCount + 1).ToString();
-            Add(table.SchemaName, table.TableName,
-                    new DbTableJoin(table, alias, type, 
-                    predicate == null ? null : new DbPredicate(predicate, this), selectColumns));
+            return AddJoin(table, null, type, predicate, selectColumns);
+        }
 
-            return alias;
+        /// <summary>
+        /// Adds the given table and join expression to the current expression
+        /// </summary>
+        /// <param name="table">Table meta data</param>
+        /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="type">Join type (inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">Columns for select</param>
+        /// <returns>Newly joined table alias.</returns>
+        public string AddJoin(DbTableStructure table
+                , string alias
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
+        {
+            _joinAlias = string.IsNullOrEmpty(alias) ? "T" + (TableCount + 1).ToString() : alias;
+            Add(table.SchemaName, table.TableName,
+                    new DbTableJoin(table, _joinAlias, type,
+                    predicate == null ? null : new DbPredicate(predicate, this), selectColumns));
+            return _joinAlias;
+        }
+
+        /// <summary>
+        /// Adds the given reference to DbTableDmlMgr and join expression to the current expression
+        /// </summary>
+        /// <param name="inlineView">A reference to DbTableDmlMgr object with describes the inline view</param>
+        /// <param name="type">Join type (inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <returns></returns>
+        public string AddJoin(DbTableDmlMgr inlineView
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate)
+        {
+            return AddJoin(inlineView, null, type, predicate);
+        }
+
+        /// <summary>
+        /// Adds the given reference to DbTableDmlMgr and join expression to the current expression
+        /// </summary>
+        /// <param name="inlineView">A reference to DbTableDmlMgr object with describes the inline view</param>
+        /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="type">Join Type (e.g. inner, outer, cross)</param>
+        /// <param name="predicate">Join expression</param>
+        /// <returns>Newly joined inLineView alias.</returns>
+        public string AddJoin(DbTableDmlMgr inlineView
+                , string alias
+                , DbTableJoinType type
+                , Expression<Func<DbTableDmlMgr, bool>> predicate)
+        {
+            _joinAlias = string.IsNullOrEmpty(alias) ? "V" + (TableCount + 1).ToString() : alias;
+            Add(inlineView.MainTable.SchemaName, inlineView.MainTable.TableName,
+                    new DbTableJoin(inlineView
+                        , _joinAlias
+                        , type
+                        , predicate == null ? null : new DbPredicate(predicate, this)));
+            return _joinAlias;
+        }
+
+        /// <summary>
+        /// Adds a column for updating or inserting. Creates a parameter (from columnName) using the catalog.
+        /// </summary>
+        /// <param name="columnName">Unqalified column name</param>
+        public void AddColumn(string columnName)
+        {
+            DbTableJoin table = MainTable;
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName
+                    , table.TableName, columnName)
+                    , _daMgr.BuildParamName(columnName));
+            if (!table.SelectColumns.Contains(columnName))
+                table.SelectColumns.Add(columnName);
         }
 
         /// <summary>
         /// Adds a column for updating or inserting. Creates a parameter (parameterName) using the catalog.
         /// </summary>
-        /// <param name="columnName"></param>
+        /// <param name="columnName">Column name from main table</param>
         /// <param name="parameterName">The name of the parameter that will be created by the DataAccessMgr.</param>
         public void AddColumn(string columnName, string parameterName)
         {
             DbTableJoin table = MainTable;
-            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName, table.TableName, columnName), parameterName);
-            if(!table.SelectColumns.Contains(columnName))
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName
+                    , table.TableName, columnName), parameterName);
+            if (!table.SelectColumns.Contains(columnName))
                 table.SelectColumns.Add(columnName);
         }
 
         /// <summary>
         /// Adds a column for updating or inserting. Uses function as parameter
         /// </summary>
-        /// <param name="columnName"></param>
+        /// <param name="columnName">Column name from main table</param>
         /// <param name="function"></param>
         public void AddColumn(string columnName, DbFunctionStructure function)
         {
             DbTableJoin table = MainTable;
-            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName, table.TableName, columnName), function);
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
+                    table.SchemaName, table.TableName, columnName), function);
             if(!table.SelectColumns.Contains(columnName))
                 table.SelectColumns.Add(columnName);
         }
@@ -465,7 +640,8 @@ namespace B1.DataAccess
         public void AddColumn(string columnName, DbParameter parameter)
         {
             DbTableJoin table = MainTable;
-            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName, table.TableName, columnName), parameter);
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
+                    table.SchemaName, table.TableName, columnName), parameter);
             if(!table.SelectColumns.Contains(columnName))
                 table.SelectColumns.Add(columnName);
         }
@@ -478,7 +654,8 @@ namespace B1.DataAccess
         public void AddColumn(string columnName, DbConstValue value)
         {
             DbTableJoin table = MainTable;
-            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName, table.TableName, columnName), value);
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
+                    table.SchemaName, table.TableName, columnName), value);
             if(!table.SelectColumns.Contains(columnName))
                 table.SelectColumns.Add(columnName);
         }
@@ -491,7 +668,8 @@ namespace B1.DataAccess
         public void AddColumn(string columnName, EnumDateTimeLocale dateFunction)
         {
             DbTableJoin table = Tables.First().Value.First();
-            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName, table.TableName, columnName), dateFunction);
+            ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
+                    table.SchemaName, table.TableName, columnName), dateFunction);
             if(!table.SelectColumns.Contains(columnName))
                 table.SelectColumns.Add(columnName);
         }
@@ -507,11 +685,14 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
 
             if (columnType != DbTableColumnType.ForInsertOnly)
-                ColumnsForUpdate.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameterName );
+                ColumnsForUpdate.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameterName );
             else if (columnType != DbTableColumnType.ForUpdateOnly)
-                ColumnsForInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameterName );
+                ColumnsForInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameterName );
             else
-                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameterName );
+                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameterName );
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
@@ -528,11 +709,14 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
 
             if (columnType != DbTableColumnType.ForInsertOnly)
-                ColumnsForUpdate.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), function );
+                ColumnsForUpdate.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), function );
             else if (columnType != DbTableColumnType.ForUpdateOnly)
-                ColumnsForInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), function );
+                ColumnsForInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), function );
             else
-                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), function );
+                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), function );
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
@@ -549,11 +733,14 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
 
             if (columnType != DbTableColumnType.ForInsertOnly)
-                ColumnsForUpdate.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameter );
+                ColumnsForUpdate.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameter );
             else if (columnType != DbTableColumnType.ForUpdateOnly)
-                ColumnsForInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameter );
+                ColumnsForInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameter );
             else
-                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), parameter );
+                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), parameter );
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
@@ -570,11 +757,14 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
 
             if (columnType != DbTableColumnType.ForInsertOnly)
-                ColumnsForUpdate.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), value );
+                ColumnsForUpdate.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), value );
             else if (columnType != DbTableColumnType.ForUpdateOnly)
-                ColumnsForInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), value );
+                ColumnsForInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), value );
             else
-                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), value );
+                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), value );
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
@@ -591,11 +781,14 @@ namespace B1.DataAccess
             DbTableJoin table = Tables.First().Value.First();
 
             if (columnType != DbTableColumnType.ForInsertOnly)
-                ColumnsForUpdate.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), dateFunction );
+                ColumnsForUpdate.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), dateFunction );
             else if (columnType != DbTableColumnType.ForUpdateOnly)
-                ColumnsForInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), dateFunction );
+                ColumnsForInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), dateFunction );
             else
-                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( table.SchemaName, table.TableName, columnName ), dateFunction );
+                ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
+                        table.SchemaName, table.TableName, columnName ), dateFunction );
 
             if (!table.SelectColumns.Contains( columnName ))
                 table.SelectColumns.Add( columnName );
@@ -868,7 +1061,6 @@ namespace B1.DataAccess
                             _whereCondition._predicate.Parameters.First().Name));
         }
 
-
         /// <summary>
         /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements
         /// </summary>
@@ -878,6 +1070,28 @@ namespace B1.DataAccess
         public DbPredicateString AliasedColumn(string tableAlias, string columnName)
         {
             return tableAlias + "." + columnName;
+        }
+
+        /// <summary>
+        /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements
+        /// It will use the main table's alias as the qualification of the column
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns>MainTable.Alias.columnName;</returns>
+        public DbPredicateString AliasedColumn(string columnName)
+        {
+            return AliasedColumn(MainTable.TableAlias, columnName);
+        }
+
+        /// <summary>
+        /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements
+        /// It will use the alias of the current join predicate as the qualification of the column
+        /// </summary>
+        /// <param name="columnName"></param>
+        /// <returns>joinAlias.columnName;</returns>
+        public DbPredicateString JoinAliasedColumn(string columnName)
+        {
+            return _joinAlias + "." + columnName;
         }
 
         /// <summary>
@@ -941,6 +1155,22 @@ namespace B1.DataAccess
         /// <summary>
         /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements
         /// </summary>
+        /// <param name="columnName">Unqualified Column Name from the MainTable</param>
+        /// <returns>DbPredicateString of the fully qualified column Name</returns>
+        public DbPredicateString Parameter(string columnName)
+        {
+            return new DbPredicateStringParameter(new DbPredicateParameter()
+            {
+                ParameterName = _daMgr.BuildParamName(columnName),
+                TableName = MainTable.TableName,
+                ColumnName = columnName,
+                SchemaName = MainTable.SchemaName
+            });
+        }
+
+        /// <summary>
+        /// Meant for use in SetWhereCondition expressions, Join predicate expressions, and Case statements
+        /// </summary>
         /// <param name="tableName"></param>
         /// <param name="columnName"></param>
         /// <param name="parameterName"></param>
@@ -948,12 +1178,12 @@ namespace B1.DataAccess
         public DbPredicateString Parameter(string tableName, string columnName, string parameterName)
         {
             return new DbPredicateStringParameter(new DbPredicateParameter()
-                {
-                    ParameterName = parameterName,
-                    TableName = tableName,
-                    ColumnName = columnName,
-                    SchemaName = GetTable(tableName).SchemaName
-                });
+            {
+                ParameterName = parameterName,
+                TableName = tableName,
+                ColumnName = columnName,
+                SchemaName = GetTable(tableName).SchemaName
+            });
         }
 
         /// <summary>
@@ -1005,7 +1235,12 @@ namespace B1.DataAccess
                 string parameterNamePrefix)
         {
             string tableAlias = GetTable(schemaName, tableName).TableAlias;
-            return new DbPredicateInClause(schemaName, tableName, tableAlias, columnName, numParameters, parameterNamePrefix);
+            return new DbPredicateInClause(schemaName
+                    , tableName
+                    , tableAlias
+                    , columnName
+                    , numParameters
+                    , parameterNamePrefix);
         }
    
         /// <summary>
@@ -1458,7 +1693,8 @@ namespace B1.DataAccess
 
             // The equal operator will not be used, This lambda is just a convenient way to get the left and right and side
             // of the expression.
-            Expression<Func<DbTableDmlMgr, bool>> exp = (t) => t.Column(finalSchemaName, finalTableName, finalColumnName) == finalParameter;
+            Expression<Func<DbTableDmlMgr, bool>> exp = (t) => 
+                    t.Column(finalSchemaName, finalTableName, finalColumnName) == finalParameter;
 
             return GetComparisonExpression(((BinaryExpression)exp.Body).Left, ((BinaryExpression)exp.Body).Right, 
                     finalComparisonOperator);

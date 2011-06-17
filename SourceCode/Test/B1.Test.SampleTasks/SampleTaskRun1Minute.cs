@@ -16,9 +16,9 @@ namespace B1.Test.SampleTasks
 
         public SampleTaskRun1Minute(DataAccessMgr daMgr
             , string taskId
-            , string payload
+            , string parameters
             , TaskCompletedDelegate taskCompletedHandler)
-            : base(daMgr, taskId, payload, taskCompletedHandler)
+            : base(daMgr, taskId, parameters, taskCompletedHandler)
         {
         }
 
