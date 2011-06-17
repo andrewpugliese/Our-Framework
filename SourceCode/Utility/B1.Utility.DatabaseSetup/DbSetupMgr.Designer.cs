@@ -37,10 +37,10 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnExit = new System.Windows.Forms.Button();
             this.cmbDbType = new System.Windows.Forms.ComboBox();
             this.btnStart = new System.Windows.Forms.Button();
@@ -206,6 +206,18 @@
             this.dgvUserSessions = new System.Windows.Forms.DataGridView();
             this.Users = new System.Windows.Forms.GroupBox();
             this.tabTaskProcessing = new System.Windows.Forms.TabPage();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.rbTPQNotQueued = new System.Windows.Forms.RadioButton();
+            this.rbTPQAll = new System.Windows.Forms.RadioButton();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.tbConfigId = new System.Windows.Forms.TextBox();
+            this.label55 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label54 = new System.Windows.Forms.Label();
+            this.label53 = new System.Windows.Forms.Label();
+            this.btnRefreshTPQ = new System.Windows.Forms.Button();
+            this.label52 = new System.Windows.Forms.Label();
+            this.dgvTPQ = new System.Windows.Forms.DataGridView();
             this.nudMaxTasks = new System.Windows.Forms.NumericUpDown();
             this.label51 = new System.Windows.Forms.Label();
             this.tbTaskAssemblyPath = new System.Windows.Forms.TextBox();
@@ -219,6 +231,7 @@
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnTestPageMgrLINQ = new System.Windows.Forms.Button();
             this.btnSaveContext = new System.Windows.Forms.Button();
             this.btnTestCompound = new System.Windows.Forms.Button();
             this.btnTestLINQQueries = new System.Windows.Forms.Button();
@@ -228,19 +241,8 @@
             this.btnAbort = new System.Windows.Forms.Button();
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
-            this.btnRefreshTPQ = new System.Windows.Forms.Button();
-            this.label52 = new System.Windows.Forms.Label();
-            this.dgvTPQ = new System.Windows.Forms.DataGridView();
-            this.label53 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label54 = new System.Windows.Forms.Label();
-            this.tbConfigId = new System.Windows.Forms.TextBox();
-            this.label55 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.rbTPQNotQueued = new System.Windows.Forms.RadioButton();
-            this.rbTPQAll = new System.Windows.Forms.RadioButton();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.btnInlineView = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -264,11 +266,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).BeginInit();
             this.tabTaskProcessing.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).BeginInit();
             this.tabTaskRegister.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).BeginInit();
             this.tabTestEF.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).BeginInit();
             this.SuspendLayout();
             // 
             // btnExit
@@ -2277,6 +2279,150 @@
             this.tabTaskProcessing.Text = "Test Task Processing";
             this.tabTaskProcessing.UseVisualStyleBackColor = true;
             // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Enabled = false;
+            this.radioButton1.Location = new System.Drawing.Point(445, 14);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(64, 17);
+            this.radioButton1.TabIndex = 195;
+            this.radioButton1.Text = "InActive";
+            this.radioButton1.UseVisualStyleBackColor = true;
+            // 
+            // rbTPQNotQueued
+            // 
+            this.rbTPQNotQueued.AutoSize = true;
+            this.rbTPQNotQueued.Enabled = false;
+            this.rbTPQNotQueued.Location = new System.Drawing.Point(384, 13);
+            this.rbTPQNotQueued.Name = "rbTPQNotQueued";
+            this.rbTPQNotQueued.Size = new System.Drawing.Size(83, 17);
+            this.rbTPQNotQueued.TabIndex = 194;
+            this.rbTPQNotQueued.Text = "Not Queued";
+            this.rbTPQNotQueued.UseVisualStyleBackColor = true;
+            // 
+            // rbTPQAll
+            // 
+            this.rbTPQAll.AutoSize = true;
+            this.rbTPQAll.Checked = true;
+            this.rbTPQAll.Enabled = false;
+            this.rbTPQAll.Location = new System.Drawing.Point(342, 14);
+            this.rbTPQAll.Name = "rbTPQAll";
+            this.rbTPQAll.Size = new System.Drawing.Size(36, 17);
+            this.rbTPQAll.TabIndex = 193;
+            this.rbTPQAll.TabStop = true;
+            this.rbTPQAll.Text = "All";
+            this.rbTPQAll.UseVisualStyleBackColor = true;
+            // 
+            // groupBox6
+            // 
+            this.groupBox6.Location = new System.Drawing.Point(268, 13);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(379, 20);
+            this.groupBox6.TabIndex = 196;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "StatusCode";
+            // 
+            // tbConfigId
+            // 
+            this.tbConfigId.Enabled = false;
+            this.tbConfigId.Location = new System.Drawing.Point(385, 412);
+            this.tbConfigId.Name = "tbConfigId";
+            this.tbConfigId.Size = new System.Drawing.Size(205, 20);
+            this.tbConfigId.TabIndex = 191;
+            // 
+            // label55
+            // 
+            this.label55.AutoSize = true;
+            this.label55.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label55.ForeColor = System.Drawing.SystemColors.WindowFrame;
+            this.label55.Location = new System.Drawing.Point(382, 396);
+            this.label55.Name = "label55";
+            this.label55.Size = new System.Drawing.Size(58, 13);
+            this.label55.TabIndex = 192;
+            this.label55.Text = "Config Id";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Enabled = false;
+            this.textBox1.Location = new System.Drawing.Point(156, 412);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(205, 20);
+            this.textBox1.TabIndex = 189;
+            // 
+            // label54
+            // 
+            this.label54.AutoSize = true;
+            this.label54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label54.ForeColor = System.Drawing.SystemColors.WindowFrame;
+            this.label54.Location = new System.Drawing.Point(153, 396);
+            this.label54.Name = "label54";
+            this.label54.Size = new System.Drawing.Size(85, 13);
+            this.label54.TabIndex = 190;
+            this.label54.Text = "Application Id";
+            // 
+            // label53
+            // 
+            this.label53.AutoSize = true;
+            this.label53.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label53.ForeColor = System.Drawing.SystemColors.WindowFrame;
+            this.label53.Location = new System.Drawing.Point(467, 448);
+            this.label53.Name = "label53";
+            this.label53.Size = new System.Drawing.Size(180, 13);
+            this.label53.TabIndex = 188;
+            this.label53.Text = "Task Functions Assembly Path";
+            // 
+            // btnRefreshTPQ
+            // 
+            this.btnRefreshTPQ.Location = new System.Drawing.Point(171, 7);
+            this.btnRefreshTPQ.Name = "btnRefreshTPQ";
+            this.btnRefreshTPQ.Size = new System.Drawing.Size(79, 25);
+            this.btnRefreshTPQ.TabIndex = 187;
+            this.btnRefreshTPQ.Text = "Refresh";
+            this.btnRefreshTPQ.UseVisualStyleBackColor = true;
+            this.btnRefreshTPQ.Click += new System.EventHandler(this.btnRefreshTPQ_Click);
+            // 
+            // label52
+            // 
+            this.label52.AutoSize = true;
+            this.label52.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label52.ForeColor = System.Drawing.SystemColors.WindowFrame;
+            this.label52.Location = new System.Drawing.Point(23, 18);
+            this.label52.Name = "label52";
+            this.label52.Size = new System.Drawing.Size(142, 13);
+            this.label52.TabIndex = 186;
+            this.label52.Text = "Task Processing Queue";
+            // 
+            // dgvTPQ
+            // 
+            this.dgvTPQ.AllowUserToAddRows = false;
+            this.dgvTPQ.AllowUserToDeleteRows = false;
+            this.dgvTPQ.AllowUserToOrderColumns = true;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTPQ.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            this.dgvTPQ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTPQ.DefaultCellStyle = dataGridViewCellStyle10;
+            this.dgvTPQ.GridColor = System.Drawing.SystemColors.ControlText;
+            this.dgvTPQ.Location = new System.Drawing.Point(14, 37);
+            this.dgvTPQ.MultiSelect = false;
+            this.dgvTPQ.Name = "dgvTPQ";
+            this.dgvTPQ.ReadOnly = true;
+            this.dgvTPQ.Size = new System.Drawing.Size(969, 253);
+            this.dgvTPQ.TabIndex = 185;
+            // 
             // nudMaxTasks
             // 
             this.nudMaxTasks.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -2439,7 +2585,8 @@
             // 
             // tabTestEF
             // 
-            this.tabTestEF.Controls.Add(this.button1);
+            this.tabTestEF.Controls.Add(this.btnInlineView);
+            this.tabTestEF.Controls.Add(this.btnTestPageMgrLINQ);
             this.tabTestEF.Controls.Add(this.btnSaveContext);
             this.tabTestEF.Controls.Add(this.btnTestCompound);
             this.tabTestEF.Controls.Add(this.btnTestLINQQueries);
@@ -2452,6 +2599,17 @@
             this.tabTestEF.TabIndex = 8;
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
+            // 
+            // btnTestPageMgrLINQ
+            // 
+            this.btnTestPageMgrLINQ.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestPageMgrLINQ.Location = new System.Drawing.Point(39, 305);
+            this.btnTestPageMgrLINQ.Name = "btnTestPageMgrLINQ";
+            this.btnTestPageMgrLINQ.Size = new System.Drawing.Size(194, 24);
+            this.btnTestPageMgrLINQ.TabIndex = 17;
+            this.btnTestPageMgrLINQ.Text = "Test PageMgr with LINQ Queries";
+            this.btnTestPageMgrLINQ.UseVisualStyleBackColor = true;
+            this.btnTestPageMgrLINQ.Click += new System.EventHandler(this.btnTestPageMgrLINQ_Click);
             // 
             // btnSaveContext
             // 
@@ -2534,159 +2692,15 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnRefreshTPQ
+            // btnInlineView
             // 
-            this.btnRefreshTPQ.Location = new System.Drawing.Point(171, 7);
-            this.btnRefreshTPQ.Name = "btnRefreshTPQ";
-            this.btnRefreshTPQ.Size = new System.Drawing.Size(79, 25);
-            this.btnRefreshTPQ.TabIndex = 187;
-            this.btnRefreshTPQ.Text = "Refresh";
-            this.btnRefreshTPQ.UseVisualStyleBackColor = true;
-            this.btnRefreshTPQ.Click += new System.EventHandler(this.btnRefreshTPQ_Click);
-            // 
-            // label52
-            // 
-            this.label52.AutoSize = true;
-            this.label52.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label52.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label52.Location = new System.Drawing.Point(23, 18);
-            this.label52.Name = "label52";
-            this.label52.Size = new System.Drawing.Size(142, 13);
-            this.label52.TabIndex = 186;
-            this.label52.Text = "Task Processing Queue";
-            // 
-            // dgvTPQ
-            // 
-            this.dgvTPQ.AllowUserToAddRows = false;
-            this.dgvTPQ.AllowUserToDeleteRows = false;
-            this.dgvTPQ.AllowUserToOrderColumns = true;
-            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTPQ.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
-            this.dgvTPQ.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvTPQ.DefaultCellStyle = dataGridViewCellStyle10;
-            this.dgvTPQ.GridColor = System.Drawing.SystemColors.ControlText;
-            this.dgvTPQ.Location = new System.Drawing.Point(14, 37);
-            this.dgvTPQ.MultiSelect = false;
-            this.dgvTPQ.Name = "dgvTPQ";
-            this.dgvTPQ.ReadOnly = true;
-            this.dgvTPQ.Size = new System.Drawing.Size(969, 253);
-            this.dgvTPQ.TabIndex = 185;
-            // 
-            // label53
-            // 
-            this.label53.AutoSize = true;
-            this.label53.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label53.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label53.Location = new System.Drawing.Point(467, 448);
-            this.label53.Name = "label53";
-            this.label53.Size = new System.Drawing.Size(180, 13);
-            this.label53.TabIndex = 188;
-            this.label53.Text = "Task Functions Assembly Path";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(156, 412);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(205, 20);
-            this.textBox1.TabIndex = 189;
-            // 
-            // label54
-            // 
-            this.label54.AutoSize = true;
-            this.label54.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label54.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label54.Location = new System.Drawing.Point(153, 396);
-            this.label54.Name = "label54";
-            this.label54.Size = new System.Drawing.Size(85, 13);
-            this.label54.TabIndex = 190;
-            this.label54.Text = "Application Id";
-            // 
-            // tbConfigId
-            // 
-            this.tbConfigId.Enabled = false;
-            this.tbConfigId.Location = new System.Drawing.Point(385, 412);
-            this.tbConfigId.Name = "tbConfigId";
-            this.tbConfigId.Size = new System.Drawing.Size(205, 20);
-            this.tbConfigId.TabIndex = 191;
-            // 
-            // label55
-            // 
-            this.label55.AutoSize = true;
-            this.label55.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label55.ForeColor = System.Drawing.SystemColors.WindowFrame;
-            this.label55.Location = new System.Drawing.Point(382, 396);
-            this.label55.Name = "label55";
-            this.label55.Size = new System.Drawing.Size(58, 13);
-            this.label55.TabIndex = 192;
-            this.label55.Text = "Config Id";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(704, 25);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(110, 23);
-            this.button1.TabIndex = 17;
-            this.button1.Text = "Test InLineSelect";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Enabled = false;
-            this.radioButton1.Location = new System.Drawing.Point(445, 14);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(64, 17);
-            this.radioButton1.TabIndex = 195;
-            this.radioButton1.Text = "InActive";
-            this.radioButton1.UseVisualStyleBackColor = true;
-            // 
-            // rbTPQNotQueued
-            // 
-            this.rbTPQNotQueued.AutoSize = true;
-            this.rbTPQNotQueued.Enabled = false;
-            this.rbTPQNotQueued.Location = new System.Drawing.Point(384, 13);
-            this.rbTPQNotQueued.Name = "rbTPQNotQueued";
-            this.rbTPQNotQueued.Size = new System.Drawing.Size(83, 17);
-            this.rbTPQNotQueued.TabIndex = 194;
-            this.rbTPQNotQueued.Text = "Not Queued";
-            this.rbTPQNotQueued.UseVisualStyleBackColor = true;
-            // 
-            // rbTPQAll
-            // 
-            this.rbTPQAll.AutoSize = true;
-            this.rbTPQAll.Checked = true;
-            this.rbTPQAll.Enabled = false;
-            this.rbTPQAll.Location = new System.Drawing.Point(342, 14);
-            this.rbTPQAll.Name = "rbTPQAll";
-            this.rbTPQAll.Size = new System.Drawing.Size(36, 17);
-            this.rbTPQAll.TabIndex = 193;
-            this.rbTPQAll.TabStop = true;
-            this.rbTPQAll.Text = "All";
-            this.rbTPQAll.UseVisualStyleBackColor = true;
-            // 
-            // groupBox6
-            // 
-            this.groupBox6.Location = new System.Drawing.Point(268, 13);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(379, 20);
-            this.groupBox6.TabIndex = 196;
-            this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "StatusCode";
+            this.btnInlineView.Location = new System.Drawing.Point(812, 25);
+            this.btnInlineView.Name = "btnInlineView";
+            this.btnInlineView.Size = new System.Drawing.Size(103, 23);
+            this.btnInlineView.TabIndex = 18;
+            this.btnInlineView.Text = "Test InlineView";
+            this.btnInlineView.UseVisualStyleBackColor = true;
+            this.btnInlineView.Click += new System.EventHandler(this.btnInlineView_Click);
             // 
             // DbSetupMgr
             // 
@@ -2730,12 +2744,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).EndInit();
             this.tabTaskProcessing.ResumeLayout(false);
             this.tabTaskProcessing.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).EndInit();
             this.tabTaskRegister.ResumeLayout(false);
             this.tabTaskRegister.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRegisteredTasks)).EndInit();
             this.tabTestEF.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2942,6 +2956,8 @@
         private System.Windows.Forms.RadioButton rbTPQNotQueued;
         private System.Windows.Forms.RadioButton rbTPQAll;
         private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.Button btnTestPageMgrLINQ;
+        private System.Windows.Forms.Button btnInlineView;
     }
 }
 

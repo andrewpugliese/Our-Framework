@@ -67,6 +67,8 @@
 *.meta
 App.config
 app.config
+Web.config
+web.config
 TmpBFC.CMD
 super011.*
 SUPER011.*

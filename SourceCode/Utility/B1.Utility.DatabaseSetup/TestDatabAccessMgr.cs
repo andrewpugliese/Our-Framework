@@ -924,5 +924,53 @@ namespace B1.Utility.DatabaseSetup
             DbCommand dbCmd2 = daMgr.BuildSelectDbCommand(resultsJoin2, null);
             DataTable tbl2 = daMgr.ExecuteDataSet(dbCmd2, null, null).Tables[0];
         }
+
+        public static void TestPagingMgrWithLINQ(DataAccessMgr daMgr)
+        {
+            B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
+
+            var resultsJoin1 = from a in entities.TestSequences
+                               from b in entities.TestSequences
+                               where a.AppSequenceId != b.AppSequenceId && a.AppSequenceName == b.AppSequenceName
+                               orderby new { a.AppSequenceName, a.AppSequenceId } ascending
+                               select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
+                               //?? select a;
+
+            PagingMgr pagingMgr = new PagingMgr(daMgr, resultsJoin1, DataAccess.Constants.PageSize, 20);
+            DataTable dt = pagingMgr.GetNextPage();
+
+        }
+
+        public static PagingMgr CreateSamplePagingMgrJoin(DataAccessMgr daMgr, Int16? pageSize
+                , string pagingState = null)
+        {
+            DbTableDmlMgr dmlJoin = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE,
+                    DataAccess.Constants.TABLE_TestSequence);
+
+            // INNER JOIN B1.TestSequence T2 ON T1.AppSequenceId <> T2.AppSequenceId 
+            // AND T1.AppSequenceName = T2.AppSequenceName 
+            string t2Alias = dmlJoin.AddJoin(DataAccess.Constants.SCHEMA_CORE, DataAccess.Constants.TABLE_TestSequence,
+                    DbTableJoinType.Inner,
+                    t => t.Column(DataAccess.Constants.SCHEMA_CORE,
+                        DataAccess.Constants.TABLE_TestSequence, Constants.AppSequenceId) !=
+                        t.Column(Constants.AppSequenceId) &&
+                        t.Column(DataAccess.Constants.SCHEMA_CORE,
+                        DataAccess.Constants.TABLE_TestSequence, Constants.AppSequenceName) ==
+                        t.Column(Constants.AppSequenceName));
+
+
+            // where T1.AppSequenceId > 1 AND T1.AppSequenceName > 'A'
+            dmlJoin.SetWhereCondition(t => t.Column(Constants.AppSequenceId) > 1 &&
+                t.Column(Constants.AppSequenceName) > 'A');
+
+            dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceName);
+            dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceId);
+            return new PagingMgr(daMgr
+                    , dmlJoin
+                ///        , new List<string> { Constants.AppSequenceName, Constants.AppSequenceId }
+                    , DataAccess.Constants.PageSize
+                    , pageSize
+                    , pagingState);
+        }
     }
 }
