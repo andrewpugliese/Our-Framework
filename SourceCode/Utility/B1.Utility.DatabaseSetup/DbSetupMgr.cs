@@ -2147,7 +2147,7 @@ namespace B1.Utility.DatabaseSetup
             dgvTPQ.Refresh();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnInlineView_Click(object sender, EventArgs e)
         {
             if (_daMgr == null)
                 CreateDbMgr();
