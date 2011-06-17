@@ -849,7 +849,7 @@ namespace B1.DataAccess
                                         , null
                                         , 0
                                         , ParameterDirection.Input
-                                        , DBNull.Value);
+                                        , DBNull.Value);    
                 else AddNewParameterToCollection(dbParams
                                         , bufferSize.ToString()
                                         , DbType.Int32
@@ -910,6 +910,26 @@ namespace B1.DataAccess
             dbCmd.Site = new ParameterSite(parser.Parameters);
 
             return dbCmd;
+        }
+
+        /// <summary>
+        /// Creates an update command with a where condition based on the (Non Qualified) columns (of the MainTable)
+        /// in lastModColumns.  If you need qualified columns use the overloaded version of this method.
+        /// If the the passed in DbTableDmlMgr already has a where condition, the where condition will be 
+        /// modified to include these additional column predicates. TWO paremeters will be generated for each last 
+        /// mod column. One for there where condition, and one for the new value. 
+        /// Use BuildParamName(string fieldName, bool isNewValueParam) to generate the names for the new/where paramaters.
+        /// </summary>
+        /// <param name="dmlChange">DbTableDmlMgr representing table to be updated. Can have where condition.</param>
+        /// <param name="lastModColumns">NON qualified column names that MUST belong to the MainTable.</param>
+        /// <returns>DbCommand</returns>
+        public DbCommand BuildChangeDbCommand(DbTableDmlMgr dmlChange, params string[] lastModColumns)
+        {
+            DbQualifiedObject<string>[] qualifiedColumns = new DbQualifiedObject<string>[lastModColumns.Length];
+            for (int i = 0; i < lastModColumns.Length; i++ )
+                qualifiedColumns[i] = new DbQualifiedObject<string>(
+                        dmlChange.MainTable.SchemaName, dmlChange.MainTable.TableName, lastModColumns[i]);
+            return BuildChangeDbCommand(dmlChange, qualifiedColumns);
         }
 
         /// <summary>
@@ -1633,9 +1653,14 @@ namespace B1.DataAccess
             foreach(var tableList in joinMgr.Tables.Values)
                 foreach(DbTableJoin join in tableList)
                 {
-                    joinClause.AppendFormat("{0}{1} {2}.{3} {4}", Environment.NewLine, 
-                            DbTableJoin.GetJoinStringFromType(join.JoinType),
-                            join.SchemaName, join.TableName, join.TableAlias);
+                    if (join.InlineView == null)
+                        joinClause.AppendFormat("{0}{1} {2}.{3} {4}", Environment.NewLine,
+                                DbTableJoin.GetJoinStringFromType(join.JoinType),
+                                join.SchemaName, join.TableName, join.TableAlias);
+                    else
+                        joinClause.AppendFormat("{0}{1} ({2}) {3}", Environment.NewLine,
+                                DbTableJoin.GetJoinStringFromType(join.JoinType),
+                                BuildSelect(join.InlineView, null).Item1, join.TableAlias);
 
                     if(join.JoinPredicate == null 
                         && (join.JoinType != DbTableJoinType.None
@@ -2595,9 +2620,10 @@ namespace B1.DataAccess
         /// <para>The sequence key corresponds to a tie-breaker value that will be significant
         /// when two threads generate a number at the same millisecond.</para>
         /// <para>For more details about the number format:</para>
-        /// <para><seealso cref="B1.Core.Functions.GetSequenceNumber(System.DateTime, Int64)"/></para>
+        /// <para>see function B1.Core.Functions.GetSequenceNumber(System.DateTime, Int64)</para>
         /// <para>For more details about the tie-breaker number:</para>
-        /// <para><seealso cref="B1.DataAccess.DataAccessMgr.GetNextUniqueId"/></para>
+        /// <para><seealso cref="GetNextUniqueId(string, UInt32, Int64?, Int64?)"/>
+        /// </para>
         /// </summary>
         /// <param name="sequenceKey">any string provided by the caller to associate with sequence number.</param>
         /// <returns>Unique Sequence Number that will correlate between threads and machines (e.g. 1111714372358100001)</returns>
@@ -2662,6 +2688,8 @@ namespace B1.DataAccess
         /// </summary>
         /// <param name="uniqueIdKey">The key that will point to the value</param>
         /// <param name="blockSize">The number of values to allocate continguously</param>
+        /// <param name="MaxIdValue">The maximum value that can be returned</param>
+        /// <param name="RolloverIdValue">The value to return once MaxIdValue has been exceeded.</param>
         /// <returns>The high value of the block size</returns>
         /// <remarks>The unique ids are stored in a database table: Core.UniqueIds
         /// <para>Each key is given its own row and can have its own value, cacheBlockSize, maxValue, and rolloverValue</para>
@@ -2778,15 +2806,13 @@ namespace B1.DataAccess
             }
         }
 
-
+        /// <summary>
         /// Returns a collection of type T based upon the results of the given DbCommand query.
         /// </summary>
         /// <typeparam name="T">Type to create</typeparam>
-        /// <param name="dbCommand">DAAB DbCommand object for select</param>
-        /// <param name="dbTrans">Database transaction object or null</param>
-        /// <param name="parameterNameValues">A set of parameter names and values or null. 
-        /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
-        /// <returns>Collection of Type T</returns>
+        /// <param name="context">DAAB DbCommand object for select</param>
+        /// <param name="entityStates">A set of entity state constants</param>
+         /// <returns>Collection of Type T</returns>
         public IEnumerable<T> ExecuteCollection<T>(ObjectContext context
                         , params EntityState[] entityStates) where T : new()
         {
@@ -2797,6 +2823,7 @@ namespace B1.DataAccess
             return collection;
         }
 
+        /// <summary>
         /// Returns a collection of type T based upon the results of the given DbCommand query.
         /// </summary>
         /// <typeparam name="T">Type to create</typeparam>
@@ -2883,7 +2910,6 @@ namespace B1.DataAccess
         /// <param name="dbCommand">DAAB DbCommand object for select</param>
         /// <param name="dbTrans">Database transaction object or null</param>
         /// <param name="context">An Entity Framework context object that will be affected</param>
-        /// <param name="entitySetName">The entity set name within the context object to affect changes</param>
         /// <param name="dataReaderHandler">An optional function accepting a datareader, dictionary of 
         /// properties for type T, an object context and entity set name, will populate an IEnumerable of T and
         /// update the object context.  To allow programmer to write custom handler.
@@ -2957,9 +2983,6 @@ namespace B1.DataAccess
         /// <param name="dbCommand">DAAB DbCommand object for select</param>
         /// <param name="dbTrans">Database transaction object or null</param>
         /// <param name="context">An Entity Framework context object that will be affected</param>
-        /// <param name="entitySetName">The entity set name within the context object to affect changes</param>
-        /// properties for type T, will populate an IEnumerable of T. 
-        /// If null, an IEnumerable of T will be generated in the order recieved by the datareader</param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
         /// <returns>Collection of Type T</returns>

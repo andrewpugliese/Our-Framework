@@ -42,9 +42,10 @@ Task Processing
 
 	
 DMLMgr
-	Switch Order of Param (TableName, SchemaName) (Ad Join)
 	Comment all parameters
 	120 Limit on all lines
-	Make DMLMgr maintain DbTableStructure in memory on Add
-	AddToOrderBy //?? 
-	//?? DaMgr member?
+	
+DDL
+AppMaster
+	Change IsTaskProcessingEngine to AllowMultipleSessions
+	

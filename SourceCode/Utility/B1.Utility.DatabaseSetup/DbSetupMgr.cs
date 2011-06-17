@@ -1770,6 +1770,8 @@ namespace B1.Utility.DatabaseSetup
             btnStartTPE.Enabled = false;
             if (_daMgr == null)
                 CreateDbMgr();
+            if (_appSession == null)
+                StartAppSession();
             _tpe = new TaskProcessEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
             _tpe.Start();
         }
@@ -2133,6 +2135,34 @@ namespace B1.Utility.DatabaseSetup
             sequences[2].AppLocalTime = DateTime.Now;
 
             _daMgr.SaveContext(entities, true);
+        }
+
+        private void btnRefreshTPQ_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+            DataTable dt = TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueList(
+                    _daMgr, TaskProcessingQueue.TaskProcessingQueueListEnum.Queued);
+            dgvTPQ.DataSource = dt;
+            dgvTPQ.Refresh();
+        }
+
+        private void btnInlineView_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+            DbTableStructure tblTestSequence = _daMgr.DbCatalogGetTable(DataAccess.Constants.SCHEMA_CORE
+                    , DataAccess.Constants.TABLE_TestSequence);
+            DbTableDmlMgr dmlSelectOuter = new DbTableDmlMgr(_daMgr, tblTestSequence);
+            DbTableDmlMgr dmlSelectInner = new DbTableDmlMgr(_daMgr, new DbTableStructure(tblTestSequence));
+            dmlSelectInner.SetWhereCondition(w => w.Column(Constants.AppSequenceId) >= w.Parameter(Constants.AppSequenceId));
+            dmlSelectOuter.AddJoin(dmlSelectInner, DbTableJoinType.Inner
+                    , j => j.JoinAliasedColumn(Constants.AppSequenceId)
+                        == j.AliasedColumn(Constants.AppSequenceId));
+            dmlSelectOuter.AddOrderByColumnAscending(Constants.AppSequenceId);
+            DbCommand dbCmd = _daMgr.BuildSelectDbCommand(dmlSelectOuter, 10);
+            dbCmd.Parameters[_daMgr.BuildParamName(Constants.AppSequenceId)].Value = 0;
+            DataTable dt = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
     }

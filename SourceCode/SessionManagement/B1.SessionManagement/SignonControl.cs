@@ -124,32 +124,22 @@ namespace B1.SessionManagement
             DbTableDmlMgr dmlChange = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                     , Constants.SignonControl);
 
-            dmlChange.AddColumn(Constants.TimeoutSeconds
-                    , _daMgr.BuildParamName(Constants.TimeoutSeconds));
-            dmlChange.AddColumn(Constants.SignoffWarningMsg
-                    , _daMgr.BuildParamName(Constants.SignoffWarningMsg));
-            dmlChange.AddColumn(Constants.ForceSignOff
-                    , _daMgr.BuildParamName(Constants.ForceSignOff));
-            dmlChange.AddColumn(Constants.RestrictSignon
-                    , _daMgr.BuildParamName(Constants.RestrictSignon));
-            dmlChange.AddColumn(Constants.StatusSeconds
-                    , _daMgr.BuildParamName(Constants.StatusSeconds));
-            dmlChange.AddColumn(Constants.RestrictSignonMsg
-                    , _daMgr.BuildParamName(Constants.RestrictSignonMsg));
-            dmlChange.AddColumn(Constants.FailedAttemptLimit
-                    , _daMgr.BuildParamName(Constants.FailedAttemptLimit));
+            dmlChange.AddColumn(Constants.TimeoutSeconds);
+            dmlChange.AddColumn(Constants.SignoffWarningMsg);
+            dmlChange.AddColumn(Constants.ForceSignOff);
+            dmlChange.AddColumn(Constants.RestrictSignon);
+            dmlChange.AddColumn(Constants.StatusSeconds);
+            dmlChange.AddColumn(Constants.RestrictSignonMsg);
+            dmlChange.AddColumn(Constants.FailedAttemptLimit);
 
             dmlChange.SetWhereCondition((j) =>
-                    j.Column(Constants.SignonControl, Constants.ControlCode) ==
-                    j.Parameter(Constants.SignonControl, Constants.ControlCode,
-                        _daMgr.BuildParamName(Constants.ControlCode)));
+                    j.Column(Constants.SignonControl) ==
+                    j.Parameter(Constants.SignonControl));
 
             DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);
             DbCommand cmdChangeOrig = _daMgr.BuildChangeDbCommand(dmlChange
-                    , new DbQualifiedObject<string>(DataAccess.Constants.SCHEMA_CORE
-                        , Constants.SignonControl, Constants.LastModifiedUserCode)
-                    , new DbQualifiedObject<string>(DataAccess.Constants.SCHEMA_CORE
-                        , Constants.SignonControl, Constants.LastModifiedDateTime));
+                    , Constants.LastModifiedUserCode
+                    , Constants.LastModifiedDateTime);
 
             cmdChangeOrig.Parameters[_daMgr.BuildParamName(Constants.ControlCode)].Value
                     = newControlSettings.SessionControlCode;

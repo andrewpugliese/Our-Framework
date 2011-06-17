@@ -62,6 +62,7 @@ ON B1.TaskProcessingQueue
 	, WaitForNoUsers
 	, WaitForEngineId
 	, WaitForConfigId
+	, TaskQueueCode
 ) ON B1CoreIdx
 
 GO
@@ -75,11 +76,11 @@ ON B1.TaskProcessingQueue
 
 GO
 
-CREATE UNIQUE INDEX UI_TaskProcessingQueue_LastCompleted
+CREATE UNIQUE INDEX UI_TaskProcessingQueue_Status
 ON B1.TaskProcessingQueue
 (
-	LastCompletedCode
-	, CompletedDateTime
+	StatusCode
+	, StatusDateTime
 	, TaskQueueCode
 ) ON B1CoreIdx
 
