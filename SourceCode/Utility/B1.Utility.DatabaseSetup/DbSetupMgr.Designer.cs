@@ -206,7 +206,7 @@
             this.dgvUserSessions = new System.Windows.Forms.DataGridView();
             this.Users = new System.Windows.Forms.GroupBox();
             this.tabTaskProcessing = new System.Windows.Forms.TabPage();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
+            this.rbTPQqueued = new System.Windows.Forms.RadioButton();
             this.rbTPQNotQueued = new System.Windows.Forms.RadioButton();
             this.rbTPQAll = new System.Windows.Forms.RadioButton();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
@@ -231,6 +231,7 @@
             this.dgvRegisteredTasks = new System.Windows.Forms.DataGridView();
             this.btnTaskRegister = new System.Windows.Forms.Button();
             this.tabTestEF = new System.Windows.Forms.TabPage();
+            this.btnInlineView = new System.Windows.Forms.Button();
             this.btnTestPageMgrLINQ = new System.Windows.Forms.Button();
             this.btnSaveContext = new System.Windows.Forms.Button();
             this.btnTestCompound = new System.Windows.Forms.Button();
@@ -242,7 +243,9 @@
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.button1 = new System.Windows.Forms.Button();
-            this.btnInlineView = new System.Windows.Forms.Button();
+            this.rbTPQInProcess = new System.Windows.Forms.RadioButton();
+            this.rbTPQFailed = new System.Windows.Forms.RadioButton();
+            this.rbTPQSucceeded = new System.Windows.Forms.RadioButton();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -266,6 +269,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.nudSignonSessions)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).BeginInit();
             this.tabTaskProcessing.SuspendLayout();
+            this.groupBox6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).BeginInit();
             this.tabTaskRegister.SuspendLayout();
@@ -2252,7 +2256,6 @@
             // 
             // tabTaskProcessing
             // 
-            this.tabTaskProcessing.Controls.Add(this.radioButton1);
             this.tabTaskProcessing.Controls.Add(this.rbTPQNotQueued);
             this.tabTaskProcessing.Controls.Add(this.rbTPQAll);
             this.tabTaskProcessing.Controls.Add(this.groupBox6);
@@ -2279,16 +2282,16 @@
             this.tabTaskProcessing.Text = "Test Task Processing";
             this.tabTaskProcessing.UseVisualStyleBackColor = true;
             // 
-            // radioButton1
+            // rbTPQqueued
             // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Enabled = false;
-            this.radioButton1.Location = new System.Drawing.Point(445, 14);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(64, 17);
-            this.radioButton1.TabIndex = 195;
-            this.radioButton1.Text = "InActive";
-            this.radioButton1.UseVisualStyleBackColor = true;
+            this.rbTPQqueued.AutoSize = true;
+            this.rbTPQqueued.Enabled = false;
+            this.rbTPQqueued.Location = new System.Drawing.Point(202, 0);
+            this.rbTPQqueued.Name = "rbTPQqueued";
+            this.rbTPQqueued.Size = new System.Drawing.Size(63, 17);
+            this.rbTPQqueued.TabIndex = 195;
+            this.rbTPQqueued.Text = "Queued";
+            this.rbTPQqueued.UseVisualStyleBackColor = true;
             // 
             // rbTPQNotQueued
             // 
@@ -2316,9 +2319,13 @@
             // 
             // groupBox6
             // 
+            this.groupBox6.Controls.Add(this.rbTPQSucceeded);
+            this.groupBox6.Controls.Add(this.rbTPQqueued);
+            this.groupBox6.Controls.Add(this.rbTPQFailed);
+            this.groupBox6.Controls.Add(this.rbTPQInProcess);
             this.groupBox6.Location = new System.Drawing.Point(268, 13);
             this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(379, 20);
+            this.groupBox6.Size = new System.Drawing.Size(496, 20);
             this.groupBox6.TabIndex = 196;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "StatusCode";
@@ -2600,6 +2607,16 @@
             this.tabTestEF.Text = "Test Entity Framework";
             this.tabTestEF.UseVisualStyleBackColor = true;
             // 
+            // btnInlineView
+            // 
+            this.btnInlineView.Location = new System.Drawing.Point(812, 25);
+            this.btnInlineView.Name = "btnInlineView";
+            this.btnInlineView.Size = new System.Drawing.Size(103, 23);
+            this.btnInlineView.TabIndex = 18;
+            this.btnInlineView.Text = "Test InlineView";
+            this.btnInlineView.UseVisualStyleBackColor = true;
+            this.btnInlineView.Click += new System.EventHandler(this.btnInlineView_Click);
+            // 
             // btnTestPageMgrLINQ
             // 
             this.btnTestPageMgrLINQ.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -2692,15 +2709,45 @@
             this.ttPaging.InitialDelay = 100;
             this.ttPaging.ReshowDelay = 20;
             // 
-            // btnInlineView
+            // button1
             // 
-            this.btnInlineView.Location = new System.Drawing.Point(812, 25);
-            this.btnInlineView.Name = "btnInlineView";
-            this.btnInlineView.Size = new System.Drawing.Size(103, 23);
-            this.btnInlineView.TabIndex = 18;
-            this.btnInlineView.Text = "Test InlineView";
-            this.btnInlineView.UseVisualStyleBackColor = true;
-            this.btnInlineView.Click += new System.EventHandler(this.btnInlineView_Click);
+            this.button1.Location = new System.Drawing.Point(0, 0);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 0;
+            // 
+            // rbTPQInProcess
+            // 
+            this.rbTPQInProcess.AutoSize = true;
+            this.rbTPQInProcess.Enabled = false;
+            this.rbTPQInProcess.Location = new System.Drawing.Point(273, 0);
+            this.rbTPQInProcess.Name = "rbTPQInProcess";
+            this.rbTPQInProcess.Size = new System.Drawing.Size(72, 17);
+            this.rbTPQInProcess.TabIndex = 197;
+            this.rbTPQInProcess.Text = "InProcess";
+            this.rbTPQInProcess.UseVisualStyleBackColor = true;
+            // 
+            // rbTPQFailed
+            // 
+            this.rbTPQFailed.AutoSize = true;
+            this.rbTPQFailed.Enabled = false;
+            this.rbTPQFailed.Location = new System.Drawing.Point(351, 0);
+            this.rbTPQFailed.Name = "rbTPQFailed";
+            this.rbTPQFailed.Size = new System.Drawing.Size(53, 17);
+            this.rbTPQFailed.TabIndex = 198;
+            this.rbTPQFailed.Text = "Failed";
+            this.rbTPQFailed.UseVisualStyleBackColor = true;
+            // 
+            // rbTPQSucceeded
+            // 
+            this.rbTPQSucceeded.AutoSize = true;
+            this.rbTPQSucceeded.Enabled = false;
+            this.rbTPQSucceeded.Location = new System.Drawing.Point(410, 0);
+            this.rbTPQSucceeded.Name = "rbTPQSucceeded";
+            this.rbTPQSucceeded.Size = new System.Drawing.Size(80, 17);
+            this.rbTPQSucceeded.TabIndex = 199;
+            this.rbTPQSucceeded.Text = "Succeeded";
+            this.rbTPQSucceeded.UseVisualStyleBackColor = true;
             // 
             // DbSetupMgr
             // 
@@ -2744,6 +2791,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserSessions)).EndInit();
             this.tabTaskProcessing.ResumeLayout(false);
             this.tabTaskProcessing.PerformLayout();
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTPQ)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudMaxTasks)).EndInit();
             this.tabTaskRegister.ResumeLayout(false);
@@ -2952,12 +3001,15 @@
         private System.Windows.Forms.TextBox tbConfigId;
         private System.Windows.Forms.Label label55;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.RadioButton radioButton1;
+        private System.Windows.Forms.RadioButton rbTPQqueued;
         private System.Windows.Forms.RadioButton rbTPQNotQueued;
         private System.Windows.Forms.RadioButton rbTPQAll;
         private System.Windows.Forms.GroupBox groupBox6;
         private System.Windows.Forms.Button btnTestPageMgrLINQ;
         private System.Windows.Forms.Button btnInlineView;
+        private System.Windows.Forms.RadioButton rbTPQSucceeded;
+        private System.Windows.Forms.RadioButton rbTPQFailed;
+        private System.Windows.Forms.RadioButton rbTPQInProcess;
     }
 }
 

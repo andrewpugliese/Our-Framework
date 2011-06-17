@@ -361,7 +361,7 @@ namespace B1.DataAccess
                 , string schemaName
                 , string tableName
                 , params object[] selectColumns)
-            : this(daMgr, schemaName, tableName, null, DbTableJoinType.None, null, selectColumns)
+            : this(schemaName, tableName, null, daMgr, selectColumns)
         {
         }
 
@@ -369,15 +369,15 @@ namespace B1.DataAccess
         /// <summary>
         /// Creates instance of DbTableDmlMgr for the given table, alias and columns for select
         /// </summary>
-        /// <param name="daMgr">DataAccessMgr Object</param>
         /// <param name="schemaName">Schema table belongs to</param>
         /// <param name="tableName">Table name</param>
         /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="daMgr">DataAccessMgr Object</param>
         /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
-        public DbTableDmlMgr(DataAccessMgr daMgr
-                   , string schemaName
+        public DbTableDmlMgr(string schemaName
                    , string tableName
                    , string alias
+                   , DataAccessMgr daMgr
                    , params object[] selectColumns)
         {
             _daMgr = daMgr;
@@ -393,7 +393,7 @@ namespace B1.DataAccess
         public DbTableDmlMgr(DataAccessMgr daMgr
                 , DbTableStructure table
                 , params object[] selectColumns)
-            : this(daMgr, table, null, selectColumns)
+            : this(daMgr, null, table, selectColumns)
         {
         }
 
@@ -401,12 +401,12 @@ namespace B1.DataAccess
         /// Creates instance of DbTableDmlMgr with the given table structure, alias and columns for select
         /// </summary>
         /// <param name="daMgr">DataAccessMgr Object</param>
-        /// <param name="table">Main DbTableStructure</param>
         /// <param name="alias">An optional alias for the join; if null one will be generated</param>
+        /// <param name="table">Main DbTableStructure</param>
         /// <param name="selectColumns">Columns for select. If none are included, all we be used for select.</param> 
         public DbTableDmlMgr(DataAccessMgr daMgr
-                , DbTableStructure table
                 , string alias
+                , DbTableStructure table
                 , params object[] selectColumns)
         {
             _daMgr = daMgr;

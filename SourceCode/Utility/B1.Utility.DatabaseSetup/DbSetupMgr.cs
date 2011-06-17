@@ -2141,6 +2141,13 @@ namespace B1.Utility.DatabaseSetup
         {
             if (_daMgr == null)
                 CreateDbMgr();
+            TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueListEnum tpqList 
+                    = TaskProcessingQueue.TaskProcessingQueueListEnum.All;
+            if (rbTPQFailed.Checked)
+                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Failed;
+            if (rbTPQInProcess.Checked)
+                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.InProcess;
+
             DataTable dt = TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueList(
                     _daMgr, TaskProcessingQueue.TaskProcessingQueueListEnum.Queued);
             dgvTPQ.DataSource = dt;
