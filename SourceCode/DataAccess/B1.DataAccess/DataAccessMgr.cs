@@ -860,7 +860,7 @@ namespace B1.DataAccess
 
             return new Tuple<string,DbParameterCollection>(cmdText, dbParams);
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -869,8 +869,8 @@ namespace B1.DataAccess
         /// <param name="bufferSize"></param>
         /// <param name="defaultSchema"></param>
         /// <returns></returns>
-        public DbCommand BuildSelectDbCommand<TEntity>(IQueryable<TEntity> queryable, object bufferSize, 
-                string defaultSchema = null) where TEntity : class
+        internal Tuple<string, List<DbPredicateParameter>> BuildSelect<TEntity>(IQueryable<TEntity> queryable, 
+                string defaultSchema = null)
         {
             LinqQueryParser parser = new LinqQueryParser(queryable, this, defaultSchema);
 
@@ -883,9 +883,9 @@ namespace B1.DataAccess
             string orderBy = parser.GetOuterOrderBy();
             string groupBy = parser.GetOuterGroupBy();
 
-            StringBuilder selectCmd = new StringBuilder(string.Format("{0}{1} FROM {2}", 
-                select, 
-                Environment.NewLine, 
+            StringBuilder selectCmd = new StringBuilder(string.Format("{0}{1} FROM {2}",
+                select,
+                Environment.NewLine,
                 from));
 
             if(!string.IsNullOrWhiteSpace(where))
@@ -901,13 +901,29 @@ namespace B1.DataAccess
                 selectCmd.AppendFormat("{0}{1}",
                         Environment.NewLine, orderBy);
 
-            DbParameterCollection dbParams = BuildWhereClauseParams(parser.Parameters);
+            return new Tuple<string, List<DbPredicateParameter>>(selectCmd.ToString(), parser.Parameters);
+        }
 
-            string cmdText = FormatSQLSelectWithMaxRows(selectCmd.ToString(), bufferSize);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="bufferSize"></param>
+        /// <param name="defaultSchema"></param>
+        /// <returns></returns>
+        public DbCommand BuildSelectDbCommand<TEntity>(IQueryable<TEntity> queryable, object bufferSize, 
+                string defaultSchema = null) where TEntity : class
+        {
+
+            Tuple<string, List<DbPredicateParameter>> select = BuildSelect(queryable, defaultSchema);
+            DbParameterCollection dbParams = BuildWhereClauseParams(select.Item2);
+
+            string cmdText = FormatSQLSelectWithMaxRows(select.Item1, bufferSize);
             
             DbCommand dbCmd = BuildSelectDbCommand(cmdText, dbParams);
 
-            dbCmd.Site = new ParameterSite(parser.Parameters);
+            dbCmd.Site = new ParameterSite(select.Item2);
 
             return dbCmd;
         }
