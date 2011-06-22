@@ -759,11 +759,13 @@ namespace B1.DataAccess
         public DbCommand BuildSelectDbCommand(DbTableDmlMgr dmlSelect
                                             , object bufferSize)
         {
-            Tuple<string, DbParameterCollection> result = BuildSelect(dmlSelect, bufferSize);
+            Tuple<string, DbParameterCollection> result = BuildSelect(dmlSelect, bufferSize, null);
             return BuildSelectDbCommand(result.Item1, result.Item2);
         }
 
-        private Tuple<string, DbParameterCollection> BuildSelect(DbTableDmlMgr dmlSelect, object bufferSize)
+        internal Tuple<string, DbParameterCollection> BuildSelect(DbTableDmlMgr dmlSelect
+            , object bufferSize
+            , DbParameterCollection dbParams)
         {
             if (dmlSelect.Tables == null | dmlSelect.Tables.Count == 0)
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
@@ -781,9 +783,25 @@ namespace B1.DataAccess
                         Environment.NewLine, 
                         BuildCaseStatementsForSelect(dmlSelect));
 
+            foreach (InlineViewColumn inlineView in dmlSelect.InlineViewColumns)
+            {
+                selectClause.AppendFormat("{0}{1}({2}) as {3}", selectClause.Length > 0 ? ", " : "",
+                        Environment.NewLine,
+                        inlineView.InlineView,
+                        inlineView.Alias);
+                if (inlineView.dbParams != null)
+                    foreach (DbParameter dbParam in inlineView.dbParams)
+                        if (dbParams == null)
+                            dbParams = inlineView.dbParams;
+                        else if (!dbParams.Contains(dbParam.ParameterName))
+                            CopyParameterToCollection(dbParams, dbParam);
+            }
+
+            Tuple<string, DbParameterCollection> inLineView = BuildJoinClause(dmlSelect, dbParams);
+            dbParams = inLineView.Item2;
             selectClause.AppendFormat("{0} from {1} "
-                        , Environment.NewLine
-                        , BuildJoinClause(dmlSelect));
+                         , Environment.NewLine
+                         , inLineView.Item1);
             
             StringBuilder whereClause = new StringBuilder();
             if (dmlSelect._whereCondition != null)
@@ -836,9 +854,8 @@ namespace B1.DataAccess
 
             string cmdText = FormatSQLSelectWithMaxRows(selectSQL.ToString(), bufferSize);
 
-            DbParameterCollection dbParams = null;
             if (whereClause.Length > 0)
-                dbParams = BuildWhereClauseParams(dmlSelect._whereCondition.Parameters.Values);
+                dbParams = BuildWhereClauseParams(dmlSelect._whereCondition.Parameters.Values, dbParams);
 
             // only if BufferSize is a parameter (string) do we need a parameter
             // otherwise it was part of the commandText
@@ -1016,7 +1033,7 @@ namespace B1.DataAccess
 
             if(DatabaseType != EnumDbType.SqlServer)
             {
-                Tuple<string, DbParameterCollection> selectResult = BuildSelect(dmlUpdate, null);
+                Tuple<string, DbParameterCollection> selectResult = BuildSelect(dmlUpdate, null, null);
 
                 updateTable = string.Format("{0}({1}) {2}"
                         , Environment.NewLine
@@ -1097,7 +1114,7 @@ namespace B1.DataAccess
             {
                 updateClause.AppendFormat("{0} from {1} "
                             , Environment.NewLine
-                            , BuildJoinClause(dmlUpdate));
+                            , BuildJoinClause(dmlUpdate, null).Item1);
             
                 StringBuilder whereClause = new StringBuilder();
                 if(dmlUpdate._whereCondition != null)
@@ -1138,7 +1155,7 @@ namespace B1.DataAccess
             {
                 deleteSQL.AppendFormat("delete {0} from {1}"
                         , dmlDelete.MainTable.TableAlias
-                        , BuildJoinClause(dmlDelete));
+                        , BuildJoinClause(dmlDelete, null).Item1);
 
                 StringBuilder whereClause = new StringBuilder();
                 if(dmlDelete._whereCondition != null)
@@ -1160,11 +1177,11 @@ namespace B1.DataAccess
                 dmlDelete.MainTable.SelectColumns.Clear();
                 dmlDelete.MainTable.SelectColumns.Add("*");
 
-                Tuple<string, DbParameterCollection> selectResult = BuildSelect(dmlDelete, null);
+                Tuple<string, DbParameterCollection> selectResult = BuildSelect(dmlDelete, null, null);
 
                 deleteSQL.AppendFormat("delete from ({0})"
                         , selectResult.Item1
-                        , BuildJoinClause(dmlDelete));
+                        , BuildJoinClause(dmlDelete, null).Item1);
 
                 dbParams = selectResult.Item2;
             }
@@ -1646,7 +1663,8 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(sqlMerge.ToString(), dbParams);
         }
 
-        private string BuildJoinClause(DbTableDmlMgr joinMgr)
+        private Tuple<string, DbParameterCollection> BuildJoinClause(DbTableDmlMgr joinMgr
+            , DbParameterCollection dbParams)
         {
             StringBuilder joinClause = new StringBuilder();
 
@@ -1658,9 +1676,13 @@ namespace B1.DataAccess
                                 DbTableJoin.GetJoinStringFromType(join.JoinType),
                                 join.SchemaName, join.TableName, join.TableAlias);
                     else
+                    {
+                        Tuple<string, DbParameterCollection> inLineView = BuildSelect(join.InlineView, null, dbParams);
                         joinClause.AppendFormat("{0}{1} ({2}) {3}", Environment.NewLine,
                                 DbTableJoin.GetJoinStringFromType(join.JoinType),
-                                BuildSelect(join.InlineView, null).Item1, join.TableAlias);
+                                inLineView.Item1, join.TableAlias);
+                        dbParams = inLineView.Item2;
+                    }
 
                     if(join.JoinPredicate == null 
                         && (join.JoinType != DbTableJoinType.None
@@ -1671,7 +1693,7 @@ namespace B1.DataAccess
                         joinClause.AppendFormat(" ON {0}", join.JoinPredicate.ToString(this));
                 }
 
-            return joinClause.ToString();
+            return new Tuple<string, DbParameterCollection>(joinClause.ToString(), dbParams);
         }
 
         private string BuildWhereClause(Dictionary<string, object> ColumnValues)
@@ -1871,9 +1893,12 @@ namespace B1.DataAccess
 
             foreach (DbPredicateParameter parameter in parameters)
             {
-                if(parameter.Parameter != null)
-                    dbParams.Add(parameter.Parameter);
-                else if(parameter.ColumnName != null && parameter.TableName != null)
+                if (parameter.Parameter != null)
+                    if (!dbParams.Contains(parameter.Parameter))
+                        dbParams.Add(parameter.Parameter);
+                    else continue;
+                else if (parameter.ColumnName != null && parameter.TableName != null
+                         && !dbParams.Contains(parameter.ParameterName))
                 {
                     DbColumnStructure column = DbCatalogGetColumn(parameter.SchemaName
                                                     , parameter.TableName

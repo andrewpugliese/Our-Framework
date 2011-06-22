@@ -19,6 +19,7 @@ using Microsoft.Practices.EnterpriseLibrary.Data;
 
 using B1.Core;
 using B1.DataAccess;
+using B1.IDataAccess;
 using B1.LoggingManagement;
 using B1.ILoggingManagement;
 using B1.Configuration;
@@ -2147,9 +2148,15 @@ namespace B1.Utility.DatabaseSetup
                 tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Failed;
             if (rbTPQInProcess.Checked)
                 tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.InProcess;
+            if (rbTPQNotQueued.Checked)
+                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.NotQueued;
+            if (rbTPQSucceeded.Checked)
+                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Succeeded;
+            if (rbTPQqueued.Checked)
+                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Queued;
 
             DataTable dt = TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueList(
-                    _daMgr, TaskProcessingQueue.TaskProcessingQueueListEnum.Queued);
+                    _daMgr, tpqList);
             dgvTPQ.DataSource = dt;
             dgvTPQ.Refresh();
         }
@@ -2165,11 +2172,25 @@ namespace B1.Utility.DatabaseSetup
             dmlSelectInner.SetWhereCondition(w => w.Column(Constants.AppSequenceId) >= w.Parameter(Constants.AppSequenceId));
             dmlSelectOuter.AddJoin(dmlSelectInner, DbTableJoinType.Inner
                     , j => j.JoinAliasedColumn(Constants.AppSequenceId)
-                        == j.AliasedColumn(Constants.AppSequenceId));
+                        == j.AliasedColumn(Constants.AppSequenceId)
+                         , dmlSelectOuter.ColumnsAs(Constants.AppSequenceId, "InnerAppId"));
+
+
+            DbTableDmlMgr colInlineView = new DbTableDmlMgr(_daMgr, new DbTableStructure(tblTestSequence)
+                    , dmlSelectOuter.ColumnsAs(Constants.AppSequenceId, "ColInLineAppId"));
+            colInlineView.SetWhereCondition(w => w.Column(Constants.AppSequenceId) == w.Parameter(Constants.AppSequenceId));
+
+            dmlSelectOuter.AddInlineViewColumn(colInlineView);
             dmlSelectOuter.AddOrderByColumnAscending(Constants.AppSequenceId);
+            dmlSelectOuter.SetWhereCondition(w => w.JoinAliasedColumn(Constants.AppSequenceName)
+                        > w.Parameter(Constants.AppSequenceName));
+
             DbCommand dbCmd = _daMgr.BuildSelectDbCommand(dmlSelectOuter, 10);
+            dbCmd.Parameters[_daMgr.BuildParamName(Constants.AppSequenceName)].Value = "D";
             dbCmd.Parameters[_daMgr.BuildParamName(Constants.AppSequenceId)].Value = 0;
             DataTable dt = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+            MessageBox.Show("Inline View test succeeded.  Executing script: " + Environment.NewLine +
+                _daMgr.DbProviderLib.GetCommandDebugScript(dbCmd));
         }
 
     }

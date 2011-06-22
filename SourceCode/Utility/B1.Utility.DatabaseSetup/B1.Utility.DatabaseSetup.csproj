@@ -125,6 +125,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SampleDb.edmx</DependentUpon>
     </Compile>
+    <Compile Include="TaskProcessingQueueAdmin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TaskProcessingQueueAdmin.Designer.cs">
+      <DependentUpon>TaskProcessingQueueAdmin.cs</DependentUpon>
+    </Compile>
     <Compile Include="TestAppSessionControl.cs" />
     <EmbeddedResource Include="DbSetupMgr.resx">
       <DependentUpon>DbSetupMgr.cs</DependentUpon>
@@ -145,6 +151,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="TaskProcessingQueueAdmin.resx">
+      <DependentUpon>TaskProcessingQueueAdmin.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
@@ -180,6 +189,10 @@
     <ProjectReference Include="..\..\Cryptography\B1.Cryptography\B1.Cryptography.csproj">
       <Project>{0B6CCB9E-7DC2-48DF-BCBD-C700681548D9}</Project>
       <Name>B1.Cryptography</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DataAccess\B1.IDataAccessProvider\B1.IDataAccessProvider.csproj">
+      <Project>{7C5452DF-532E-4B8A-BE47-93042D684342}</Project>
+      <Name>B1.IDataAccessProvider</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\LoggingManagement\B1.LoggingManagement\B1.LoggingManagement.csproj">
       <Project>{7DB1E797-E40A-4815-9007-453152561250}</Project>

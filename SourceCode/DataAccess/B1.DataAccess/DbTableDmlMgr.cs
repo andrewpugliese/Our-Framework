@@ -94,8 +94,9 @@ namespace B1.DataAccess
         /// <param name="inlineView">DbTableDmlMgr instance for a inline view or query</param>
         /// <param name="joinType">Type of join</param>
         /// <param name="joinPredicate">Join predicate, i.e, SQL ON conditions</param>
-        public DbTableJoin(DbTableDmlMgr inlineView, string alias, DbTableJoinType joinType, 
-                DbPredicate joinPredicate)
+        /// <param name="selectColumns">Columns for select.</param>
+        public DbTableJoin(DbTableDmlMgr inlineView, string alias, DbTableJoinType joinType,
+                DbPredicate joinPredicate, params object[] selectColumns)
         {
             SchemaName = inlineView.MainTable.SchemaName;
             TableName = inlineView.MainTable.TableName;
@@ -106,10 +107,13 @@ namespace B1.DataAccess
                 JoinPredicate._newJoinTable = this;
             InlineView = new DbTableDmlMgr(inlineView);
             Columns = new Dictionary<string,object>(StringComparer.CurrentCultureIgnoreCase);
-            object[] selectColumns = new object[inlineView.QualifiedColumns.Count()];
-            int i = 0;
-            foreach (string qualifiedColumn in inlineView.QualifiedColumns.ToList<string>())
-                selectColumns[i++] = qualifiedColumn.Split(new char[] { '.' })[1];
+            if (selectColumns == null)
+            {
+                selectColumns = new object[inlineView.QualifiedColumns.Count()];
+                int i = 0;
+                foreach (string qualifiedColumn in inlineView.QualifiedColumns.ToList<string>())
+                    selectColumns[i++] = qualifiedColumn.Split(new char[] { '.' })[1];
+            }
             SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
         }
 
@@ -255,7 +259,7 @@ namespace B1.DataAccess
         string _joinAlias = null;
                       
         /// <summary>
-        /// Main table.
+        /// The Main table of the DML
         /// </summary>
         public DbTableJoin MainTable
         {
@@ -271,7 +275,7 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// returns all qualified columns.
+        /// Returns all qualified columns; columns can be constants, and fully qualified table column names
         /// </summary>
         public IEnumerable<string> QualifiedColumns
         {
@@ -317,6 +321,11 @@ namespace B1.DataAccess
         /// List of case statements to include in select.
         /// </summary>
         public readonly List<DbCase> CaseColumns = new List<DbCase>();
+
+        /// <summary>
+        /// List of inline view statements to include in select.
+        /// </summary>
+        public readonly List<InlineViewColumn> InlineViewColumns = new List<InlineViewColumn>();
 
         /// <summary>
         /// Get a DbTableJoin instance based on schema name and table name.
@@ -563,9 +572,10 @@ namespace B1.DataAccess
         /// <returns></returns>
         public string AddJoin(DbTableDmlMgr inlineView
                 , DbTableJoinType type
-                , Expression<Func<DbTableDmlMgr, bool>> predicate)
+                , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
         {
-            return AddJoin(inlineView, null, type, predicate);
+            return AddJoin(inlineView, null, type, predicate, selectColumns);
         }
 
         /// <summary>
@@ -579,14 +589,16 @@ namespace B1.DataAccess
         public string AddJoin(DbTableDmlMgr inlineView
                 , string alias
                 , DbTableJoinType type
-                , Expression<Func<DbTableDmlMgr, bool>> predicate)
+                 , Expression<Func<DbTableDmlMgr, bool>> predicate
+                , params object[] selectColumns)
         {
             _joinAlias = string.IsNullOrEmpty(alias) ? "V" + (TableCount + 1).ToString() : alias;
             Add(inlineView.MainTable.SchemaName, inlineView.MainTable.TableName,
                     new DbTableJoin(inlineView
                         , _joinAlias
                         , type
-                        , predicate == null ? null : new DbPredicate(predicate, this)));
+                        , predicate == null ? null : new DbPredicate(predicate, this)
+                        , selectColumns));
             return _joinAlias;
         }
 
@@ -934,6 +946,35 @@ namespace B1.DataAccess
             dbCase.Whens.AddRange(when);
 
             CaseColumns.Add(dbCase);
+        }
+
+
+        /// <summary>
+        /// Adds the given reference to DbTableDmlMgr as an inline query
+        /// </summary>
+        /// <param name="inlineView">DbTableDmlManager instance</param>
+        /// <returns>The alias assigned to the inline view</returns>
+        public string AddInlineViewColumn(DbTableDmlMgr inlineView)
+        {
+            return AddInlineViewColumn(inlineView, "I" + InlineViewColumns.Count().ToString());
+        }
+
+        /// <summary>
+        /// Adds the given reference to DbTableDmlMgr as an inline query and assigns it to the given alias
+        /// </summary>
+        /// <param name="inlineView">DbTableDmlManager instance</param>
+        /// <param name="alias">Alias to reference the Inline view with</param>
+        /// <returns>The alias assigned to the inline view</returns>
+        public string AddInlineViewColumn(DbTableDmlMgr inlineView, string alias)
+        {
+            Tuple<string, DbParameterCollection> inlineVw = _daMgr.BuildSelect(inlineView, null, null);
+            string inlineViewSelect = inlineVw.Item1;
+            InlineViewColumn ivc = new InlineViewColumn();
+            ivc.Alias = alias;
+            ivc.InlineView = inlineVw.Item1;
+            ivc.dbParams = inlineVw.Item2;
+            InlineViewColumns.Add(ivc);
+            return alias;
         }
 
         /// <summary>
@@ -1815,6 +1856,16 @@ namespace B1.DataAccess
     }
 
     /// <summary>
+    /// Class for constructing the inline view sql of a column in a select statement
+    /// </summary>
+    public class InlineViewColumn
+    {
+        public string InlineView;
+        public string Alias;
+        public DbParameterCollection dbParams;
+    }
+
+    /// <summary>
     /// Class for constructing WHEN portion of case statment
     /// </summary>
     public class DbCaseWhen
@@ -1914,7 +1965,7 @@ namespace B1.DataAccess
 
         public int Compare(object x, object y)
         {
-            return String.Compare(x.ToString(), y.ToString(), true);
+            return String.Compare(x.ToString().ToLower(), y.ToString().ToLower(), true);
         }
 
         #endregion
