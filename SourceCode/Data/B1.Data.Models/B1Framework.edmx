@@ -4,11 +4,12 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="B1SampleModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
+    <Schema Namespace="B1SampleModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/02/edm/ssdl">
         <EntityContainer Name="B1SampleModelStoreContainer">
           <EntitySet Name="AppMaster" EntityType="B1SampleModel.Store.AppMaster" store:Type="Tables" Schema="B1" />
           <EntitySet Name="AppSessions" EntityType="B1SampleModel.Store.AppSessions" store:Type="Tables" Schema="B1" />
           <EntitySet Name="SignonControl" EntityType="B1SampleModel.Store.SignonControl" store:Type="Tables" Schema="B1" />
+          <EntitySet Name="TestSequence" EntityType="B1SampleModel.Store.TestSequence" store:Type="Tables" Schema="B1" />
           <EntitySet Name="UserMaster" EntityType="B1SampleModel.Store.UserMaster" store:Type="Tables" Schema="B1" />
           <EntitySet Name="UserSessions" EntityType="B1SampleModel.Store.UserSessions" store:Type="Tables" Schema="B1" />
           <AssociationSet Name="FK_AppMaster_UserMaster" Association="B1SampleModel.Store.FK_AppMaster_UserMaster">
@@ -75,6 +76,19 @@
           <Property Name="SignoffWarningMsg" Type="varchar" MaxLength="256" />
           <Property Name="LastModifiedUserCode" Type="int" />
           <Property Name="LastModifiedDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="TestSequence">
+          <Key>
+            <PropertyRef Name="AppSequenceId" />
+          </Key>
+          <Property Name="AppSequenceId" Type="bigint" Nullable="false" />
+          <Property Name="DbSequenceId" Type="bigint" Nullable="false" StoreGeneratedPattern="Identity" />
+          <Property Name="AppSynchTime" Type="datetime" Nullable="false" />
+          <Property Name="AppLocalTime" Type="datetime" Nullable="false" />
+          <Property Name="DbServerTime" Type="datetime" Nullable="false" />
+          <Property Name="AppSequenceName" Type="varchar" Nullable="false" MaxLength="32" />
+          <Property Name="Remarks" Type="varchar" MaxLength="100" />
+          <Property Name="ExtraData" Type="varchar(max)" />
         </EntityType>
         <EntityType Name="UserMaster">
           <Key>
@@ -177,8 +191,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="B1SampleModel" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
@@ -208,6 +221,7 @@
             <End Role="UserMaster" EntitySet="UserMasters" />
             <End Role="UserSessions" EntitySet="UserSessions" />
           </AssociationSet>
+          <EntitySet Name="TestSequences" EntityType="B1SampleModel.TestSequence" />
         </EntityContainer>
         <EntityType Name="AppMaster">
           <Key>
@@ -364,6 +378,19 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="TestSequence">
+          <Key>
+            <PropertyRef Name="AppSequenceId" />
+          </Key>
+          <Property Type="Int64" Name="AppSequenceId" Nullable="false" />
+          <Property Type="Int64" Name="DbSequenceId" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="DateTime" Name="AppSynchTime" Nullable="false" />
+          <Property Type="DateTime" Name="AppLocalTime" Nullable="false" />
+          <Property Type="DateTime" Name="DbServerTime" Nullable="false" />
+          <Property Type="String" Name="AppSequenceName" Nullable="false" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="Remarks" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Type="String" Name="ExtraData" MaxLength="Max" FixedLength="false" Unicode="false" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -438,6 +465,20 @@
             <ScalarProperty Name="AppMachine" ColumnName="AppMachine" />
             <ScalarProperty Name="RemoteAddress" ColumnName="RemoteAddress" />
           </MappingFragment></EntityTypeMapping></EntitySetMapping>
+          <EntitySetMapping Name="TestSequences">
+            <EntityTypeMapping TypeName="B1SampleModel.TestSequence">
+              <MappingFragment StoreEntitySet="TestSequence">
+                <ScalarProperty Name="ExtraData" ColumnName="ExtraData" />
+                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+                <ScalarProperty Name="AppSequenceName" ColumnName="AppSequenceName" />
+                <ScalarProperty Name="DbServerTime" ColumnName="DbServerTime" />
+                <ScalarProperty Name="AppLocalTime" ColumnName="AppLocalTime" />
+                <ScalarProperty Name="AppSynchTime" ColumnName="AppSynchTime" />
+                <ScalarProperty Name="DbSequenceId" ColumnName="DbSequenceId" />
+                <ScalarProperty Name="AppSequenceId" ColumnName="AppSequenceId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
         </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>
@@ -489,6 +530,7 @@
           <ConnectorPoint PointX="0.98470903846153834" PointY="10.3306689453125" />
           <ConnectorPoint PointX="3" PointY="10.3306689453125" />
         </AssociationConnector>
+        <EntityTypeShape EntityType="B1SampleModel.TestSequence" Width="1.5" PointX="5.375" PointY="5.75" Height="2.2496956380208317" />
       </Diagram>
     </Diagrams>
   </Designer>

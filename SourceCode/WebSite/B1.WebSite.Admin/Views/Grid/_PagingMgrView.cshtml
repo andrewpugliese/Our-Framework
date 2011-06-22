@@ -1,0 +1,70 @@
+﻿@using System.Data;
+
+@using B1.Web;
+@using B1.DataAccess;
+
+@model B1.DataAccess.PagingMgr
+
+@{
+    var pagingMgr = Model;
+    
+    // Get the pagingState and pagingDirection
+    var route = Html.ViewContext.RouteData;
+    var controllerName = route.GetRequiredString("controller");
+    var actionName = route.GetRequiredString("action");
+    string pagingState = Html.ViewContext.HttpContext.Request.Params["pagingState"];
+    string pagingDirection = Html.ViewContext.HttpContext.Request.Params["pagingDirection"] ?? "first";
+
+    // Set the pagingState before getting the intended page
+    pagingMgr.RestorePagingState(pagingState);
+
+    // Set the paging option and get the next page
+    PagingMgr.PagingDbCmdEnum pagingOption = pagingDirection == "first" ? PagingMgr.PagingDbCmdEnum.First
+        : pagingDirection == "next" ? PagingMgr.PagingDbCmdEnum.Next
+        : pagingDirection == "prev" ? PagingMgr.PagingDbCmdEnum.Previous
+        : PagingMgr.PagingDbCmdEnum.Last;
+    DataTable pageTable = pagingMgr.GetPage(pagingOption);
+    IEnumerable<dynamic> pageData = PagingMgrHelper.DataTableToEnumerable(pageTable);
+
+    // Realize the loop
+    WebGrid webGrid = new WebGrid(pageData, rowsPerPage: pagingMgr.PageSize);
+
+    // Get the new paging state for next and previous link
+    string newPagingState = pagingMgr.GetPagingState();
+}
+
+<script type="text/javascript">
+
+function showPage(linkName) {
+    $.ajax({
+        url: '@Url.Action(actionName)',
+        type: "post",
+        format: "html",
+        cache: false,
+        data: {pagingState: '@newPagingState', pagingDirection: linkName},
+        success: function (result) {
+            $("#gridContainer").html(result); //?? #gridContainer - //?? referring to the parent container - NO NO
+        },
+        error: function (xhr, status, error) {
+            alert(xhr.responseText);
+            //?? showModalDialog(xhr.statusText, xhr.responseText);
+        }
+    });
+}
+
+</script>
+
+<div id="pagingMgrContainer" style="border: 1px solid black; margin-top: 10px;">
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+@foreach(var linkName in (new string[] { "first", "prev", "next", "last" }))
+{
+    <a href="javascript: showPage('@linkName');">@linkName</a>
+    @* Html.ActionLink(linkName, actionName, new RouteValueDictionary() { { "pagingState", newPagingState }, { "pagingDirection", linkName } }) *@
+    @: &nbsp;&nbsp;|&nbsp;&nbsp;
+}
+
+@* Render the WebGrid HTML *@
+@webGrid.GetHtml();    
+
+</div>

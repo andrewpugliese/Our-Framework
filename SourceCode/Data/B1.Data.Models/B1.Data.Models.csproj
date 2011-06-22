@@ -68,6 +68,9 @@
     <Compile Include="SignonControl.cs">
       <DependentUpon>AppSession.tt</DependentUpon>
     </Compile>
+    <Compile Include="TestSequence.cs">
+      <DependentUpon>AppSession.tt</DependentUpon>
+    </Compile>
     <Compile Include="UserMaster.cs">
       <DependentUpon>AppSession.tt</DependentUpon>
     </Compile>

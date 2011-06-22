@@ -677,6 +677,9 @@ namespace B1.Utility.DatabaseSetup
 
         PagingMgr CreatePagingMgrJoin()
         {
+            if (_daMgr == null)
+                CreateDbMgr();
+
             DbTableDmlMgr dmlJoin = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE,
                     DataAccess.Constants.TABLE_TestSequence);
     

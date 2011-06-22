@@ -826,7 +826,7 @@
     <Diagrams>
       <Diagram Name="SampleDb">
         <EntityTypeShape EntityType="B1SampleModel.AppConfigSetting" Width="1.5" PointX="7.75" PointY="0.75" Height="1.5923063151041674" IsExpanded="true" />
-        <EntityTypeShape EntityType="B1SampleModel.TestSequence" Width="1.5" PointX="9.75" PointY="0.75" Height="2.2496956380208335" IsExpanded="true" />
+        <EntityTypeShape EntityType="B1SampleModel.TestSequence" Width="1.75" PointX="10" PointY="1.25" Height="2.2496956380208335" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UIControl" Width="1.5" PointX="5.25" PointY="4.75" Height="2.0853483072916674" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UniqueId" Width="1.5" PointX="0.75" PointY="9.75" Height="1.7566536458333317" IsExpanded="true" />
         <EntityTypeShape EntityType="B1SampleModel.UserMaster" Width="1.5" PointX="3" PointY="3.25" Height="5.0436002604166674" IsExpanded="true" />
