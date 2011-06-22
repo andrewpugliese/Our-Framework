@@ -825,6 +825,21 @@ namespace B1.Utility.DatabaseSetup
 
             var resultsOrderBy = entities.AppConfigSettings.Where(a => a.ConfigValue == "value").OrderBy( a => a.ConfigValue);
 
+            string inValue = "A";
+            var resultsInClause1 = from a in entities.AppConfigSettings
+                                   from b in entities.AppMasters.Where(m => m.Remarks == a.ConfigValue).DefaultIfEmpty()
+                                   where new[] { inValue, "B", "C", "D", inValue }.Contains(a.ConfigKey)
+                                   && (a.ConfigKey != null || a.ConfigKey == "test")
+                                   select a;
+
+            var resultsSubSelect1 = from a in entities.AppConfigSettings
+                                   join b in
+                                       (from c in entities.AppMasters
+                                        where c.Remarks != null
+                                        select new { c.Remarks, c.UserMaster }) on a.ConfigKey equals b.Remarks
+                                   where new[] { inValue, "B", "C", "D", inValue }.Contains(a.ConfigKey)
+                                   && (a.ConfigKey != null || a.ConfigKey == "test")
+                                   select a;
 
             DbCommand dbCmd;
             DataTable tbl;
@@ -896,6 +911,14 @@ namespace B1.Utility.DatabaseSetup
             dbCmd = _daMgr.BuildSelectDbCommand(results8, null);
 
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
+            dbCmd = _daMgr.BuildSelectDbCommand(resultsInClause1, null);
+
+            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
+            //dbCmd = _daMgr.BuildSelectDbCommand(resultsSubSelect1, null);
+
+            //tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
         public static void TestDbMultiContext(DataAccessMgr daMgr)
