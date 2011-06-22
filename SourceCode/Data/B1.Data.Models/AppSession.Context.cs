@@ -71,6 +71,12 @@ namespace B1.Data.Models
             get { return _userSessions  ?? (_userSessions = CreateObjectSet<UserSession>("UserSessions")); }
         }
         private ObjectSet<UserSession> _userSessions;
+    
+        public ObjectSet<TestSequence> TestSequences
+        {
+            get { return _testSequences  ?? (_testSequences = CreateObjectSet<TestSequence>("TestSequences")); }
+        }
+        private ObjectSet<TestSequence> _testSequences;
 
         #endregion
     }

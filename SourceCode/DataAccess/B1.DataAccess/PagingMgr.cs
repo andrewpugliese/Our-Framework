@@ -305,25 +305,23 @@ namespace B1.DataAccess
             string tableName = baseTableInfo[2];
 
             // Check the orderby columns if they are in the base table index
+            // If no orderby defined then returns the primary key of the table
             var orderByColumns = parser.GetOrderByColumnList();
             var indexColumns = VerifyIndexColumns(
                 dataAccessManager.DbCatalogGetTable(string.Format("{0}.{1}", schemaName, tableName)),
-                orderByColumns.Select(col => col.Item1).ToList());
+                orderByColumns != null ? orderByColumns.Select(col => col.Item1).ToList() : null);
 
-            //?? If no orderby use the primary key of the base table
-            
             string select = parser.GetOuterSelect();
             string from = parser.GetOuterFrom();
             if (from == null)
                 from = parser.GetDefaultFrom();
 
             string whereClause = parser.GetWhereClause();
-            string orderBy = parser.GetOuterOrderBy();
             string groupBy = parser.GetOuterGroupBy();
 
-            DbTableDmlMgr dbTableDmlMgr = new DbTableDmlMgr(dataAccessManager, schemaName, tableName);
+            DbTableDmlMgr dbTableDmlMgr = new DbTableDmlMgr(schemaName, tableName, aliasName, dataAccessManager);
 
-            Func<Expression, DbCommand> func = pagingWhereExpression =>
+            Func<PagingDbCmdEnum, DbCommand> func = pagingDbCmd =>
             {
                 IEnumerable<DbPredicateParameter> parameters = parser.Parameters ?? new List<DbPredicateParameter>();
 
@@ -332,6 +330,7 @@ namespace B1.DataAccess
                     string.Format("{0}{1} FROM {2}", select, Environment.NewLine, from));
 
                 // Create a paging WHERE clause
+                var pagingWhereExpression = GetPagingWhereClause(pagingDbCmd, tableName, indexColumns);
                 string pagingWhereClause = null;
                 if (pagingWhereExpression != null)
                 {
@@ -342,23 +341,29 @@ namespace B1.DataAccess
                     parameters = parameters.Concat(dbPredicate.Parameters.Select(kv => kv.Value));
                 }
 
-                if (!string.IsNullOrWhiteSpace(whereClause) || !string.IsNullOrWhiteSpace(pagingWhereClause))
+                // Build WHERE clause with the one in the LINQ query and the one needed for supporting paging
+                if (!string.IsNullOrWhiteSpace(whereClause) && !string.IsNullOrWhiteSpace(pagingWhereClause))
                 {
-                    selectCmd.AppendFormat("{0}WHERE ({1}) AND ({2})",
-                        Environment.NewLine,
-                        string.IsNullOrWhiteSpace(whereClause) ? "1=1" : whereClause,
-                        string.IsNullOrWhiteSpace(pagingWhereClause) ? "1=1" : pagingWhereClause);
+                    selectCmd.AppendFormat("{0}WHERE ({1}) AND ({2})", Environment.NewLine, whereClause, pagingWhereClause);
+                }
+                else if (!string.IsNullOrWhiteSpace(whereClause))
+                {
+                    selectCmd.AppendFormat("{0}WHERE {1}", Environment.NewLine, whereClause);
+                } else if (!string.IsNullOrWhiteSpace(pagingWhereClause))
+                {
+                    selectCmd.AppendFormat("{0}WHERE {1}", Environment.NewLine, pagingWhereClause);
                 }
 
                 if (!string.IsNullOrWhiteSpace(groupBy))
-                    selectCmd.AppendFormat("{0}{1}",
-                            Environment.NewLine, groupBy);
+                    selectCmd.AppendFormat("{0}{1}", Environment.NewLine, groupBy);
 
-                //?? Currently the order by should exist in the LINQ query
-                if (!string.IsNullOrWhiteSpace(orderBy))
-                    selectCmd.AppendFormat("{0}{1}",
-                            Environment.NewLine, orderBy);
+                // Create the orderby from the index used in paging
+                string sort = pagingDbCmd == PagingDbCmdEnum.First || pagingDbCmd == PagingDbCmdEnum.Next ? "ASC" : "DESC";
+                string orderby = indexColumns.Aggregate(new StringBuilder(),
+                    (sb, column) => sb.AppendFormat(" {0} {1},", column, sort)).ToString();
+                selectCmd.AppendFormat("{0}ORDER BY {1}", Environment.NewLine, orderby.Remove(orderby.Length - 1));
 
+                // Build the where clause parameters
                 DbParameterCollection dbParams = dataAccessManager.BuildWhereClauseParams(parameters);
                 string cmdText = dataAccessManager.FormatSQLSelectWithMaxRows(selectCmd.ToString(), pageSizeParam);
                 // Add pageSize parameter to the parameter collection
@@ -382,12 +387,10 @@ namespace B1.DataAccess
             };
 
             // Create the where clause flavors for the first, next, previous and last page
-            Expression firstWhereClause = GetPagingWhereClause(PagingDbCmdEnum.Next, tableName, indexColumns);
-
-            DbCommand dbCmdFirstPage = func(GetPagingWhereClause(PagingDbCmdEnum.First, tableName, indexColumns));
-            DbCommand dbCmdLastPage = func(GetPagingWhereClause(PagingDbCmdEnum.Last, tableName, indexColumns));
-            DbCommand dbCmdNextPage = func(GetPagingWhereClause(PagingDbCmdEnum.Next, tableName, indexColumns));
-            DbCommand dbCmdPreviousPage = func(GetPagingWhereClause(PagingDbCmdEnum.Previous, tableName, indexColumns));
+            DbCommand dbCmdFirstPage = func(PagingDbCmdEnum.First);
+            DbCommand dbCmdLastPage = func(PagingDbCmdEnum.Last);
+            DbCommand dbCmdNextPage = func(PagingDbCmdEnum.Next);
+            DbCommand dbCmdPreviousPage = func(PagingDbCmdEnum.Previous);
 
             Initialize(dbCmdFirstPage, dbCmdLastPage, dbCmdNextPage, dbCmdPreviousPage);
         }

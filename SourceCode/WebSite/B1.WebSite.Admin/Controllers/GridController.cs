@@ -33,17 +33,6 @@ namespace B1.WebSite.Admin.Controllers
             return View();
         }
 
-        public ActionResult AppSessions()
-        {
-            B1SampleEntities entities = new B1SampleEntities();
-            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
-
-            var query = from a in entities.AppSessions
-                        select new { a.AppCode, a.AppId };
-            DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
-            return PartialView("_AppSessions", daMgr.ExecuteCollection<AppSession>(dbCmd, null));
-        }
-
         public ActionResult UserSessions()
         {
             B1SampleEntities entities = new B1SampleEntities();
@@ -65,14 +54,30 @@ namespace B1.WebSite.Admin.Controllers
             return PartialView("_Users", daMgr.ExecuteCollection<UserMaster>(dbCmd, null));
         }
 
+        //?? public ActionResult AppSessions()
+        public string AppSessions()
+        {
+            B1SampleEntities entities = new B1SampleEntities();
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+            var query = from a in entities.AppSessions
+                        orderby new { a.AppCode, a.MultipleSessionCode }
+                        select new { a.AppCode, a.AppId, a.MultipleSessionCode };                
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 20);
+            return testSequenceMgr.ToHtmlString<AppSession>(PagingMgr.PagingDbCmdEnum.First).ToHtmlString();
+            //DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
+            //return PartialView("_AppSessions", daMgr.ExecuteCollection<AppSession>(dbCmd, null));
+        }
+
         public string TestSequences()
         {
             DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
-            PagingMgr testSequenceMgr = new PagingMgr(daMgr
-                , DataAccess.Constants.SCHEMA_CORE + "." + DataAccess.Constants.TABLE_TestSequence
-                , DataAccess.Constants.PageSize
-                , 5);
-            return testSequenceMgr.View(PagingMgr.PagingDbCmdEnum.First).ToHtmlString();
+            B1SampleEntities entities = new B1SampleEntities();
+            var query = from a in entities.TestSequences
+                        orderby new { a.AppSequenceName, a.AppSequenceId }
+                        select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 20);
+            return testSequenceMgr.ToHtmlString(this);
         }
 
         public ActionResult UserEditForm(int userCode)
@@ -86,5 +91,27 @@ namespace B1.WebSite.Admin.Controllers
             DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
             return PartialView("_UserEdit", daMgr.ExecuteCollection<UserMaster>(dbCmd, null).First());
         }
+
+        public ActionResult TestSequences2()
+        {
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+            B1SampleEntities entities = new B1SampleEntities();
+            var query = from a in entities.TestSequences
+                        orderby new { a.AppSequenceName, a.AppSequenceId }
+                        select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 10);
+            return PartialView("_PagingMgrView", testSequenceMgr);
+        }
+
+        public ActionResult Users2()
+        {
+            DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+            B1SampleEntities entities = new B1SampleEntities();
+            var query = from a in entities.UserMasters
+                        select new { a.UserCode, a.UserId, a.FirstName };
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 5);
+            return PartialView("_PagingMgrView", testSequenceMgr);
+        }
+
     }
 }

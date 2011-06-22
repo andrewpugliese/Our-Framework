@@ -59,6 +59,8 @@ namespace B1.WebSite.Admin
             // Save to the Application cache
             Application["AppSession"] = appSession;
         }
+
+        //?? DO the appSession.End() at the end of the application
     }
 
     public static class Global

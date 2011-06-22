@@ -826,9 +826,20 @@ namespace B1.DataAccess
 
                         QualifiedEntity entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
 
-                        _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
-                                null : _currentAliasName, string.Format("{0}.{1}", alias, 
-                                entity.GetColumnName(node.Member.Name))));
+                        string columnName = entity.GetColumnName(node.Member.Name);
+
+                        //If it is not a column then assume it is a table. Add all columns
+                        if(columnName == null)
+                        {
+                            foreach(var kvp in _tableMgr.GetColumnDictionary(node.Type, alias))
+                            {
+                                _select.Add(new Tuple<string, string>(null, kvp.Value));
+                            }
+                        }
+                        else
+                            _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
+                                    null : _currentAliasName, string.Format("{0}.{1}", alias,
+                                    columnName)));
                     }
                 }
             }
@@ -1063,6 +1074,11 @@ namespace B1.DataAccess
                 VisitJoin(expression);
                 
             }
+            else if(expression.Method.Name == "Select" && expression.Method.DeclaringType == typeof(Queryable))
+            {
+                //Sub selects.
+
+            }
             else
             {
                 Type tableType = TypeVisitor.GetNonGenericTypes(expression.Method.ReturnType)[0];
@@ -1071,7 +1087,7 @@ namespace B1.DataAccess
 
                 _currentTableAlias = _tableMgr.Add(tableType);
                 _joins.Add(_currentTableAlias, _join);
-                
+
                 _join.AppendFormat("{0}{1}.{2} {3}", Environment.NewLine,
                         _tableMgr.GetSchema(tableType), _tableMgr.GetTableName(tableType), _currentTableAlias);
             }
@@ -1271,6 +1287,33 @@ namespace B1.DataAccess
                 _sqlPredicate.AppendFormat(" {0} {1} ", _currentBinaryOp, SelectParser.GenerateFunctionSql(node, 
                         _daMgr));
             }
+            else if(node.Method.Name == "Contains" && node.Method.DeclaringType == typeof(Enumerable))
+            {
+                if(node.Arguments[1] is MemberExpression)
+                {
+                    VisitMember((MemberExpression)node.Arguments[1]);
+                }
+                else throw new Exception("Invalid Linq Query: Unsupported expression in Contains()");
+
+                _sqlPredicate.AppendFormat(" in (");
+
+                if(node.Arguments[0] is NewArrayExpression)
+                {
+                    NewArrayExpression arrayExp = (NewArrayExpression)node.Arguments[0];
+
+                    for(int i = 0; i < arrayExp.Expressions.Count; i++)
+                    {
+                        if(i > 0)
+                            _sqlPredicate.AppendFormat(", ");
+
+                        Visit(arrayExp.Expressions[i]);
+                    }
+                }
+                else throw new Exception("Invalid Linq Query: Contains can only be issued on an array.");
+
+                _sqlPredicate.AppendFormat(") ");
+                
+            }
             else
             {
                 Visit(node.Object);
@@ -1390,14 +1433,18 @@ namespace B1.DataAccess
             {   
                 if(_currentParameter != null)
                 {
-                    Delegate memberAccess = Expression.Lambda(node).Compile();
-                    _currentParameter.MemberPropertyName = node.Member.Name;
-                    _currentParameter.MemberAccess = memberAccess;
-                    _currentParameter.Value = memberAccess.DynamicInvoke();
-                    _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
+                    if(_currentParameter.ParameterName != 
+                            LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr))
+                    {
+                        Delegate memberAccess = Expression.Lambda(node).Compile();
+                        _currentParameter.MemberPropertyName = node.Member.Name;
+                        _currentParameter.MemberAccess = memberAccess;
+                        _currentParameter.Value = memberAccess.DynamicInvoke();
+                        _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
+                        _tableMgr._parameters.Add(_currentParameter);
+                    }
+
                     _sqlPredicate.Append(_daMgr.BuildBindVariableName(_currentParameter.ParameterName));
-                    _tableMgr._parameters.Add(_currentParameter);
-                    _currentParameter = null;
                 }
             }
 

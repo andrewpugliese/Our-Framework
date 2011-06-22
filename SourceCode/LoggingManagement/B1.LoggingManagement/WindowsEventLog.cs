@@ -17,6 +17,8 @@ namespace B1.LoggingManagement
         EventLog _eventLog;
         enumEventPriority[] _priorities;
 
+        
+
         /// <summary>
         /// Initializes a Windows Event Log target
         /// </summary>
@@ -73,20 +75,18 @@ namespace B1.LoggingManagement
         public void Write(string message, bool appendText, Int32 eventId, Int64 eventReference
                         , EventLogEntryType entryType, enumEventPriority enumPriority)
         {
-            int msgPart = 0;    // event log has a max size so we may have to divide the message up in parts
-            Int16 maxKBytes = _eventLog.MaximumKilobytes > Int16.MaxValue 
-                    ? Int16.MaxValue : Convert.ToInt16(_eventLog.MaximumKilobytes);
+            int msgPart = 0;    // event log has a max message size so we may have to divide the message up in parts
 
             string referencedMsg = string.Empty;
             do
-            {
+            {   
                 referencedMsg = string.Format("Event Reference {0}: {1}{2}{3}"
-                        , msgPart > 0 ? "Continued Part " + (msgPart + 1).ToString(): ""
+                        , msgPart > 0 ? "Continued Part " + (msgPart + 1).ToString() : ""
                         , eventReference
                         , Environment.NewLine
-                        , message.Substring(msgPart * maxKBytes
-                            , message.Length >= maxKBytes
-                                ? maxKBytes : message.Length));
+                        , message.Substring(msgPart * Constants.MaxMessageSize
+                            , Math.Min(Constants.MaxMessageSize, 
+                                message.Length - (msgPart * Constants.MaxMessageSize))));
 
                 _eventLog.WriteEntry(referencedMsg
                         , entryType
@@ -94,7 +94,7 @@ namespace B1.LoggingManagement
 
                 msgPart++;      // increase the count
             }
-            while (referencedMsg.Length > msgPart * maxKBytes);
+            while(message.Length > msgPart * Constants.MaxMessageSize);
         }
 
         /// <summary>
