@@ -27,6 +27,29 @@ namespace B1.DataAccess
         // "B1.Utility.DatabaseSetup.ModelsSecond.AppConfigParameter"
         //      =>     "B1SampleModel.AppConfigParameter"
         private static CacheMgr<string> _typeNamesMapping = new CacheMgr<string>();
+
+        public static bool ExistsMappingTypeName(Type dotNetEntityType, ObjectContext defaultContext)
+        {
+            // dotNetEntityType can be a POCO object with no ObjectContext. We are getting proxy for the POCO
+            // object which will have the context needed for LINQ stuff
+            Type objectType = ObjectContext.GetObjectType(dotNetEntityType);
+
+            ObjectContext context = TypesToContexts.GetOrDefault(objectType.FullName, defaultContext);
+            EntityContainer entityContainer = context.MetadataWorkspace.GetEntityContainer(context.DefaultContainerName, DataSpace.CSpace);
+            EntitySetBase entitySet = entityContainer.BaseEntitySets.FirstOrDefault(es => es.ElementType.Name == objectType.Name);
+
+            if(entitySet != null)
+            {
+                _typeNamesMapping.GetOrAdd(objectType.FullName,
+                   () =>
+                   {
+                       return entitySet.ElementType.FullName;
+                   });
+                return true;
+            }
+            else return false;
+        }
+
         public static string GetMappingTypeName(Type dotNetEntityType, ObjectContext defaultContext)
         {
             // dotNetEntityType can be a POCO object with no ObjectContext. We are getting proxy for the POCO
@@ -198,6 +221,11 @@ namespace B1.DataAccess
             }
 
             return expression;
+        }
+
+        public bool EntityExists(Type dotNetEntityType)
+        {
+            return EntityContextCache.ExistsMappingTypeName(dotNetEntityType, _defaultContext);
         }
 
         public QualifiedEntity GetQualifiedEntity(Type dotNetEntityType)

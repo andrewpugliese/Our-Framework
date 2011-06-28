@@ -861,19 +861,8 @@ namespace B1.DataAccess
             return new Tuple<string,DbParameterCollection>(cmdText, dbParams);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="bufferSize"></param>
-        /// <param name="defaultSchema"></param>
-        /// <returns></returns>
-        internal Tuple<string, List<DbPredicateParameter>> BuildSelect<TEntity>(IQueryable<TEntity> queryable, 
-                string defaultSchema = null)
+        internal Tuple<string, List<DbPredicateParameter>> BuildSelect(LinqQueryParser parser)
         {
-            LinqQueryParser parser = new LinqQueryParser(queryable, this, defaultSchema);
-
             string select = parser.GetOuterSelect();
             string from = parser.GetOuterFrom();
             if(from == null)
@@ -902,6 +891,29 @@ namespace B1.DataAccess
                         Environment.NewLine, orderBy);
 
             return new Tuple<string, List<DbPredicateParameter>>(selectCmd.ToString(), parser.Parameters);
+        }
+
+
+        internal Tuple<string, List<DbPredicateParameter>> BuildSelect(MethodCallExpression expression, 
+                LinqTableMgr tableMgr, string defaultSchema = null)
+        {
+            LinqQueryParser parser = new LinqQueryParser(expression, tableMgr, this, defaultSchema);
+            return BuildSelect(parser);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="queryable"></param>
+        /// <param name="bufferSize"></param>
+        /// <param name="defaultSchema"></param>
+        /// <returns></returns>
+        internal Tuple<string, List<DbPredicateParameter>> BuildSelect<TEntity>(IQueryable<TEntity> queryable, 
+                string defaultSchema = null)
+        {
+            LinqQueryParser parser = new LinqQueryParser(queryable, this, defaultSchema);
+            return BuildSelect(parser);
         }
 
         /// <summary>

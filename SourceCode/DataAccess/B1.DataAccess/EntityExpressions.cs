@@ -35,7 +35,13 @@ namespace B1.DataAccess
         /// <summary>
         ///  Types to member name to table alias. Most useful for anonymous types that contain members that are tables/entities
         /// </summary>
-        internal Dictionary<Type, Dictionary<string, string>> _typeToAlias = new Dictionary<Type,Dictionary<string, string>>();
+        internal Dictionary<Type, Dictionary<string, string>> _typeToAlias = 
+                new Dictionary<Type,Dictionary<string, string>>();
+        /// <summary>
+        /// Types to member name to QualifiedEntity.
+        /// </summary>
+        internal Dictionary<Type, Dictionary<string, QualifiedEntity>> _typeToEntities = 
+                new Dictionary<Type, Dictionary<string, QualifiedEntity>>();
 
         /// <summary>
         /// Schema to table alias to table name
@@ -65,59 +71,24 @@ namespace B1.DataAccess
         public string GetTableName(Type type)
         {
             return this.ContextCache.GetTableName(type);
-            //Type entityType = ObjectContext.GetObjectType(type);
-
-            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
-            //{
-            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.First(es => es.ElementType.Name == entityType.Name);
-            //    QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-            //    return entity.EntityName;
-            //}
-            //else
-            //    return entityType.Name;
-
         }
 
         public string GetSchemaQualifiedTableName(Type type)
         {
             return this.ContextCache.GetSchemaQualifiedTableName(type);
-            //Type entityType = ObjectContext.GetObjectType(type);
+        }
 
-            //string schemaName = _defaultSchema;
-            //string tableName = entityType.Name;
-
-            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
-            //{
-            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault(
-            //            es => es.ElementType.Name == entityType.Name);
-                
-            //    if(entitySet != null)
-            //    {
-            //        QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-            //        if (entity != null)
-            //        {
-            //            schemaName = entity.SchemaName;
-            //            tableName = entity.EntityName;
-            //        }
-            //        else
-            //        {
-            //            tableName = entitySet.Name;
-            //        }
-            //    }
-            //}
-            
-            //return string.Format("{0}.{1}", schemaName, tableName);
+        public QualifiedEntity GetQualifiedEntityOrNull(Type type)
+        {
+            if(this.ContextCache.EntityExists(type))
+                return this.ContextCache.GetQualifiedEntity(type);
+            else
+                return null;
         }
 
         public QualifiedEntity GetQualifiedEntity(Type type)
         {
             return this.ContextCache.GetQualifiedEntity(type);
-            //Type entityType = ObjectContext.GetObjectType(type);
-
-            //EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault(
-            //            es => es.ElementType.Name == entityType.Name);
-
-            //return StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
         }
 
         public QualifiedEntity GetQualifiedEntityFromAlias(string alias)
@@ -141,24 +112,7 @@ namespace B1.DataAccess
         public string GetSchema(Type type)
         {
             return this.ContextCache.GetSchemaName(type);
-            //Type entityType = ObjectContext.GetObjectType(type);
-
-            //string schemaName = _defaultSchema;
-
-            //if (_contextVisitor.DefaultEntityContainer != null && entityType != null)
-            //{
-            //    EntitySetBase entitySet = _contextVisitor.DefaultEntityContainer.BaseEntitySets.FirstOrDefault( 
-            //            es => es.ElementType.Name == entityType.Name);
-
-            //    if(entitySet != null)
-            //    {
-            //        QualifiedEntity entity = StorageMetaData.GetQualifiedEntity(entitySet.ElementType.FullName);
-            //        if(entity != null)
-            //            return entity.SchemaName;
-            //    }
-            //}
-
-            //return schemaName;
+        
         }
 
         public string Add(Type type)
@@ -190,15 +144,43 @@ namespace B1.DataAccess
             return nextAlias;
         }
 
-        public void AddTypedAlias(Type containingType, string methodName, string alias)
+        public void AddTypedAlias(Type containingType, string memberName, string alias)
         {
             if(!_typeToAlias.ContainsKey(containingType))
                 _typeToAlias.Add(containingType, new Dictionary<string,string>(StringComparer.CurrentCultureIgnoreCase));
 
-            if(!_typeToAlias[containingType].ContainsKey(methodName))
-                _typeToAlias[containingType].Add(methodName, alias);
+            if(!_typeToAlias[containingType].ContainsKey(memberName))
+                _typeToAlias[containingType].Add(memberName, alias);
+
+            QualifiedEntity entity = GetQualifiedEntityFromAlias(alias);
+
+            if(entity != null)
+                AddTypedToQualifiedEntity(containingType, memberName, entity);
         }
 
+        public void AddTypedToQualifiedEntity(Type containingType, string memberName, QualifiedEntity entity)
+        {
+            if(!_typeToEntities.ContainsKey(containingType))
+                _typeToEntities.Add(containingType,
+                        new Dictionary<string, QualifiedEntity>(StringComparer.CurrentCultureIgnoreCase));
+
+            if(!_typeToEntities[containingType].ContainsKey(memberName))
+                _typeToEntities[containingType].Add(memberName, entity);
+        }
+
+        internal void AddTypeToQualifiedEntities(
+                Dictionary<Type, Dictionary<string, QualifiedEntity>> typeToQualifiedEntities)
+        {
+            foreach(var typeToMethodToEntity in typeToQualifiedEntities)
+            {
+                if(!_typeToEntities.ContainsKey(typeToMethodToEntity.Key))
+                    _typeToEntities.Add(typeToMethodToEntity.Key, typeToMethodToEntity.Value);
+                else
+                    foreach(var methodToEntity in typeToMethodToEntity.Value)
+                        if(!_typeToEntities[typeToMethodToEntity.Key].ContainsKey(methodToEntity.Key))
+                            _typeToEntities[typeToMethodToEntity.Key].Add(methodToEntity.Key, methodToEntity.Value);
+            }
+        }
 
         internal Dictionary<string, string> GetColumnDictionary(Type type, string alias)
         {
@@ -355,6 +337,9 @@ namespace B1.DataAccess
                 throw new Exception("Invalid linq expression.");
 
             _daMgr = daMgr;
+            //Keep the outermost/first expression for the case where there is no 
+            //explicit select. In this case we select ALL the columns of the entity which the 
+            //outermost expression returns.
             _outerMostExpression = expression;
 
             Visit(expression);
@@ -748,19 +733,50 @@ namespace B1.DataAccess
                     ParameterExpression param = (ParameterExpression)arg;
                     string alias = _parameterToAlias[param.Name];
 
-                    Type type = ObjectContext.GetObjectType(TypeVisitor.GetNonGenericTypes(param.Type)[0]);
-                    if(type != null)
+                    if(_tableMgr._typeToEntities.ContainsKey(node.Type) &&
+                            _tableMgr._typeToEntities[node.Type].ContainsKey(param.Name))
                     {
-                        foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
+                        QualifiedEntity entity = _tableMgr._typeToEntities[node.Type][param.Name];
+
+                        foreach(var kvp in entity._propertyToColumnMap)
                         {
-                            _select.Add(new Tuple<string, string>(null, kvp.Value));
+                            _select.Add(new Tuple<string, string>(null, string.Format("{0}.{1}", alias, kvp.Value)));
                         }
                     }
+                    else
+                    {
+                        Type type = ObjectContext.GetObjectType(TypeVisitor.GetNonGenericTypes(param.Type)[0]);
 
-                    _tableMgr.AddTypedAlias(node.Type, param.Name, alias);      
+                        if(type != null)
+                        {
+                            foreach(var kvp in _tableMgr.GetColumnDictionary(type, alias))
+                            {
+                                _select.Add(new Tuple<string, string>(null, kvp.Value));
+                            }
+                        }
+
+                        _tableMgr.AddTypedAlias(node.Type, param.Name, alias);
+                    }
                 }
                 else
+                {
+                    if(arg is MemberExpression)
+                    {
+                        MemberExpression member = (MemberExpression)arg;
+
+                        ParameterExpression param = TypeVisitor.GetFirstParent<ParameterExpression>(member);
+
+                        if(param != null)
+                        {
+                            if(_parameterToAlias.ContainsKey(param.Name))
+                            {
+                                string alias = _parameterToAlias[param.Name];
+                                _tableMgr.AddTypedAlias(node.Type, member.Member.Name, alias);
+                            }
+                        }
+                    }
                     Visit(arg);
+                }
 
                 _currentAliasName = null;
                 memberIndex++;
@@ -776,7 +792,6 @@ namespace B1.DataAccess
         {
             if(_inSelect)
             {
-                Type type = null;
 
                 if(node.Member.DeclaringType.IsGenericType &&
                         node.Member.DeclaringType.GetGenericTypeDefinition() == typeof(IGrouping<,>))
@@ -789,27 +804,54 @@ namespace B1.DataAccess
                 }
                 else
                 {
-                    type = node.Member.DeclaringType;
-
                     string alias = "";
 
+                    MemberInfo topMember = (TypeVisitor.GetFirstParent<MemberExpression>(node) ?? node).Member;
+
+                    Type topType = topMember.DeclaringType;
+                    
                     if(node.Expression is MemberExpression &&
-                            _tableMgr._typeToAlias.ContainsKey(((MemberExpression)node.Expression).Member.DeclaringType))
+                        _tableMgr._typeToAlias.ContainsKey(topType))
                     {
-     
-                        MemberInfo member = ((MemberExpression)node.Expression).Member;
-                        alias = _tableMgr._typeToAlias[member.DeclaringType][member.Name];
+                        if(_tableMgr._typeToAlias.ContainsKey(node.Member.DeclaringType))
+                            alias = _tableMgr._typeToAlias[node.Member.DeclaringType][node.Member.Name];
+                        else
+                            alias = _tableMgr._typeToAlias[topType][topMember.Name];
+
                         QualifiedEntity entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
 
-                        _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
-                                null : _currentAliasName, string.Format("{0}.{1}",
-                                alias,
-                                entity.GetColumnName(node.Member.Name))));
+                        if(entity == null)
+                            entity = _tableMgr._typeToEntities[topMember.DeclaringType][topMember.Name];
+
+                        string columnName = entity.GetColumnName(node.Member.Name);
+
+                        //If it is not a column then assume it is a table. Add all columns
+                        if(columnName == null)
+                        {
+                            foreach(var kvp in entity._propertyToColumnMap)
+                            {
+                                _select.Add(new Tuple<string, string>(null,
+                                        string.Format("{0}.{1}", alias, kvp.Value)));
+                            }
+                        }
+                        else
+                            _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ?
+                                    null : _currentAliasName, string.Format("{0}.{1}",
+                                    alias,
+                                    entity.GetColumnName(node.Member.Name))));
                     }
                     else
                     {
-                        if(_tableMgr._aliasStack.Count() == 0)
-                            alias = _tableMgr.Add(type);
+                        QualifiedEntity entity = null;
+
+                        if(node.Expression is ParameterExpression &&
+                            _tableMgr._typeToAlias.ContainsKey(topType))
+                        {
+                            alias = _tableMgr._typeToAlias[topType][node.Member.Name];
+                            entity = _tableMgr.GetQualifiedEntityOrNull(node.Type);
+                        }
+                        else if(_tableMgr._aliasStack.Count() == 0)
+                            alias = _tableMgr.Add(topType);
                         else
                         {
                             ParameterExpression param = TypeVisitor.GetFirstParent<ParameterExpression>(node);
@@ -824,20 +866,25 @@ namespace B1.DataAccess
                             }
                         }
 
-                        QualifiedEntity entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
+                        if(entity == null)
+                            entity = _tableMgr.GetQualifiedEntityOrNull(node.Member.DeclaringType);
+
+                        if(entity == null)
+                            entity = _tableMgr.GetQualifiedEntityFromAlias(alias);
 
                         string columnName = entity.GetColumnName(node.Member.Name);
 
                         //If it is not a column then assume it is a table. Add all columns
                         if(columnName == null)
                         {
-                            foreach(var kvp in _tableMgr.GetColumnDictionary(node.Type, alias))
+                            foreach(var kvp in entity._propertyToColumnMap)
                             {
-                                _select.Add(new Tuple<string, string>(null, kvp.Value));
+                                _select.Add(new Tuple<string, string>(null,
+                                        string.Format("{0}.{1}", alias, kvp.Value)));
                             }
                         }
                         else
-                            _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ? 
+                            _select.Add(new Tuple<string, string>(string.IsNullOrEmpty(_currentAliasName) ?
                                     null : _currentAliasName, string.Format("{0}.{1}", alias,
                                     columnName)));
                     }
@@ -1043,6 +1090,10 @@ namespace B1.DataAccess
         private string _leftAlias;
         private string _rightAlias;
 
+        private LinqTableMgr _leftSubSelectTableMgr = null;
+        private LinqTableMgr _rightSubSelectTableMgr = null;
+        private LinqTableMgr _subSelectTableMgr = null;
+
         internal Dictionary<string, string> _parameterToAlias = new Dictionary<string, string>();
         internal Dictionary<string, StringBuilder> _joins = new Dictionary<string, StringBuilder>(); 
         internal SelectParser _selectParser = null;
@@ -1074,10 +1125,25 @@ namespace B1.DataAccess
                 VisitJoin(expression);
                 
             }
-            else if(expression.Method.Name == "Select" && expression.Method.DeclaringType == typeof(Queryable))
+            else if((expression.Method.Name == "Select" || expression.Method.Name == "Where") 
+                    && expression.Method.DeclaringType == typeof(Queryable))
             {
-                //Sub selects.
+                //Sub selects
+                _join = new StringBuilder();
 
+                _subSelectTableMgr = new LinqTableMgr(_tableMgr.ContextCache);
+
+                Tuple<string, List<DbPredicateParameter>> select = _daMgr.BuildSelect(expression,
+                        _subSelectTableMgr );
+
+                _currentTableAlias = _tableMgr.Add("SUBSELECTS", select.Item1);
+                _joins.Add(_currentTableAlias, _join);
+
+                _join.AppendFormat("({0}) as {1} {2}", select.Item1,
+                        _currentTableAlias, Environment.NewLine);
+
+                _tableMgr.AddTypeToQualifiedEntities(_subSelectTableMgr._typeToEntities);
+                _tableMgr._parameters.AddRange(_subSelectTableMgr._parameters);
             }
             else
             {
@@ -1106,9 +1172,11 @@ namespace B1.DataAccess
             _join = new StringBuilder();
 
             Visit(outerTable);
-            _leftAlias = _leftAlias = _currentTableAlias;
+            _leftSubSelectTableMgr = _subSelectTableMgr;
+            _leftAlias = _currentTableAlias;
 
             Visit(innerTable);
+            _rightSubSelectTableMgr = _subSelectTableMgr;
             _rightAlias = _currentTableAlias;
 
             Visit(expression.Arguments[4]);
@@ -1124,14 +1192,41 @@ namespace B1.DataAccess
             int p = 0;
             _join.AppendFormat(" ON");
 
-            QualifiedEntity leftEntity = _tableMgr.GetQualifiedEntityFromAlias(_leftAlias);
-            QualifiedEntity rightEntity = _tableMgr.GetQualifiedEntityFromAlias(_rightAlias);
+
             foreach(var prop in leftOn._properties)
             {
+                QualifiedEntity rightEntity = null;
+                QualifiedEntity leftEntity = null;
+
+                if(_rightSubSelectTableMgr == null)
+                    rightEntity = _tableMgr.GetQualifiedEntityFromAlias(_rightAlias);
+                else
+                    rightEntity = _tableMgr.GetQualifiedEntityOrNull(rightOn._properties[p].DeclaringType);
+
+                if(_leftSubSelectTableMgr == null)
+                    leftEntity = _tableMgr.GetQualifiedEntityFromAlias(_leftAlias);
+                else
+                    leftEntity = _tableMgr.GetQualifiedEntityOrNull(prop.DeclaringType);
+
+                if(rightEntity == null)
+                {
+                    rightEntity = _rightSubSelectTableMgr.GetQualifiedEntityFromAlias(
+                            _rightSubSelectTableMgr._typeToAlias[rightOn._properties[p].DeclaringType]
+                                [rightOn._properties[p].Name]);
+                }
+
+                if(leftEntity == null)
+                {
+                    leftEntity = _leftSubSelectTableMgr.GetQualifiedEntityFromAlias(
+                            _leftSubSelectTableMgr._typeToAlias[prop.DeclaringType]
+                                [prop.Name]);
+                }
+                        
+                        
                 _join.AppendFormat(" {0}{1}.{2} = {3}.{4}",
                     p > 0 ? "AND " : " ",
-                        _leftAlias, leftEntity.GetColumnName(prop),
-                        _rightAlias, rightEntity.GetColumnName(rightOn._properties[p]));
+                        _leftAlias, leftEntity.GetColumnName(prop.Name),
+                        _rightAlias, rightEntity.GetColumnName(rightOn._properties[p].Name));
                 p++;
             }
 
@@ -1158,6 +1253,7 @@ namespace B1.DataAccess
         protected override Expression VisitNew(NewExpression node)
         {
             string alias = _leftAlias;
+            LinqTableMgr subSelectTableMgr = _leftSubSelectTableMgr;
             foreach(Expression arg in node.Arguments)
             {
                 if(arg is MemberExpression)
@@ -1168,10 +1264,16 @@ namespace B1.DataAccess
                 else if (arg is ParameterExpression)
                 {
                     ParameterExpression param = (ParameterExpression)arg;
-                    _tableMgr.AddTypedAlias(node.Type, param.Name, alias);
+
+                    if(subSelectTableMgr != null && subSelectTableMgr._typeToEntities.ContainsKey(param.Type) )
+                        _tableMgr.AddTypedToQualifiedEntity(node.Type, param.Name,
+                                subSelectTableMgr._typeToEntities[param.Type].First().Value);
+                    else
+                        _tableMgr.AddTypedAlias(node.Type, param.Name, alias);
                 }
                 
                 alias = _rightAlias;
+                subSelectTableMgr = _rightSubSelectTableMgr;
             }
 
             return base.VisitNew(node);
@@ -1180,7 +1282,7 @@ namespace B1.DataAccess
 
     internal class OnParser : ExpressionVisitor
     {
-        internal List<string> _properties = new List<string>();
+        internal List<MemberInfo> _properties = new List<MemberInfo>();
         internal string _alias = null;
         private LinqTableMgr _tableMgr;
 
@@ -1204,13 +1306,14 @@ namespace B1.DataAccess
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            _properties.Add(node.Member.Name);
+            _properties.Add(node.Member);
 
             if(node.Expression is MemberExpression)
             {
                 MemberExpression member = (MemberExpression)node.Expression;
 
-                if(_tableMgr._typeToAlias.ContainsKey(member.Member.DeclaringType))
+                if(_tableMgr._typeToAlias.ContainsKey(member.Member.DeclaringType) && 
+                    _tableMgr._typeToAlias[member.Member.DeclaringType].ContainsKey(member.Member.Name))
                 {
                     _alias = _tableMgr._typeToAlias[member.Member.DeclaringType][member.Member.Name];
                 }
@@ -1531,6 +1634,8 @@ namespace B1.DataAccess
 
             if(exp.Expression is T)
                 return (T)exp.Expression;
+            if(exp is T)
+                return (T)(Expression)exp;
             else
                 return default(T);
         }
