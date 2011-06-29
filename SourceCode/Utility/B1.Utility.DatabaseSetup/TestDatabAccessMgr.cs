@@ -832,17 +832,45 @@ namespace B1.Utility.DatabaseSetup
                                    && (a.ConfigKey != null || a.ConfigKey == "test")
                                    select a;
 
+            string remarks = "";
             var resultsSubSelect1 = from a in entities.AppConfigSettings
                                    join b in
                                        (from c in entities.AppMasters
-                                        where c.Remarks != null
-                                        select new { c.Remarks, c.UserMaster }) on a.ConfigKey equals b.Remarks
+                                        where c.Remarks != remarks
+                                        select c) on a.ConfigKey equals b.Remarks
                                    where new[] { inValue, "B", "C", "D", inValue }.Contains(a.ConfigKey)
                                    && (a.ConfigKey != null || a.ConfigKey == "test")
-                                   select a;
+                                   select b;
+
+
+            var resultsSubSelect2 = from a in entities.AppConfigSettings
+                                    join b in
+                                        (from c in entities.AppMasters
+                                         join d in entities.AppSessions on c.Remarks equals d.AppVersion
+                                         where c.Remarks != null
+                                         select new { c.Remarks, d.AppVersion }) on a.ConfigKey equals b.Remarks
+                                    join c in
+                                        (from a in entities.AppMasters
+                                         join b in
+                                             (from a in entities.AppSessions
+                                              where a.AppProduct != "asdf"
+                                              select new { a.AppVersion, a.AppProduct }) on a.Remarks equals b.AppVersion
+                                         where a.Remarks != null
+                                         select new { a.AppId, a.AppCode }) on b.Remarks equals c.AppId
+                                    where new[] { inValue, "B", "C", "D", inValue }.Contains(a.ConfigKey)
+                                    && (a.ConfigKey != null || a.ConfigKey == "test")
+                                    select a;
 
             DbCommand dbCmd;
             DataTable tbl;
+
+            dbCmd = _daMgr.BuildSelectDbCommand(resultsSubSelect1, null);
+
+            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
+            dbCmd = _daMgr.BuildSelectDbCommand(resultsSubSelect2, null);
+
+            tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
 
             dbCmd = _daMgr.BuildSelectDbCommand(resultsGroupBy1, null);
 
@@ -916,9 +944,7 @@ namespace B1.Utility.DatabaseSetup
 
             tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
 
-            //dbCmd = _daMgr.BuildSelectDbCommand(resultsSubSelect1, null);
 
-            //tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
         public static void TestDbMultiContext(DataAccessMgr daMgr)
