@@ -110,4 +110,9 @@ Tables\CG\dbo.SubscriptionOffer.sql
 Tables\CG\dbo.PublicationUsr.sql
 Tables\CG\dbo.FinancialServiceMast.sql
 Tables\CG\dbo.PaymentMethod.sql
+Tables\CG\dbo.AffiliateMast.sql
 Tables\CG\dbo.MemberPurchaseTran.sql
+Tables\CG\dbo.MemberPurchaseDetail.sql
+
+// initial Data
+Scripts\setup\CG.LoadInitialData.sql

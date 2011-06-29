@@ -23,7 +23,20 @@ CREATE TABLE dbo.EntityMast(
 	LastModifiedDateTime	DATETIME, -- Date/Time of the last modification
  CONSTRAINT EntityMast_PK PRIMARY KEY NONCLUSTERED (EntityCod)
  ) ON [PRIMARY]
+GO
 
+ CREATE UNIQUE NONCLUSTERED INDEX EntityMast00 ON dbo.EntityMast 
+(
+	LastModUsrCod ASC,
+	LastModDate ASC,
+	LastModTim ASC
+) ON ContentGalaxyIdx
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX EntityMast02 ON dbo.EntityMast
+(
+	EntityNam ASC
+) ON ContentGalaxyIdx
 GO
 
 ALTER TABLE dbo.EntityMast  WITH CHECK ADD  CONSTRAINT EntityMast_FK01 FOREIGN KEY(EntityTypCod)
@@ -33,12 +46,6 @@ GO
 ALTER TABLE dbo.EntityMast CHECK CONSTRAINT EntityMast_FK01
 GO
 
-ALTER TABLE dbo.EntityMast  WITH CHECK ADD  CONSTRAINT EntityMast_FK02 FOREIGN KEY(MainContactUsrSortNam)
-REFERENCES dbo.MemberMast (UsrSortNam)
-GO
-
-ALTER TABLE dbo.EntityMast CHECK CONSTRAINT EntityMast_FK02
-GO
 
 ALTER TABLE dbo.EntityMast ADD  DEFAULT ('0') FOR DemoEntityFlag
 GO

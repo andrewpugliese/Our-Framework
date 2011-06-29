@@ -83,6 +83,8 @@ go
 USE ContentGalaxy
 go
 create schema B1 authorization dbo
+go
+create schema CG authorization dbo
 
 -- Logins may already exist on the server, so we will check
 --		if they are not, create them.

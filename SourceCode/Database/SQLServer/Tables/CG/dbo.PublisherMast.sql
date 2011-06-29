@@ -33,11 +33,6 @@ REFERENCES dbo.EntityMast (EntityCod)
 GO
 ALTER TABLE dbo.PublisherMast CHECK CONSTRAINT PublisherMast_FK01
 GO
-ALTER TABLE dbo.PublisherMast  WITH CHECK ADD  CONSTRAINT PublisherMast_FK02 FOREIGN KEY(PublisherContactUsrSortNam)
-REFERENCES dbo.MemberMast (UsrSortNam)
-GO
-ALTER TABLE dbo.PublisherMast CHECK CONSTRAINT PublisherMast_FK02
-GO
 ALTER TABLE dbo.PublisherMast  WITH CHECK ADD  CONSTRAINT PublisherMast_FK03 FOREIGN KEY(PublisherStatCod)
 REFERENCES dbo.EntityStat (EntityStatCod)
 GO
