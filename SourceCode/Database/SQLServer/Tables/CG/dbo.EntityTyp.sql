@@ -13,6 +13,20 @@ CREATE TABLE dbo.EntityTyp(
 ) ON [PRIMARY]
 GO
 
+CREATE UNIQUE NONCLUSTERED INDEX [EntityTyp00] ON [dbo].[EntityTyp] 
+(
+	[LastModUsrCod] ASC,
+	[LastModDate] ASC,
+	[LastModTim] ASC
+) ON ContentGalaxyIdx
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [EntityTyp02] ON [dbo].[EntityTyp] 
+(
+	[EntityTypNam] ASC
+) ON ContentGalaxyIdx
+GO
+
 ALTER TABLE dbo.EntityTyp
 ADD CONSTRAINT FK_EntityTyp_UserMaster
 FOREIGN KEY (LastModifiedUserCode)

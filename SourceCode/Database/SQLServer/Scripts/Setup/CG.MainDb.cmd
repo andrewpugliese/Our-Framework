@@ -98,6 +98,7 @@ Scripts\setup\B1.LoadInitialData.sql
 Tables\CG\dbo.MemberPurchaseTranStat.sql
 Tables\CG\dbo.ShoppingCartStat.sql
 Tables\CG\dbo.MemberMast.sql
+Tables\CG\dbo.EntityRole.sql
 Tables\CG\dbo.EntityStat.sql
 Tables\CG\dbo.EntityTyp.sql
 Tables\CG\dbo.EntityMast.sql
@@ -111,8 +112,17 @@ Tables\CG\dbo.PublicationUsr.sql
 Tables\CG\dbo.FinancialServiceMast.sql
 Tables\CG\dbo.PaymentMethod.sql
 Tables\CG\dbo.AffiliateMast.sql
+Tables\CG\dbo.EditorMast.sql
 Tables\CG\dbo.MemberPurchaseTran.sql
 Tables\CG\dbo.MemberPurchaseDetail.sql
+Tables\CG\dbo.ContentItmStat.sql
+Tables\CG\dbo.ContentProviderMast.sql
+Tables\CG\dbo.ContentItm.sql
+Tables\CG\dbo.ContentItmUsage.sql
+Tables\CG\dbo.ContentClickResultTyp.sql
+Tables\CG\dbo.ContentClickEvent.sql
+Tables\CG\dbo.ContentClickIn.sql
+Tables\CG\dbo.ContentClickQ.sql
 
 // initial Data
 Scripts\setup\CG.LoadInitialData.sql
