@@ -7,6 +7,9 @@
 
 @{
     var pagingMgr = Model;
+
+    // Check if this the paging manager callback from the clicked link of first, next, previous and last
+    bool isPagingMgrCallback = Html.ViewContext.HttpContext.Request.Params["pagingState"] != null;
     
     // Get the pagingState and pagingDirection
     var route = Html.ViewContext.RouteData;
@@ -24,47 +27,75 @@
         : pagingDirection == "prev" ? PagingMgr.PagingDbCmdEnum.Previous
         : PagingMgr.PagingDbCmdEnum.Last;
     DataTable pageTable = pagingMgr.GetPage(pagingOption);
+
     IEnumerable<dynamic> pageData = PagingMgrHelper.DataTableToEnumerable(pageTable);
 
     // Realize the loop
-    WebGrid webGrid = new WebGrid(pageData, rowsPerPage: pagingMgr.PageSize);
+    WebGrid webGrid = new WebGrid(pageData, rowsPerPage: pagingMgr.PageSize, canSort: false);
 
     // Get the new paging state for next and previous link
-    string newPagingState = pagingMgr.GetPagingState();
+    string newPagingState = pageData.Count() > 0 ? pagingMgr.GetPagingState() : pagingState;
 }
 
-<script type="text/javascript">
+@* Render this code only the first time *@
+@if (!isPagingMgrCallback)
+{
+    <text>
+        <script type="text/javascript">
 
-function showPage(linkName) {
-    $.ajax({
-        url: '@Url.Action(actionName)',
-        type: "post",
-        format: "html",
-        cache: false,
-        data: {pagingState: '@newPagingState', pagingDirection: linkName},
-        success: function (result) {
-            $("#gridContainer").html(result); //?? #gridContainer - //?? referring to the parent container - NO NO
-        },
-        error: function (xhr, status, error) {
-            alert(xhr.responseText);
-            //?? showModalDialog(xhr.statusText, xhr.responseText);
+        function showPage(linkName, pagingState) {
+            $.ajax({
+                url: '@Url.Action(actionName)',
+                type: "post",
+                format: "html",
+                cache: false,
+                data: { pagingState: pagingState, pagingDirection: linkName },
+                success: function (result) {
+                    var msgStartIndex = result.indexOf("<msg>");
+                    var msgEndIndex = result.indexOf("</msg>");
+                    if (msgStartIndex != -1) {
+                        var msg = result.substr(msgStartIndex + 5,
+                                    msgEndIndex - msgStartIndex - 5);
+                        alert(msg);
+                    } else {
+                        // alert(result);
+                        $("#pagingMgrContainer").html(result);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert(xhr.responseText);
+                    //?? showModalDialog(xhr.statusText, xhr.responseText);
+                }
+            });
         }
-    });
+
+        </script>
+         
+        <div id="pagingMgrContainer" style="border: 1px solid black; margin-top: 10px;">
+    </text>
 }
-
-</script>
-
-<div id="pagingMgrContainer" style="border: 1px solid black; margin-top: 10px;">
 
 &nbsp;&nbsp;|&nbsp;&nbsp;
 @foreach(var linkName in (new string[] { "first", "prev", "next", "last" }))
 {
-    <a href="javascript: showPage('@linkName');">@linkName</a>
+    <a href="javascript: showPage('@linkName', '@newPagingState');">@linkName</a>
     @* Html.ActionLink(linkName, actionName, new RouteValueDictionary() { { "pagingState", newPagingState }, { "pagingDirection", linkName } }) *@
     @: &nbsp;&nbsp;|&nbsp;&nbsp;
 }
 
-@* Render the WebGrid HTML *@
-@webGrid.GetHtml();    
+@if (pageData.Count() > 0)
+{
+    @* Render the WebGrid HTML *@
+    @webGrid.GetHtml();
+}
+else
+{
+    <msg>End of Data reached.</msg>
+}
 
-</div>
+
+@* Render this code only the first time *@
+@if (!isPagingMgrCallback)
+{
+    @:</div>
+}

@@ -990,6 +990,21 @@ namespace B1.Utility.DatabaseSetup
 
         }
 
+        public static void TestPagingMgrEnumerable(DataAccessMgr daMgr)
+        {
+            B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
+            var query = from a in entities.TestSequences
+                        orderby new { a.AppSequenceName, a.AppSequenceId }
+                        select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
+            PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 10);
+            PagingMgrEnumerable<Models.TestSequence> pagingMgrEnumerable = new PagingMgrEnumerable<Models.TestSequence>(testSequenceMgr);
+            int count = 0;
+            foreach (Models.TestSequence t in pagingMgrEnumerable)
+            {
+                count++;
+            }
+        }
+
         public static PagingMgr CreateSamplePagingMgrJoin(DataAccessMgr daMgr, Int16? pageSize
                 , string pagingState = null)
         {

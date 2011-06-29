@@ -144,6 +144,7 @@ namespace B1.DataAccess
                 , string pagingState = null)
             : this(dataAccessManager, pageSizeParam, pageSize, pagingState)
         {
+            // Verify that the table has a PrimaryKey or an Index that matches the index column list
             indexColumns = VerifyIndexColumns(dbTable, indexColumns);
 
             DbCommand dbCmdFirstPage = GetPageDbCmd(PagingDbCmdEnum.First
@@ -1144,5 +1145,133 @@ namespace B1.DataAccess
 			return dt;
 		}
 
+    }
+
+    /// <summary>
+    /// This class helps to enumerator over rows in each page of the PagingMgr. It automatically fetch the next page
+    /// when the enuemration is past the last row in the current page.
+    /// </summary>
+    public class PagingMgrEnumerator<T> : IEnumerator<T> where T : new()
+    {
+        PagingMgr _pagingMgr = null;
+        IEnumerator<T> _currentPage = null;
+        bool _endOfData = false;
+
+        /// <summary>
+        /// Constructor needs the PagingMgr which needs to be enumerated
+        /// </summary>
+        public PagingMgrEnumerator(PagingMgr pagingMgr)
+        {
+            _pagingMgr = pagingMgr;
+        }
+
+        /// <summary>
+        /// Returns the current row in the current page.
+        /// </summary>
+        public T Current
+        {
+            get
+            {
+                if (_endOfData)
+                    throw new InvalidOperationException("End of Data reached.");
+                if (_currentPage == null)
+                    throw new InvalidOperationException("Enumeration has not started. Call MoveNext.");
+                return _currentPage.Current;
+            }
+        }
+
+        /// <summary>
+        /// Disposes the current page.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_currentPage != null)
+                _currentPage.Dispose();
+        }
+
+        /// <summary>
+        /// Current is returned as an object
+        /// </summary>
+        object System.Collections.IEnumerator.Current
+        {
+            get { return Current; }
+        }
+
+        /// <summary>
+        /// Move the pointer to the next row in the current page. If end of data reached in the current page than
+        /// fetches next page from the PagingMgr and put the pointer to the first row of the next page.
+        /// 
+        /// It always starts with the First page in the paging manager to the next pages.
+        /// </summary>
+        /// <returns>False if end of the data is reached else return true.</returns>
+        public bool MoveNext()
+        {
+            // Move the pointer in the current page - if End of Data reached or first time called
+            if (_currentPage == null || !_currentPage.MoveNext())
+            {
+                // Get the next page from the paging manager
+                IEnumerable<T> newPage = _currentPage == null ? _pagingMgr.GetFirstPage<T>() : _pagingMgr.GetNextPage<T>();
+
+                // If the next page has data then make that as the current page
+                if (newPage.Count() > 0)
+                {
+                    if (_currentPage != null) _currentPage.Dispose();
+                    _currentPage = newPage.GetEnumerator();
+                    return MoveNext();  // Move to next in the new enumerator
+                }
+                else
+                {
+                    // If the next page has no data than return false to signify end of data reached
+                    _endOfData = true;
+                    return false;
+                }
+            }
+
+            // There is more data available in current
+            return true;
+        }
+
+        /// <summary>
+        /// Reset the pointer to the current page. It does not change any state in the PagingMgr.
+        /// </summary>
+        public void Reset()
+        {
+            _currentPage = null;
+            _endOfData = false;
+        }
+    }
+
+    /// <summary>
+    /// PagingMgr enumerable class which can be used in the foreach loop to enuemrate over all the rows in all
+    /// pages.
+    /// </summary>
+    public class PagingMgrEnumerable<T> : IEnumerable<T> where T : new()
+    {
+        PagingMgr _pagingMgr = null;
+
+        /// <summary>
+        /// Constructor for PagingMgrEnumerable needs the PagingMgr which needs to be enumerated.
+        /// </summary>
+        /// <param name="pagingMgr"></param>
+        public PagingMgrEnumerable(PagingMgr pagingMgr)
+        {
+            _pagingMgr = pagingMgr;
+        }
+
+        /// <summary>
+        /// GetEnumerator returns the PagingMgrEnumerator
+        /// </summary>
+        public IEnumerator<T> GetEnumerator()
+        {
+            return new PagingMgrEnumerator<T>(_pagingMgr);
+        }
+
+        /// <summary>
+        /// GetEnumerator returns the PagingMgrEnumerator
+        /// </summary>
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 }

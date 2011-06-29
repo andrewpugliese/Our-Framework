@@ -41,16 +41,43 @@ namespace B1.Web
             var controllerName = route.GetRequiredString("controller");
             var actionName = route.GetRequiredString("action");
             string pagingState = htmlHelper.ViewContext.HttpContext.Request.Params["pagingState"];
-            string pagingDirection = htmlHelper.ViewContext.HttpContext.Request.Params["pagingDirection"] ?? "first";
+            string pagingDirection = htmlHelper.ViewContext.HttpContext.Request.Params["pagingDirection"];
+            PagingMgr.PagingDbCmdEnum pagingOption = string.IsNullOrWhiteSpace(pagingDirection) ?
+                PagingMgr.PagingDbCmdEnum.First :
+                (PagingMgr.PagingDbCmdEnum)Enum.Parse(typeof(PagingMgr.PagingDbCmdEnum), pagingDirection);
 
-            // Set the pagingState before getting the intended page
-            pagingMgr.RestorePagingState(pagingState);
+            if (!string.IsNullOrWhiteSpace(pagingState))
+            {
+                // Set the pagingState before getting the intended page
+                pagingMgr.RestorePagingState(pagingState);
+
+                string initHtml = @"
+
+function showPage(action, data) {{
+    $.ajax({{
+        url: action,
+        type: ""get"",
+        format: ""html"",
+        cache: false,
+        data: data,
+        success: function (result) {{
+            // alert(result);
+            $(""#gridContainer"").html(result);
+        }},
+        error: function (xhr, status, error) {{
+
+            //?? CALL the client side error handling function which may be provided by the client
+
+            alert(xhr.responseText);
+            //?? showModalDialog(xhr.statusText, xhr.responseText);
+        }}
+    }});
+}}
+
+";
+            }
 
             // Set the paging option and get the next page
-            PagingMgr.PagingDbCmdEnum pagingOption = pagingDirection == "first" ? PagingMgr.PagingDbCmdEnum.First
-                : pagingDirection == "next" ? PagingMgr.PagingDbCmdEnum.Next
-                : pagingDirection == "prev" ? PagingMgr.PagingDbCmdEnum.Previous
-                : PagingMgr.PagingDbCmdEnum.Last;
             DataTable pageTable = pagingMgr.GetPage(pagingOption);
             IEnumerable<dynamic> pageData = DataTableToEnumerable(pageTable);
 
