@@ -765,8 +765,19 @@ namespace B1.DataAccess
                         MemberExpression member = (MemberExpression)arg;
 
                         ParameterExpression param = TypeVisitor.GetFirstParent<ParameterExpression>(member);
+                        
+                        MemberExpression firstMember = TypeVisitor.GetFirstParent<MemberExpression>(member);
 
-                        if(param != null)
+                        QualifiedEntity entity = null;
+
+                        if(firstMember != null)
+                            entity = _tableMgr.GetQualifiedEntityOrNull(firstMember.Type);
+
+                        if(entity != null)
+                        {
+                            _tableMgr.AddTypedToQualifiedEntity(node.Type, member.Member.Name, entity);
+                        }
+                        else if(param != null)
                         {
                             if(_parameterToAlias.ContainsKey(param.Name))
                             {
@@ -1139,7 +1150,7 @@ namespace B1.DataAccess
                 _currentTableAlias = _tableMgr.Add("SUBSELECTS", select.Item1);
                 _joins.Add(_currentTableAlias, _join);
 
-                _join.AppendFormat("({0}) as {1} {2}", select.Item1,
+                _join.AppendFormat("({0}) {1} {2}", select.Item1,
                         _currentTableAlias, Environment.NewLine);
 
                 _tableMgr.AddTypeToQualifiedEntities(_subSelectTableMgr._typeToEntities);
@@ -1201,24 +1212,36 @@ namespace B1.DataAccess
                 if(_rightSubSelectTableMgr == null)
                     rightEntity = _tableMgr.GetQualifiedEntityFromAlias(_rightAlias);
                 else
-                    rightEntity = _tableMgr.GetQualifiedEntityOrNull(rightOn._properties[p].DeclaringType);
+                    rightEntity = _rightSubSelectTableMgr.GetQualifiedEntityOrNull(rightOn._properties[p].DeclaringType);
 
                 if(_leftSubSelectTableMgr == null)
                     leftEntity = _tableMgr.GetQualifiedEntityFromAlias(_leftAlias);
                 else
-                    leftEntity = _tableMgr.GetQualifiedEntityOrNull(prop.DeclaringType);
+                    leftEntity = _leftSubSelectTableMgr.GetQualifiedEntityOrNull(prop.DeclaringType);
 
                 if(rightEntity == null)
                 {
-                    rightEntity = _rightSubSelectTableMgr.GetQualifiedEntityFromAlias(
-                            _rightSubSelectTableMgr._typeToAlias[rightOn._properties[p].DeclaringType]
-                                [rightOn._properties[p].Name]);
+                    if(_rightSubSelectTableMgr._typeToEntities.ContainsKey(rightOn._properties[p].DeclaringType)
+                            && _rightSubSelectTableMgr._typeToEntities[rightOn._properties[p].DeclaringType].ContainsKey(
+                            rightOn._properties[p].Name))
+                        rightEntity = _rightSubSelectTableMgr._typeToEntities[rightOn._properties[p].DeclaringType]
+                            [rightOn._properties[p].Name];
+                    else
+                        rightEntity = _rightSubSelectTableMgr.GetQualifiedEntityFromAlias(
+                                _rightSubSelectTableMgr._typeToAlias[rightOn._properties[p].DeclaringType]
+                                    [rightOn._properties[p].Name]);
                 }
 
                 if(leftEntity == null)
                 {
-                    leftEntity = _leftSubSelectTableMgr.GetQualifiedEntityFromAlias(
-                            _leftSubSelectTableMgr._typeToAlias[prop.DeclaringType]
+                    if(_leftSubSelectTableMgr._typeToEntities.ContainsKey(prop.DeclaringType)
+                           && _leftSubSelectTableMgr._typeToEntities[prop.DeclaringType].ContainsKey(
+                           prop.Name))
+                        leftEntity = _leftSubSelectTableMgr._typeToEntities[prop.DeclaringType]
+                            [prop.Name];
+                    else
+                        leftEntity = _leftSubSelectTableMgr.GetQualifiedEntityFromAlias(
+                                _leftSubSelectTableMgr._typeToAlias[prop.DeclaringType]
                                 [prop.Name]);
                 }
                         
