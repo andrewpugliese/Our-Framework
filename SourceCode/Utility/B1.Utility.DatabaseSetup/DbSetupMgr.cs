@@ -2145,20 +2145,20 @@ namespace B1.Utility.DatabaseSetup
         {
             if (_daMgr == null)
                 CreateDbMgr();
-            TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueListEnum tpqList 
-                    = TaskProcessingQueue.TaskProcessingQueueListEnum.All;
+            TaskProcessingQueue.QueueListEnum tpqList 
+                    = TaskProcessingQueue.QueueListEnum.All;
             if (rbTPQFailed.Checked)
-                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Failed;
+                tpqList = TaskProcessingQueue.QueueListEnum.Failed;
             if (rbTPQInProcess.Checked)
-                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.InProcess;
+                tpqList = TaskProcessingQueue.QueueListEnum.InProcess;
             if (rbTPQNotQueued.Checked)
-                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.NotQueued;
+                tpqList = TaskProcessingQueue.QueueListEnum.NotQueued;
             if (rbTPQSucceeded.Checked)
-                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Succeeded;
+                tpqList = TaskProcessingQueue.QueueListEnum.Succeeded;
             if (rbTPQqueued.Checked)
-                tpqList = TaskProcessingQueue.TaskProcessingQueueListEnum.Queued;
+                tpqList = TaskProcessingQueue.QueueListEnum.Queued;
 
-            DataTable dt = TaskProcessingEngine.TaskProcessingQueue.TaskProcessingQueueList(
+            DataTable dt = TaskProcessingQueue.TaskProcessingQueueList(
                     _daMgr, tpqList);
             dgvTPQ.DataSource = dt;
             dgvTPQ.Refresh();
@@ -2194,6 +2194,14 @@ namespace B1.Utility.DatabaseSetup
             DataTable dt = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
             MessageBox.Show("Inline View test succeeded.  Executing script: " + Environment.NewLine +
                 _daMgr.DbProviderLib.GetCommandDebugScript(dbCmd));
+        }
+
+        private void btnAddTPQItem_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+            TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr, null);
+            DialogResult dr = taskAdmin.ShowDialog();
         }
 
     }

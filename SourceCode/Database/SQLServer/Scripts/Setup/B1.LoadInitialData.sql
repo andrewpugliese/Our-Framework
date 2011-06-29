@@ -508,15 +508,36 @@ INSERT INTO B1.AppMaster
 (
 AppCode
 , AppId
-, IsTaskProcessingEngine
+, AllowMultipleSessions
 , Remarks
 )
 VALUES
 (
 @AppCode
 , 'TPE1'
-, 1
-, 'Task Processing Engine'
+, 0
+, 'Task Processing Engine 1'
+)
+
+GO 
+
+DECLARE @AppCode INT
+
+EXEC B1.usp_UniqueIdsGetNextBlock 'AppCode', 1, @AppCode out
+
+INSERT INTO B1.AppMaster
+(
+AppCode
+, AppId
+, AllowMultipleSessions
+, Remarks
+)
+VALUES
+(
+@AppCode
+, 'TPE2'
+, 0
+, 'Task Processing Engine 2'
 )
 
 GO 

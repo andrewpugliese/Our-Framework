@@ -246,6 +246,8 @@
             this.rbTPQInProcess = new System.Windows.Forms.RadioButton();
             this.rbTPQFailed = new System.Windows.Forms.RadioButton();
             this.rbTPQSucceeded = new System.Windows.Forms.RadioButton();
+            this.btnDelTPQItem = new System.Windows.Forms.Button();
+            this.btnAddTPQItem = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -2256,6 +2258,8 @@
             // 
             // tabTaskProcessing
             // 
+            this.tabTaskProcessing.Controls.Add(this.btnDelTPQItem);
+            this.tabTaskProcessing.Controls.Add(this.btnAddTPQItem);
             this.tabTaskProcessing.Controls.Add(this.rbTPQNotQueued);
             this.tabTaskProcessing.Controls.Add(this.rbTPQAll);
             this.tabTaskProcessing.Controls.Add(this.groupBox6);
@@ -2749,6 +2753,26 @@
             this.rbTPQSucceeded.Text = "Succeeded";
             this.rbTPQSucceeded.UseVisualStyleBackColor = true;
             // 
+            // btnDelTPQItem
+            // 
+            this.btnDelTPQItem.Enabled = false;
+            this.btnDelTPQItem.Location = new System.Drawing.Point(131, 306);
+            this.btnDelTPQItem.Name = "btnDelTPQItem";
+            this.btnDelTPQItem.Size = new System.Drawing.Size(94, 25);
+            this.btnDelTPQItem.TabIndex = 198;
+            this.btnDelTPQItem.Text = "Delete TPQItem";
+            this.btnDelTPQItem.UseVisualStyleBackColor = true;
+            // 
+            // btnAddTPQItem
+            // 
+            this.btnAddTPQItem.Location = new System.Drawing.Point(14, 306);
+            this.btnAddTPQItem.Name = "btnAddTPQItem";
+            this.btnAddTPQItem.Size = new System.Drawing.Size(94, 25);
+            this.btnAddTPQItem.TabIndex = 197;
+            this.btnAddTPQItem.Text = "Add TPQ Item";
+            this.btnAddTPQItem.UseVisualStyleBackColor = true;
+            this.btnAddTPQItem.Click += new System.EventHandler(this.btnAddTPQItem_Click);
+            // 
             // DbSetupMgr
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3010,6 +3034,8 @@
         private System.Windows.Forms.RadioButton rbTPQSucceeded;
         private System.Windows.Forms.RadioButton rbTPQFailed;
         private System.Windows.Forms.RadioButton rbTPQInProcess;
+        private System.Windows.Forms.Button btnDelTPQItem;
+        private System.Windows.Forms.Button btnAddTPQItem;
     }
 }
 

@@ -44,7 +44,7 @@ namespace B1.SessionManagement
         string _appId;
         string _appName;
         string _appVersion;
-        bool _isTaskProcessingEngine;
+        bool _allowMultipleSessions;
         SignonControl _signonControl = null;
         DataTable _appSessions = null;
         System.Threading.Timer _heartbeatTimer;
@@ -73,7 +73,7 @@ namespace B1.SessionManagement
             _signonControl = new SignonControl(_daMgr);
 
             DbTableDmlMgr dmlSelectMgr = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
-                    , Constants.AppMaster, Constants.AppCode, Constants.IsTaskProcessingEngine);
+                    , Constants.AppMaster, Constants.AppCode, Constants.AllowMultipleSessions);
             dmlSelectMgr.SetWhereCondition((j) => j.Column(Constants.AppId)
                 == j.Parameter(dmlSelectMgr.MainTable.SchemaName
                     , dmlSelectMgr.MainTable.TableName
@@ -87,8 +87,8 @@ namespace B1.SessionManagement
                         , string.Format("AppId: {0}", appId));
 
             _appCode = Convert.ToInt32(appMaster.Rows[0][Constants.AppCode]);
-            _isTaskProcessingEngine = Convert.ToBoolean(appMaster.Rows[0][Constants.IsTaskProcessingEngine]);
-            if (_isTaskProcessingEngine)
+            _allowMultipleSessions = Convert.ToBoolean(appMaster.Rows[0][Constants.AllowMultipleSessions]);
+            if (!_allowMultipleSessions)
                 _appSessionCode = 0;
             else _appSessionCode = _daMgr.GetNextSequenceNumber(Constants.MultipleSessionCode);
         }
@@ -146,7 +146,7 @@ namespace B1.SessionManagement
         /// </summary>
         public Boolean IsTaskProcessingEngine
         {
-            get { return _isTaskProcessingEngine; }
+            get { return _allowMultipleSessions; }
         }
 
         /// <summary>
@@ -278,7 +278,7 @@ namespace B1.SessionManagement
             DbCommand dbCmdInsert = _daMgr.BuildInsertDbCommand(dmlInsertMgr);
             DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("IsTaskProcessingEngine: {0} {1}", _isTaskProcessingEngine, Environment.NewLine);
+            sb.AppendFormat("AllowMultipleSessions: {0} {1}", _allowMultipleSessions, Environment.NewLine);
             sb.AppendFormat("OS Version: {0} {1}", Environment.OSVersion, Environment.NewLine);
             sb.AppendFormat("ProcessName: {0} {1}", Process.GetCurrentProcess().ProcessName, Environment.NewLine);
             sb.AppendFormat("CLR Version: {0} {1}", Environment.Version, Environment.NewLine);

@@ -50,7 +50,7 @@ namespace B1.SessionManagement
         public const string EnvironmentSettings = "EnvironmentSettings";
         public const string FailedAttemptLimit = "FailedAttemptLimit";
         public const string ForceSignOff = "ForceSignOff";
-        public const string IsTaskProcessingEngine = "IsTaskProcessingEngine";
+        public const string AllowMultipleSessions = "AllowMultipleSessions";
         public const string LastModifiedDateTime = "LastModifiedDateTime";
         public const string LastModifiedUserCode = "LastModifiedUserCode";
         public const string MachineName = "MachineName";

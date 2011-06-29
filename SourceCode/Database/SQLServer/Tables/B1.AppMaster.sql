@@ -13,8 +13,9 @@ CREATE TABLE B1.AppMaster
 	AppCode					INT NOT NULL, -- Unique Numeric Code
 	AppId					VARCHAR(32) NOT NULL, -- Unique String Identifier
 	Remarks					VARCHAR(512) NOT NULL, -- Description, comments
-	IsTaskProcessingEngine	BIT NOT NULL DEFAULT(0), -- Indicates if the application
-													--  will act as a TaskProcessing Engine
+	AllowMultipleSessions	BIT NOT NULL DEFAULT(0), -- Indicates if the same appCode/appId
+													-- can have multiple active app sessions
+													-- TaskProcessingEngine Apps CANNOT have multiple sessions
 	LastModifiedUserCode	INT,	-- Last User to Modify the record
 	LastModifiedDateTime	DATETIME, -- Date/Time of the last modification
 	CONSTRAINT PK_AppMaster PRIMARY KEY (AppCode) 

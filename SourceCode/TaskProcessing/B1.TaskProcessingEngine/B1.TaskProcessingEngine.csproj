@@ -46,7 +46,6 @@
     <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskProcessEngine.cs" />
-    <Compile Include="TaskProcessingQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CacheManagement\B1.CacheManagement\B1.CacheManagement.csproj">

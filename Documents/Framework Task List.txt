@@ -49,3 +49,9 @@ DDL
 AppMaster
 	Change IsTaskProcessingEngine to AllowMultipleSessions
 	
+
+Content Galaxy
+- DDL from CG (content galaxy tables) 
+	- Keep dbo schema and LMod key for now;  Add new LastMod key (LastModifiedUserCode, LastModifiedDateTime);
+
+	- 
