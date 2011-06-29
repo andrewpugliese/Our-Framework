@@ -2204,5 +2204,23 @@ namespace B1.Utility.DatabaseSetup
             DialogResult dr = taskAdmin.ShowDialog();
         }
 
+        private void btnTestPagingMgrEnumerable_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                CreateDbMgr();
+
+            try
+            {
+                TestDataAccessMgr.TestPagingMgrEnumerable(_daMgr);
+
+                MessageBox.Show("PagingMgrEnumerable ran without any exception being thrown");
+            }
+            catch (Exception ex)
+            {
+                _loggingMgr.WriteToLog(ex);
+                MessageBox.Show(ex.Message + ex.StackTrace);
+            }
+        }
+
     }
 }
