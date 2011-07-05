@@ -84,6 +84,7 @@ SRC/B1_APP/Temp/
 Temp/
 B1BDLL.xml
 B1.SampleDb.BuildResults.txt
+*.BuildResults.txt
 cmdOutput.txt
 output.txt
 ddl.bat
