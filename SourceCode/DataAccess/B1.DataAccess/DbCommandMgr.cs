@@ -659,8 +659,8 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// Adds the given DbCommand and parameters to the current CommandBlock. Remaps the DbCommand for the
-        /// entity object.
+        /// Adds the given DbCommand and parameters to the current CommandBlock. Changes the parameters in
+        /// the passed in DbCommand to point to the properties of the entity passed in.
         /// </summary>
         /// <param name="dbCommand">Given DAAB DbCommand object.</param>
         /// <param name="entity">Entity instance for this DbCommand</param>

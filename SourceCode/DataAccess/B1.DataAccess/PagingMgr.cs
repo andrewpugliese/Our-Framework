@@ -291,6 +291,18 @@ namespace B1.DataAccess
                     , dbCmdPreviousPage);
         }
 
+
+        /// <summary>
+        /// Builds a paging manager based on a LINQ expression or IQueryable method calls.
+        /// The LINQ expression or IQueryable method calls can represent a select with one or more tables(join) 
+        /// and contain an existing where condition. The PagingMgr will append to the existing where condition 
+        /// to perform the 4 basic paging commands: first, last, prev, next.
+        /// </summary>
+        /// <param name="dataAccessManager"></param>
+        /// <param name="queryable">The LINQ expression or IQueryable method calls, e.g., .Where, .Select, etc.</param>
+        /// <param name="pageSizeParam"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="pagingState"></param>
         public PagingMgr(DataAccessMgr dataAccessManager
             , IQueryable queryable
             , string pageSizeParam

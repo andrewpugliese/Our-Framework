@@ -959,11 +959,11 @@ namespace B1.DataAccess
         /// A parameter named n will be created for that DbCommand and the variable n is linked to the parameter 
         /// in the dbCmd for the lifetime of that dbCmd. You can reuse the DbCommand along with the integer n.
         /// </code>
-        /// 
+        ///
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="bufferSize"></param>
+        /// <param name="queryable">Linq Query or IQueryable method calls</param>
+        /// <param name="bufferSize">number of rows to return</param>
         /// <param name="defaultSchema">Currently not used. Will be used in future for classes not in Entity Framework.
         /// </param>
         /// <returns></returns>

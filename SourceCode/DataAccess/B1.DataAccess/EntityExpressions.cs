@@ -21,15 +21,30 @@ using B1.CacheManagement;
 #pragma warning disable 1591 // disable the xmlComments warning   
 namespace B1.DataAccess
 {
+    /// <summary>
+    /// This class manages all of the entities, their SQL aliases, their LINQ aliases, and other information
+    /// that helps the LinqParser keep track of them.
+    /// </summary>
     internal class LinqTableMgr
     {
-        //?? private ContextCache _contextCache;
         private string _defaultSchema;
 
+        /// <summary>
+        /// "known types" are types that are entities or part of the entities. We keep track of known types so that 
+        /// when we encounter an "unknown" type in a where condition, we can assume it is an external variable that
+        /// needs to be made a parameter.
+        /// </summary>
         internal TypeVisitor _knownTypes = new TypeVisitor();
 
+        /// <summary>
+        /// List of parameters to be made into DbParameters
+        /// </summary>
         internal List<DbPredicateParameter> _parameters = new List<DbPredicateParameter>();
 
+        /// <summary>
+        /// The alias stack keeps tracks of new entities and their SQL alias as they are encountered. This is uesefull
+        /// when trying to connect a LINQ parameter to the actual entity. 
+        /// </summary>
         internal List<string> _aliasStack = new List<string>();
 
         /// <summary>
@@ -267,7 +282,8 @@ namespace B1.DataAccess
     }
 
     /// <summary>
-    /// 
+    /// This is the main class that is used to parse a LINQ expression tree (this can include just straight IQueryable 
+    /// method calls like .Where or .Select.
     /// </summary>
     public class LinqQueryParser : ExpressionVisitor
     {
@@ -289,6 +305,12 @@ namespace B1.DataAccess
 
         public List<DbPredicateParameter> Parameters { get { return _tableMgr._parameters; } }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="queryable">Linq or Iqueryable expression</param>
+        /// <param name="daMgr"></param>
+        /// <param name="defaultSchemaName"></param>
         public LinqQueryParser(IQueryable queryable, DataAccessMgr daMgr, string defaultSchemaName = null)
         {
             InitTableMgr(queryable, defaultSchemaName);
@@ -306,29 +328,7 @@ namespace B1.DataAccess
         {
             ContextVisitor visitor = new ContextVisitor(queryable);
             _tableMgr = new LinqTableMgr(visitor, defaultSchemaName);
-            ////?? TypeVisitor visitor = new TypeVisitor(queryable.Expression);
-
-            //ObjectContext entityContext = null;
-            //EntityContainer cspaceEntityContainer = null;
-
-            //if(!(queryable.Expression is MethodCallExpression))
-            //    throw new Exception("Invalid linq expression.");
-
-            //if(queryable.GetType().IsGenericType && (queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectQuery<>)
-            //        || queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectSet<>)))
-            //{
-
-            //    entityContext = ((ObjectQuery)queryable).Context;
-
-            //    cspaceEntityContainer = entityContext.MetadataWorkspace.GetEntityContainer(
-            //            entityContext.DefaultContainerName, DataSpace.CSpace);
-
-            //    //?? Loading all storage meta data from the assembly of this context.
-            //    //?? We have to load the storage meta data for every context we encounter
-            //    StorageMetaData.EnsureStorageMetaData(entityContext/*, cspaceEntityContainer*/);
-            //}
-
-            //_tableMgr = new LinqTableMgr(entityContext, cspaceEntityContainer, defaultSchemaName);
+           
         }
 
         private void Parse(MethodCallExpression expression, DataAccessMgr daMgr)
@@ -345,6 +345,10 @@ namespace B1.DataAccess
             Visit(expression);
         }
 
+        /// <summary>
+        /// Recursively search for the first select.
+        /// </summary>
+        /// <returns></returns>
         internal string GetOuterSelect()
         {
             if(_selectParser != null)
@@ -359,7 +363,8 @@ namespace B1.DataAccess
                 return _orderByParser._parser.GetOuterSelect();
             else if(_joinParser != null && _joinParser._selectParser != null)
                 return "SELECT " + _joinParser._selectParser.GetSelect();
-            else 
+            else //If no select found, use the outermost expressions return type to create the select.
+                 //The return type will be an entity. Select all the columns of this entity.
             {
                 Type[] genericTypes = _outerMostExpression.Method.ReturnType.GetGenericArguments();
 
@@ -377,6 +382,10 @@ namespace B1.DataAccess
             }
         }
 
+        /// <summary>
+        /// recursively search for first from
+        /// </summary>
+        /// <returns></returns>
         internal string GetOuterFrom()
         {
             if(_selectParser != null && _selectParser._from.Length > 0)
@@ -398,6 +407,10 @@ namespace B1.DataAccess
             
         }
 
+        /// <summary>
+        /// Recursively search for first join.
+        /// </summary>
+        /// <returns></returns>
         internal string GetJoinFrom()
         {
             if(_joinParser != null)
@@ -427,6 +440,10 @@ namespace B1.DataAccess
             return new string[] { schema, aliasAndTable.Key, aliasAndTable.Value };
         }
 
+        /// <summary>
+        /// Gets either the join statment, or if none is found, the first table that is found
+        /// </summary>
+        /// <returns></returns>
         internal string GetDefaultFrom()
         {
             string joinFrom = GetJoinFrom();
@@ -587,6 +604,9 @@ namespace B1.DataAccess
 
     }
 
+    /// <summary>
+    /// Used for parsing Select and SelectMany IQueryable methods.
+    /// </summary>
     internal class SelectParser : ExpressionVisitor
     {
         internal StringBuilder _from = new StringBuilder();
@@ -633,12 +653,15 @@ namespace B1.DataAccess
 
             _tableMgr._knownTypes.Visit(expression.Arguments[0]);
 
+            //First argument is the collection that the select is performing a transform on.
+            //If first arguement is a method, the call the parse this as another Linq Expression.
             if(expression.Arguments[0] is MethodCallExpression)
             {
                 MethodCallExpression method = (MethodCallExpression)expression.Arguments[0];
                 _parser = new LinqQueryParser(method, tableMgr, daMgr);
             }
 
+            //If this select is a select many, this is a type of join.
             if(expression.Method.Name == "SelectMany")
             {
                 string internalFrom = _parser.GetOuterFrom();
@@ -668,6 +691,8 @@ namespace B1.DataAccess
                 // Needed in case of where
                 ParseSecondTable(expression.Arguments[1]);
 
+                // Look to see of this is an outer join. Outer joins are created by specifying
+                // using DefaultIfEmpty on one of the collections/tables.
                 if(IsDefaultIfEmptyMethod(expression.Arguments[0]))
                     _joinType = DbTableJoinType.RightOuter;
                 else if(IsDefaultIfEmptyMethod(expression.Arguments[1]))
@@ -1130,16 +1155,17 @@ namespace B1.DataAccess
         /// <returns></returns>
         protected override Expression VisitMethodCall(MethodCallExpression expression)
         {
+            // Joining to a join.
             if((expression.Method.Name == "Join" || expression.Method.Name == "GroupJoin") 
                     && expression.Method.DeclaringType == typeof(Queryable))
             {
                 VisitJoin(expression);
                 
             }
+            // joining to a Sub Select
             else if((expression.Method.Name == "Select" || expression.Method.Name == "Where") 
                     && expression.Method.DeclaringType == typeof(Queryable))
             {
-                //Sub selects
                 _join = new StringBuilder();
 
                 _subSelectTableMgr = new LinqTableMgr(_tableMgr.ContextCache);
@@ -1147,6 +1173,8 @@ namespace B1.DataAccess
                 Tuple<string, List<DbPredicateParameter>> select = _daMgr.BuildSelect(expression,
                         _subSelectTableMgr );
 
+                //Addes the subselect to a schema called "SUBSELECTS". This schema is never used. It 
+                //is just a place holder for the dictionary.
                 _currentTableAlias = _tableMgr.Add("SUBSELECTS", select.Item1);
                 _joins.Add(_currentTableAlias, _join);
 
@@ -1156,6 +1184,7 @@ namespace B1.DataAccess
                 _tableMgr.AddTypeToQualifiedEntities(_subSelectTableMgr._typeToEntities);
                 _tableMgr._parameters.AddRange(_subSelectTableMgr._parameters);
             }
+            // joining to an entity
             else
             {
                 Type tableType = TypeVisitor.GetNonGenericTypes(expression.Method.ReturnType)[0];
@@ -1203,7 +1232,7 @@ namespace B1.DataAccess
             int p = 0;
             _join.AppendFormat(" ON");
 
-
+            //Loop through the join "ON" properties.
             foreach(var prop in leftOn._properties)
             {
                 QualifiedEntity rightEntity = null;
@@ -1219,6 +1248,7 @@ namespace B1.DataAccess
                 else
                     leftEntity = _leftSubSelectTableMgr.GetQualifiedEntityOrNull(prop.DeclaringType);
 
+                // the right side ON properties are on a subselect
                 if(rightEntity == null)
                 {
                     if(_rightSubSelectTableMgr._typeToEntities.ContainsKey(rightOn._properties[p].DeclaringType)
@@ -1232,6 +1262,7 @@ namespace B1.DataAccess
                                     [rightOn._properties[p].Name]);
                 }
 
+                // the left side ON properties are on a subselect
                 if(leftEntity == null)
                 {
                     if(_leftSubSelectTableMgr._typeToEntities.ContainsKey(prop.DeclaringType)
@@ -1518,7 +1549,7 @@ namespace B1.DataAccess
 
         protected override Expression VisitMember(MemberExpression node)
         {
-            // Database column reference
+            // Database column reference. We know this because it is a "known" type.
             if(_tableMgr._knownTypes._types.Contains(node.Member.DeclaringType))
             {
                 QualifiedEntity entity = _tableMgr.GetQualifiedEntity(node.Member.DeclaringType);
@@ -1555,15 +1586,19 @@ namespace B1.DataAccess
                         };
 
             }
-            else // value/parameter reference
+            // Variable/member reference. Needs to be made a parameter
+            else 
             {   
                 if(_currentParameter != null)
                 {
                     if(_currentParameter.ParameterName != 
                             LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr))
                     {
+                        // Create a lambda (closure) with a body that is the member access.
                         Delegate memberAccess = Expression.Lambda(node).Compile();
+
                         _currentParameter.MemberPropertyName = node.Member.Name;
+                        // Store lambda for later value retrieval.
                         _currentParameter.MemberAccess = memberAccess;
                         _currentParameter.Value = memberAccess.DynamicInvoke();
                         _currentParameter.ParameterName = LinqTableMgr.BuildParamName(node.Member.Name, _tableMgr._parameters, _daMgr);
@@ -1588,6 +1623,10 @@ namespace B1.DataAccess
         }
     }
 
+    /// <summary>
+    /// Walks and entire expression tree and looking for method calls and lambdas.
+    /// Stores the return types of method calls and parameter types of lambdas.
+    /// </summary>
     internal class TypeVisitor : ExpressionVisitor
     {
         public static TypeComparer Comparer = new TypeComparer();
@@ -1631,6 +1670,13 @@ namespace B1.DataAccess
             return node;
         }
 
+        /// <summary>
+        /// Gets a list of all the NON generic types by recursively walking the Types and Generic Type
+        /// parameters of a type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="nonGenericTypes"></param>
+        /// <returns></returns>
         public static List<Type> GetNonGenericTypes(Type type, List<Type> nonGenericTypes = null)
         {
             if(type.IsGenericType)
@@ -1648,6 +1694,15 @@ namespace B1.DataAccess
             return nonGenericTypes;
         }
 
+
+        /// <summary>
+        /// Goes up the MemberExpression tree until it finds the first instance of a MemberExpression with an
+        /// *.Expression member that is NOT of type MemberExpression. Returns that instance of the Expression
+        /// member if it is of type. Otherwise returns null.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public static T GetFirstParent<T>(MemberExpression exp) where T : Expression
         {
             while(exp.Expression is MemberExpression)
@@ -1674,6 +1729,10 @@ namespace B1.DataAccess
 
     /// <summary>
     /// Used to get new values of variables that were used as parameters in LINQ queries.
+    /// This class derives from ISite because the DbCommand class has an optional ISite member. 
+    /// An instance of this class is stored with the DbCommand object so that anytime the DbCommand
+    /// object is executed, we are able to retrieve the values of a particular variable or member reference via
+    /// the use of a closure that is stored in the DbPredicateParameter.
     /// </summary>
     internal class ParameterSite : System.ComponentModel.ISite
     {
@@ -1736,6 +1795,10 @@ namespace B1.DataAccess
         }
     }
 
+    /// <summary>
+    /// This class is used for creating Insert, Update and Delete SQL for Entity Framework entities. 
+    /// For select statements see <see cref="B1.DataAccess.LinqQueryParser"/>
+    /// </summary>
     internal class ObjectParser
     {
         private QualifiedEntity _qualifiedTable;
@@ -1822,6 +1885,7 @@ namespace B1.DataAccess
                     string value = null;
                     if (propertyDbFunctions != null && !propertyDbFunctions.ContainsKey(_entityType.GetProperty(prop.Name)))
                     {
+                        //Create a lambda (closure) for accessing this property value later on.
                         Delegate memberAccess = Expression.Lambda(
                                 Expression.Property(Expression.Constant(_objRef), prop)).Compile();
 
@@ -1897,6 +1961,7 @@ namespace B1.DataAccess
                 object value = null;
                 if (propertyDbFunctions == null || !propertyDbFunctions.ContainsKey(_entityType.GetProperty(propName)))
                 {
+                    //Create a lambda (closure) for accessing this property value later on.
                     Delegate memberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
                             , _entityType.GetProperty(propName))).Compile();
@@ -1947,7 +2012,6 @@ namespace B1.DataAccess
 
             updateSQL.Append(setColumns);
 
-            // build where clause
             // build where clause
             Tuple<string, List<DbPredicateParameter>> whereClause
                     = BuildWhereClause(ose.EntityKey.EntityKeyValues, parameters);
@@ -2000,6 +2064,7 @@ namespace B1.DataAccess
                     SchemaName = _qualifiedTable.SchemaName,
                     MemberPropertyName = key.Key,
                     Value = key.Value,
+                    //Create a lambda (closure) for accessing this property value later on.
                     MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(_objRef)
                             , _entityType.GetProperty(key.Key))).Compile()
@@ -2009,7 +2074,7 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// Points the ParameterSite(Isite) parameters to the new object.
+        /// Points the ParameterSite(ISite) parameters to the new object's properties.
         /// </summary>
         /// <param name="dbCmd"></param>
         /// <param name="obj"></param>
@@ -2026,6 +2091,7 @@ namespace B1.DataAccess
             {
                 PropertyInfo property = obj.GetType().GetProperty(param.MemberPropertyName);
 
+                //Create a lambda (closure) for accessing this property value of obj later on.
                 param.MemberAccess = Expression.Lambda(
                             Expression.Property(Expression.Constant(obj)
                             , obj.GetType().GetProperty(param.MemberPropertyName))).Compile();
