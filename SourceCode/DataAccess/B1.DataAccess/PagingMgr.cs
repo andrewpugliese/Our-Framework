@@ -1168,13 +1168,22 @@ namespace B1.DataAccess
         PagingMgr _pagingMgr = null;
         IEnumerator<T> _currentPage = null;
         bool _endOfData = false;
+        //?? bool _reverse = false; //?? NOT implemented yet
 
         /// <summary>
-        /// Constructor needs the PagingMgr which needs to be enumerated
+        /// Constructor needs the DbPagingManager which needs to be enumerated
         /// </summary>
         public PagingMgrEnumerator(PagingMgr pagingMgr)
         {
             _pagingMgr = pagingMgr;
+        }
+
+        /// <summary>
+        /// GetEnumerator returns the this. This function is needed for using this class in "foreach"
+        /// </summary>
+        public IEnumerator<T> GetEnumerator()
+        {
+            return this;
         }
 
         /// <summary>
@@ -1211,7 +1220,7 @@ namespace B1.DataAccess
 
         /// <summary>
         /// Move the pointer to the next row in the current page. If end of data reached in the current page than
-        /// fetches next page from the PagingMgr and put the pointer to the first row of the next page.
+        /// fetches next page from the DbPagingManager and put the pointer to the first row of the next page.
         /// 
         /// It always starts with the First page in the paging manager to the next pages.
         /// </summary>
@@ -1244,46 +1253,12 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// Reset the pointer to the current page. It does not change any state in the PagingMgr.
+        /// Reset the pointer to the current page. It does not change any state in the DbPagingManager.
         /// </summary>
         public void Reset()
         {
             _currentPage = null;
             _endOfData = false;
-        }
-    }
-
-    /// <summary>
-    /// PagingMgr enumerable class which can be used in the foreach loop to enuemrate over all the rows in all
-    /// pages.
-    /// </summary>
-    public class PagingMgrEnumerable<T> : IEnumerable<T> where T : new()
-    {
-        PagingMgr _pagingMgr = null;
-
-        /// <summary>
-        /// Constructor for PagingMgrEnumerable needs the PagingMgr which needs to be enumerated.
-        /// </summary>
-        /// <param name="pagingMgr"></param>
-        public PagingMgrEnumerable(PagingMgr pagingMgr)
-        {
-            _pagingMgr = pagingMgr;
-        }
-
-        /// <summary>
-        /// GetEnumerator returns the PagingMgrEnumerator
-        /// </summary>
-        public IEnumerator<T> GetEnumerator()
-        {
-            return new PagingMgrEnumerator<T>(_pagingMgr);
-        }
-
-        /// <summary>
-        /// GetEnumerator returns the PagingMgrEnumerator
-        /// </summary>
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }
