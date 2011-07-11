@@ -1303,7 +1303,14 @@ namespace B1.DataAccess
         }
     }
     
-    #pragma warning disable 1591 // disable the xmlComments warning    
+    #pragma warning disable 1591 // disable the xmlComments warning
+    /// <summary>
+    /// Class the represents a database parameter. 
+    /// 
+    /// The two fields MemberPropertyName and MemberAccess are for retrieving the value of this parameter
+    /// out of class members prior to execution of a DbCommand. See the field documentation for more
+    /// details.
+    /// </summary>
     public class DbPredicateParameter
     {
         public string SchemaName { get; set; }
@@ -1313,8 +1320,16 @@ namespace B1.DataAccess
         public DbParameter Parameter { get; set; }
         public object Value { get; set; }
 
-        // Fields used for member access in Linq and Entity Framework DML;
+        //Fields used for member access in Linq and Entity Framework DML. 
+        /// <summary>
+        /// The name of the member that is accessed via the MemberAccess delegate below.
+        /// </summary>
         public string MemberPropertyName { get; set; }
+        /// <summary>
+        /// This is a function that is used to get the parameter value by retrieving a variable/member value before a 
+        /// database command is executed. The function is a "closure" in that it closes over the variable that while it
+        /// is in scope, for later use.
+        /// </summary>
         public Delegate MemberAccess { get; set; }
 
         public DbPredicateParameter()

@@ -211,5 +211,41 @@ namespace B1.Cryptography
                 }
             }
         }
+
+        public static SymmetricCipherResults EncryptData(string plainText, 
+                SymmetricAlgorithmTypeEnum symmetricAlgorithm, 
+                string key)
+        {
+            SymmetricAlgorithm algorithm = SymmetricOperation.CreateSymmetricAlgorithmProvider(symmetricAlgorithm);
+
+            key = SymmetricOperation.MakeKeyLegalSize(symmetricAlgorithm, key);
+            algorithm.GenerateIV();
+            string iv = Convert.ToBase64String(algorithm.IV );
+
+            string cipherText = SymmetricOperation.EncryptToBase64(symmetricAlgorithm, 
+                    plainText, key, algorithm.IV, System.Text.Encoding.UTF8 );
+
+            return new SymmetricCipherResults() { CipherText = cipherText, IV = iv };
+        }
+
+        public static string DecryptData(SymmetricCipherResults cipherResults, 
+                SymmetricAlgorithmTypeEnum symmetricAlgorithm, 
+                string key)
+        {
+            key = SymmetricOperation.MakeKeyLegalSize(symmetricAlgorithm, key);
+
+            byte[] IV = Convert.FromBase64String( cipherResults.IV );
+
+            string PlainText = SymmetricOperation.DecryptFromBase64(symmetricAlgorithm,
+                    cipherResults.CipherText, key, IV, System.Text.Encoding.UTF8 );
+
+            return PlainText;
+        }                                                                                       
+    }
+
+    public class SymmetricCipherResults
+    {
+        public string IV { get; set; }
+        public string CipherText { get; set; }
     }
 }
