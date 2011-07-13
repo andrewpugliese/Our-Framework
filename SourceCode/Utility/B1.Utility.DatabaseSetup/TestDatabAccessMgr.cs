@@ -997,9 +997,12 @@ namespace B1.Utility.DatabaseSetup
                         orderby new { a.AppSequenceName, a.AppSequenceId }
                         select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
             PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 10);
-            PagingMgrEnumerable<Models.TestSequence> pagingMgrEnumerable = new PagingMgrEnumerable<Models.TestSequence>(testSequenceMgr);
+
+            PagingMgrEnumerator<Models.TestSequence> pagingMgrEnumerator =
+                new PagingMgrEnumerator<Models.TestSequence>(testSequenceMgr);
+
             int count = 0;
-            foreach (Models.TestSequence t in pagingMgrEnumerable)
+            foreach (Models.TestSequence t in pagingMgrEnumerator)
             {
                 count++;
             }
