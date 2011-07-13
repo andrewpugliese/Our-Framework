@@ -1,30 +1,31 @@
-Framework UI Design Outline
+Framework UI Design Outline (Part of B1Framework; available to all frameworks)
 
-Page
-
-Signon
-	- Everyone has access
-	
-Home
-	- Default page
-	Contains
-		Links
-			Admin
 
 Administration			
 	User Administration
-	Access Control Groups
-	Access Control Group Rules
-	UI Controls
-
-Application Administration
-
-	Application Configuration
-	Application Session View
-	User Session Management
-	Signon Control
-	Application Master
-	
+		Access Control Groups
+		Access Control Group Rules
+		UI Controls
+		Reset Passwords (access to all user accounts)
+		Unlock accounts (access to all user accounts)
+		
+	Application Administration
+		Application Configuration
+		Application Session (view , remove old session records)
+		User Session Management (view, forceoff)
+		Signon Control (signon warning message, NoSignon, ForceSignoff, etc)
+		Application Master 
+		
+	System Administration
+		Task Processing
+			Task Registration
+			Task Status View
+			Task Configurations
+			Task Dependancies
+			Task Processing Queue
+				Grid View
+				Edit QueueItem (add, change, delete)
+			WCF interface for (stop, start, pause, resume, refresh status)
 		
 User Profile
 	Change Password
@@ -33,37 +34,48 @@ User Profile
 User Registration
 
 
-Task Processing
-	Task Registration
-	Task Status View
-	Task Configurations
-	Task Dependancies
-	Task Processing Queue
-
+Content Galaxy Task List
 	
-DMLMgr
-	Comment all parameters
-	120 Limit on all lines
 	
-DDL
-
-Documentation
-	Copy setup comments from DTFramework
-	Produce Help files
-	
-Content Galaxy
-- DDL from CG (content galaxy tables) 
-	- Keep dbo schema and LMod key for now;  Add new LastMod key (LastModifiedUserCode, LastModifiedDateTime);
-
-	- Create a modified script to update 
-	
-	- Member Registration
-	- Member Signon
+Mark Perrotta
+	- Member Registration (derive from B1)
+	- Member Signon (derive from B1)
 	- New Subscription
-	- Change Password
-	
+		- AuthorizeNet
+	- Change Password/email (derive from B1)
 	- Shopping Cart
 		- use Database table
 	- Checkout Process
 		- Cookie
 			- UserCode, ShoppingCode, AccessGroupCode : Encrypted
+	- Convert CG BatchJobs to TPE task
+		- AddContentClick
+		- ExtractSliceFromIISLog
+		- BatchFiles from CG Util 
+
+Narayan Singhal
+	- GetStream
+	- GetContent
+	
+Andrew Pugliese
+	- DDL Merge from latest CG release
+		- modify varchar to Unicode columns
+		- modify flag columns to boolean columns
+		- Remove old LModKey from new tables
+		- Remove new LModKey from old tables //??
+	- DbSetup - Test TaskProcessingFramework Tab
+		- View/Change/Delete QueueItems
+		- Test TaskProcessingEngine
+		- Refactor TaskProcessingFunctions namespace
+	- Administrative Screens (Task Registrations)
+	- Create TaskProcessingEngine Application
+	- Create TaskProcessingEngine Service
+	- QueueManager base class
+		- construct with tableName and number threads
+		- push
+		- pop (with delegate)
+		- stop, start, pause, resume
+
+Not Assigned
+	- DateTimePicker with Null value
+	- ComboBox (scrollable)
