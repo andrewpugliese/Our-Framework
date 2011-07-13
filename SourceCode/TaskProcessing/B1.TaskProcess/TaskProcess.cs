@@ -6,7 +6,7 @@ using System.Threading;
 
 using B1.DataAccess;
 
-namespace B1.TaskProcessingFunctions
+namespace B1.TaskProcessing
 {
     public abstract class TaskProcess
     {

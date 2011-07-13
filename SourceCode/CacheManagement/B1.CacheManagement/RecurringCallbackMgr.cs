@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,8 +57,17 @@ namespace B1.CacheManagement
 
         ILoggingMgr _loggingMgr = null;
 
+
         /// <summary>
-        /// Constructor for creating a RecurringCallbackManager. 
+        /// Default constructor for creating a RecurringCallbackMgr. 
+        /// </summary>
+        public RecurringCallbackMgr()
+            : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Main constructor for creating a RecurringCallbackManager. 
         /// </summary>
         public RecurringCallbackMgr(ILoggingMgr loggingMgr = null)
         {
@@ -101,7 +110,7 @@ namespace B1.CacheManagement
 
             // Wrap the function to call in try catch block so that unhandled exception in user function does not
             // trash the timer.
-            funcToCall = id =>
+            Action<string> tryCatchWrapper = id =>
             {
                 try { funcToCall(id); }
                 catch (Exception ex) { if (_loggingMgr != null) _loggingMgr.WriteToLog(ex); }
@@ -109,7 +118,7 @@ namespace B1.CacheManagement
 
             lock (_callbackItems)
             {
-                _callbackItems.Add(identifier, new CallbackItem(identifier, funcToCall, cycleFrequency));
+                _callbackItems.Add(identifier, new CallbackItem(identifier, tryCatchWrapper, cycleFrequency));
             }
 
             // Start the timer if it is NOT already started
@@ -135,6 +144,19 @@ namespace B1.CacheManagement
             lock (_callbackItems)
             {
                 _callbackItems.Remove(identifier);
+            }
+        }
+
+        /// <summary>
+        /// Returns boolean indicating whether the given identifier exists in the callback set
+        /// </summary>
+        /// <param name="identifier">User defined string token to associate with callback</param>
+        /// <returns>true or false whether identifier exists</returns>
+        public bool ContainsKey(string identifier)
+        {
+            lock (_callbackItems)
+            {
+                return _callbackItems.ContainsKey(identifier);
             }
         }
 

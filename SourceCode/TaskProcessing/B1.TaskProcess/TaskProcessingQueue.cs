@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 
 using B1.DataAccess;
 
-namespace B1.TaskProcessingFunctions
+namespace B1.TaskProcessing
 {
     public class TaskProcessingQueue
     {
@@ -16,8 +16,8 @@ namespace B1.TaskProcessingFunctions
         /// Enumeration for returning the Task Processing Queue Records
         /// </summary>
 #pragma warning disable 1591 // disable the xmlComments warning
-        public enum QueueListEnum { All, NotQueued, Queued, InProcess, Failed, Succeeded };
-        public enum QueueItemStatusEnum { NotQueued = 0, Queued = 32, InProcess = 64, Failed = 128, Succeeded = 255 };
+        public enum ListEnum { All, NotQueued, Queued, InProcess, Failed, Succeeded };
+        public enum StatusCodeEnum { NotQueued = 0, Queued = 32, InProcess = 64, Failed = 128, Succeeded = 255 };
 #pragma warning restore 1591 // restore the xmlComments warning
 
         /// <summary>
@@ -27,19 +27,19 @@ namespace B1.TaskProcessingFunctions
         /// <param name="daMgr">DataAccessMgr object</param>
         /// <param name="tpqList">Enumeration indicating what type of session records to return</param>
         /// <returns>DataTable of Task Processing Queue records</returns>
-        public static DataTable TaskProcessingQueueList(DataAccessMgr daMgr, QueueListEnum tpqList)
+        public static DataTable TaskProcessingQueueList(DataAccessMgr daMgr, ListEnum tpqList)
         {
             DbCommand dbCmd;
             switch (tpqList)
             {
-                case QueueListEnum.Queued:
+                case ListEnum.Queued:
                     dbCmd = daMgr.DbCmdCacheGetOrAdd("BuildCmdGetTPQListByWaitDateTime", BuildCmdGetTPQListByWaitDateTime);
                     dbCmd.Parameters[daMgr.BuildParamName(Constants.StatusCode)].Value = Convert.ToByte(tpqList);
                     break;
-                case QueueListEnum.Failed:
-                case QueueListEnum.Succeeded:
-                case QueueListEnum.InProcess:
-                case QueueListEnum.NotQueued:
+                case ListEnum.Failed:
+                case ListEnum.Succeeded:
+                case ListEnum.InProcess:
+                case ListEnum.NotQueued:
                     dbCmd = daMgr.DbCmdCacheGetOrAdd("BuildCmdGetTPQListByStatusDateTime", BuildCmdGetTPQListByStatusDateTime);
                     dbCmd.Parameters[daMgr.BuildParamName(Constants.StatusCode)].Value = Convert.ToByte(tpqList);
                     break;

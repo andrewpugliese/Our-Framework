@@ -13,7 +13,7 @@ CREATE TABLE B1.AppMaster
 	AppCode					INT NOT NULL, -- Unique Numeric Code
 	AppId					VARCHAR(32) NOT NULL, -- Unique String Identifier
 	Remarks					VARCHAR(512) NOT NULL, -- Description, comments
-	AllowMultipleSessions	BIT NOT NULL DEFAULT(0), -- Indicates if the same appCode/appId
+	AllowMultipleSessions	BIT NOT NULL DEFAULT(1), -- Indicates if the same appCode/appId
 													-- can have multiple active app sessions
 													-- TaskProcessingEngine Apps CANNOT have multiple sessions
 	LastModifiedUserCode	INT,	-- Last User to Modify the record

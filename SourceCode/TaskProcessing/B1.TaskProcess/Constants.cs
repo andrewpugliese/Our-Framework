@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace B1.TaskProcessingFunctions
+namespace B1.TaskProcessing
 {
     public class Constants
     {
@@ -32,6 +32,7 @@ namespace B1.TaskProcessingFunctions
         public const string TaskParameters = "TaskParameters";
         public const string TaskProcessingQueue = "TaskProcessingQueue";
         public const string TaskQueueCode = "TaskQueueCode";
+        public const string TaskRemark = "TaskRemark";
         public const string TaskRegistrations = "TaskRegistrations";
         public const string TaskRegistrationList = "TaskRegistrationList";
         public const string TaskStatusCodes = "TaskStatusCodes";

@@ -44,7 +44,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.WebSite.Admin", "WebSite
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.TaskProcessingEngine", "TaskProcessing\B1.TaskProcessingEngine\B1.TaskProcessingEngine.csproj", "{143FC60B-7E6C-4FB3-A90E-33E8C885FC5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.TaskProcess", "TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj", "{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.TaskProcessing", "TaskProcessing\B1.TaskProcess\B1.TaskProcessing.csproj", "{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B1.Test.SampleTasks", "Test\B1.Test.SampleTasks\B1.Test.SampleTasks.csproj", "{F97F487A-941F-41A8-9B0D-86ECDE809D88}"
 EndProject

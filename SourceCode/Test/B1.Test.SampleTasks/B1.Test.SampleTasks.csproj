@@ -56,7 +56,7 @@
       <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
       <Name>B1.ILoggingManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj">
+    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcessing.csproj">
       <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
       <Name>B1.TaskProcessing</Name>
     </ProjectReference>

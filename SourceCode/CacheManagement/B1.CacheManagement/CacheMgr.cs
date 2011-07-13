@@ -245,6 +245,7 @@ namespace B1.CacheManagement
 
         /// <summary>
         /// Removes the value from the specified key in the cache.
+        /// It also removes the recurring callback method (if any) that was associated with this key.
         /// </summary>
         /// <param name="cacheKey">Cache key to lookup</param>
         /// <returns>true if the element is successfully found and removed; otherwise, false. This method returns
@@ -254,6 +255,8 @@ namespace B1.CacheManagement
             _cacheReadWriteLock.EnterWriteLock();
             try
             {
+                if (RecurringCallbackMgr.Default.ContainsKey(cacheKey))
+                    RecurringCallbackMgr.Default.Remove(cacheKey);
                 return _cache.Remove(cacheKey);
             }
             finally

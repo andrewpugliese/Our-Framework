@@ -222,9 +222,9 @@
       <Project>{77CD10F5-170A-4E52-80F7-1E8891CD66DF}</Project>
       <Name>B1.TaskProcessingEngine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcess.csproj">
+    <ProjectReference Include="..\..\TaskProcessing\B1.TaskProcess\B1.TaskProcessing.csproj">
       <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
-      <Name>B1.TaskProcess</Name>
+      <Name>B1.TaskProcessing</Name>
     </ProjectReference>
     <ProjectReference Include="..\B1.Utility.SecondEntities\B1.Utility.SecondEntities.csproj">
       <Project>{23642148-7B7A-4682-8F6F-FA4BFA7C1296}</Project>

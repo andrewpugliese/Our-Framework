@@ -44,8 +44,6 @@ namespace B1.DataAccess
     /// </summary>
     public class DbTableJoin 
     {
-        private static readonly ColumnComparer _columnComparer = new ColumnComparer();
-
         /// <summary>
         /// Table name to join to
         /// </summary>
@@ -86,7 +84,7 @@ namespace B1.DataAccess
         /// <summary>
         /// Columns to retrieve as part of the select clause.
         /// </summary>
-        public SortedSet<object> SelectColumns;
+        public Dictionary<string, object> SelectColumns;
 
         /// <summary>
         /// Instantiate a DbTableJoin class for defining a join to an inline view or query.
@@ -114,7 +112,7 @@ namespace B1.DataAccess
                 foreach (string qualifiedColumn in inlineView.QualifiedColumns.ToList<string>())
                     selectColumns[i++] = qualifiedColumn.Split(new char[] { '.' })[1];
             }
-            SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
+            SelectColumns = new Dictionary<string,object>(StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -138,7 +136,8 @@ namespace B1.DataAccess
                 JoinPredicate._newJoinTable = this;
 
             Columns = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
-            SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
+            SelectColumns = selectColumns.ToDictionary(item => item.ToString(), item => item
+                    , StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -161,11 +160,12 @@ namespace B1.DataAccess
             JoinPredicate = joinPredicate;
             if(JoinPredicate != null)
                 JoinPredicate._newJoinTable = this;
-            
-            if(selectColumns != null & selectColumns.Count() > 0)
-                SelectColumns = new SortedSet<object>(selectColumns, _columnComparer);
+
+            if (selectColumns != null & selectColumns.Count() > 0)
+                SelectColumns = selectColumns.ToDictionary(item => item.ToString(), item => item, StringComparer.CurrentCultureIgnoreCase);
             else
-                SelectColumns = new SortedSet<object>(tableStruct.Columns.Select(kvp => kvp.Key), _columnComparer);
+                SelectColumns = tableStruct.Row.ToDictionary(kvp => kvp.Value
+                        , kvp => (object)kvp.Value, StringComparer.CurrentCultureIgnoreCase);
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace B1.DataAccess
                 {
                     foreach(DbTableJoin table in tableList)
                     {
-                        foreach(object column in table.SelectColumns)
+                        foreach(object column in table.SelectColumns.Values)
                             if(!(column is string))
                                 yield return column.ToString();
                             else
@@ -437,7 +437,7 @@ namespace B1.DataAccess
 
                 foreach(DbTableJoin table in tableList.Value)
                 {
-                    object[] selectColumns = table.SelectColumns.ToArray();
+                    object[] selectColumns = table.SelectColumns.Values.ToArray<object>();
 
                     newTableList.Add(new DbTableJoin(table.SchemaName
                             , table.TableName
@@ -612,8 +612,8 @@ namespace B1.DataAccess
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName
                     , table.TableName, columnName)
                     , _daMgr.BuildParamName(columnName));
-            if (!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if (!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -626,8 +626,8 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(table.SchemaName
                     , table.TableName, columnName), parameterName);
-            if (!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if (!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -640,8 +640,8 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
                     table.SchemaName, table.TableName, columnName), function);
-            if(!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if(!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -654,8 +654,8 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
                     table.SchemaName, table.TableName, columnName), parameter);
-            if(!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if(!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
                 /// <summary>
@@ -668,8 +668,8 @@ namespace B1.DataAccess
             DbTableJoin table = MainTable;
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
                     table.SchemaName, table.TableName, columnName), value);
-            if(!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if(!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -682,8 +682,8 @@ namespace B1.DataAccess
             DbTableJoin table = Tables.First().Value.First();
             ColumnsForUpdateOrInsert.Add(new DbQualifiedObject<string>(
                     table.SchemaName, table.TableName, columnName), dateFunction);
-            if(!table.SelectColumns.Contains(columnName))
-                table.SelectColumns.Add(columnName);
+            if(!table.SelectColumns.ContainsKey(columnName))
+              table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -706,8 +706,8 @@ namespace B1.DataAccess
                 ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
                         table.SchemaName, table.TableName, columnName ), parameterName );
 
-            if (!table.SelectColumns.Contains( columnName ))
-                table.SelectColumns.Add( columnName );
+            if (!table.SelectColumns.ContainsKey( columnName ))
+                table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -730,8 +730,8 @@ namespace B1.DataAccess
                 ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
                         table.SchemaName, table.TableName, columnName ), function );
 
-            if (!table.SelectColumns.Contains( columnName ))
-                table.SelectColumns.Add( columnName );
+            if (!table.SelectColumns.ContainsKey(columnName))
+                table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -754,8 +754,8 @@ namespace B1.DataAccess
                 ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
                         table.SchemaName, table.TableName, columnName ), parameter );
 
-            if (!table.SelectColumns.Contains( columnName ))
-                table.SelectColumns.Add( columnName );
+            if (!table.SelectColumns.ContainsKey(columnName))
+                table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -778,8 +778,8 @@ namespace B1.DataAccess
                 ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
                         table.SchemaName, table.TableName, columnName ), value );
 
-            if (!table.SelectColumns.Contains( columnName ))
-                table.SelectColumns.Add( columnName );
+            if (!table.SelectColumns.ContainsKey(columnName))
+                table.SelectColumns.Add(columnName, columnName);
         }
 
         /// <summary>
@@ -802,8 +802,8 @@ namespace B1.DataAccess
                 ColumnsForUpdateOrInsert.Add( new DbQualifiedObject<string>( 
                         table.SchemaName, table.TableName, columnName ), dateFunction );
 
-            if (!table.SelectColumns.Contains( columnName ))
-                table.SelectColumns.Add( columnName );
+            if (!table.SelectColumns.ContainsKey(columnName))
+                table.SelectColumns.Add( columnName, columnName );
         }
 
         /// <summary>
@@ -1973,18 +1973,5 @@ namespace B1.DataAccess
         }
     }
 
-    public class ColumnComparer : IComparer<object>
-    {
-
-        #region IComparer<object> Members
-
-        public int Compare(object x, object y)
-        {
-            return String.Compare(x.ToString().ToLower(), y.ToString().ToLower(), true);
-        }
-
-        #endregion
-    }
-
-    #pragma warning restore 1591 // disable the xmlComments warning    
+#pragma warning restore 1591 // disable the xmlComments warning    
 }
