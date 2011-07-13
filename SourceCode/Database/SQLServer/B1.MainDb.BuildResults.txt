@@ -1,0 +1,162 @@
+Batch Started: 6/29/2011 10:33:56 PM
+
+Parsing Command File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\scripts\setup\CG.MainDb.cmd
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\scripts\setup\cg.maindb.andrew.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\scripts\setup\cg.maindb.andrew.sql" -o cmdOutput.txt
+Changed database context to 'master'.
+Changed database context to 'ContentGalaxy'.
+Changed database context to 'ContentGalaxy'.
+Changed database context to 'master'.
+Changed database context to 'master'.
+Changed database context to 'ContentGalaxy'.
+Changed database context to 'ContentGalaxy'.
+Changed database context to 'master'.
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UniqueIds.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UniqueIds.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppConfigSettings.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppConfigSettings.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppConfigParameters.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppConfigParameters.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TestSequence.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TestSequence.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.DbSequenceIds.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.DbSequenceIds.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AccessControlGroups.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AccessControlGroups.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UserMaster.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UserMaster.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UIControls.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UIControls.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AccessControlGroupRules.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AccessControlGroupRules.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppMaster.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppMaster.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.SignonControl.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.SignonControl.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UserSessions.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.UserSessions.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppSessions.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.AppSessions.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskConfigurations.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskConfigurations.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskRegistrations.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskRegistrations.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskStatusCodes.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskStatusCodes.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskProcessingQueue.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskProcessingQueue.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskDependencies.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\B1.TaskDependencies.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_UniqueIdsGetNextBlock.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_UniqueIdsGetNextBlock.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetColumns.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetColumns.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetPrimaryKeys.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetPrimaryKeys.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetIndexes.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetIndexes.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetFKeys.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Procedures\B1.usp_CatalogGetFKeys.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Scripts\setup\B1.LoadInitialData.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Scripts\setup\B1.LoadInitialData.sql" -o cmdOutput.txt
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+
+(1 rows affected)
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseTranStat.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseTranStat.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ShoppingCartStat.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ShoppingCartStat.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityRole.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityRole.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityStat.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityStat.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityTyp.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityTyp.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EntityMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.LedgerAccountMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.LedgerAccountMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PaymentTranTyp.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PaymentTranTyp.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublisherMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublisherMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublicationMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublicationMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.SubscriptionPeriodTyp.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.SubscriptionPeriodTyp.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.SubscriptionOffer.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.SubscriptionOffer.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublicationUsr.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PublicationUsr.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.FinancialServiceMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.FinancialServiceMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PaymentMethod.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.PaymentMethod.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.AffiliateMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.AffiliateMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EditorMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.EditorMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseTran.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseTran.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseDetail.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.MemberPurchaseDetail.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItmStat.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItmStat.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentProviderMast.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentProviderMast.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItm.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItm.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItmUsage.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentItmUsage.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickResultTyp.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickResultTyp.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickEvent.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickEvent.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickIn.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickIn.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickQ.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Tables\CG\dbo.ContentClickQ.sql" -o cmdOutput.txt
+Executing Script File: C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Scripts\setup\CG.LoadInitialData.sql
+    sqlcmd -S ANDREW-W7-X64\SQLSERVER2008 -Usa -Pbase0n3 -d ContentGalaxy  -i "C:\B1\DEVEL\Framework\SourceCode\Database\SqlServer\Scripts\setup\CG.LoadInitialData.sql" -o cmdOutput.txt
+
+(1 rows affected)
+
+(1 rows affected)
+
+
+Batch Completed: 6/29/2011 10:34:34 PM; Total Time: 37.8635339 seconds

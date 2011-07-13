@@ -997,9 +997,13 @@ namespace B1.DataAccess
             {
                 if (!dmlChange.ColumnsForUpdateOrInsert.ContainsKey(lastModCol))
                 {
-                    DbColumnStructure column = DbCatalogGetColumn(lastModCol.SchemaName, lastModCol.TableName, lastModCol.DbObject);
+                    //DbColumnStructure column = DbCatalogGetColumn(lastModCol.SchemaName, lastModCol.TableName, lastModCol.DbObject);
                     dmlChange.AddColumn(lastModCol.DbObject, BuildParamName(lastModCol.DbObject, true));
                 }
+                else if (dmlChange.ColumnsForUpdateOrInsert[lastModCol].ToString()
+                        != BuildParamName(lastModCol.DbObject, true))
+                    dmlChange.ColumnsForUpdateOrInsert[lastModCol] = BuildParamName(lastModCol.DbObject, true); 
+
             }
 
             Expression lastModKeyExpression = null;
@@ -1203,7 +1207,7 @@ namespace B1.DataAccess
             else
             {
                 dmlDelete.MainTable.SelectColumns.Clear();
-                dmlDelete.MainTable.SelectColumns.Add("*");
+                dmlDelete.MainTable.SelectColumns.Add("*", "*");
 
                 Tuple<string, DbParameterCollection> selectResult = BuildSelect(dmlDelete, null, null);
 

@@ -9,11 +9,14 @@ CREATE TABLE B1.TaskProcessingQueue
 														 -- 0: NotQueued; 32: Queued; 64: InProcess; 128: Failed; 255: Succeeded
 	PriorityCode			TINYINT NOT NULL DEFAULT(32), -- The priority code of the task item (any number 0 - 255)
 														-- items are dequeued in PriorityCode order.
+	StatusDateTime			DATETIME NOT NULL DEFAULT(GETUTCDATE()), -- The datetime of the last status change
 	WaitForDateTime			DATETIME NOT NULL DEFAULT(GETUTCDATE()),-- The earliest datetime that the task can be processed 
 	WaitForTasks			BIT NOT NULL DEFAULT(0), -- Indicates that this task has dependancies
-	WaitForNoUsers			BIT NOT NULL DEFAULT(1), -- indicates that task item cannot be processed until all users are off system
+	WaitForNoUsers			BIT NOT NULL DEFAULT(0), -- indicates that task item cannot be processed until all users are off system
+	ClearParametersAtEnd	BIT NOT NULL DEFAULT(0), -- Indicates whether or not to clear the TaskParameters column on completion
+	IntervalCount			INT NOT NULL DEFAULT(0), -- The current interval iteration of this task when not null
+	IntervalSecondsRequeue	INT NOT NULL DEFAULT(0), -- The new WaitForDateTime (competedDateTime + IntervalSeconds) for automatic requeue
 	StatusMsg				VARCHAR(512),	-- The status msg for this task queue record
-	StatusDateTime			DATETIME,		-- The datetime of the last status change
 	StartedDateTime			DATETIME,		-- The datetime when the task last started
 	CompletedDateTime		DATETIME,		-- The datetime when the task last completed (Failed or Succeeded)
 	ProcessEngineId			VARCHAR(32),	-- The EngineId that last processed (or currently processing) the queue item
@@ -22,9 +25,6 @@ CREATE TABLE B1.TaskProcessingQueue
 	WaitForEngineId			VARCHAR(32),	-- The only Engine process that can process this task
 	WaitForConfigId			VARCHAR(32),	-- The only configuration that this task must be processed under
 	TaskParameters			VARCHAR(512),	-- String that will be passed to task function
-	ClearParametersAtEnd	BIT,			-- Indicates whether or not to clear the TaskParameters column on completion
-	IntervalCount			INT,			-- The current interval iteration of this task when not null
-	IntervalSecondsRequeue	INT,			-- The new WaitForDateTime (competedDateTime + IntervalSeconds) for automatic requeue
 	TaskRemark				VARCHAR(512),	-- Optional remark about the task item
 	LastModifiedUserCode	INT,
 	LastModifiedDateTime	DATETIME,
@@ -43,11 +43,11 @@ CREATE TABLE B1.TaskProcessingQueue
 	CONSTRAINT FK_TaskProcsssingQueue_UserMaster_Code
 		FOREIGN KEY (LastModifiedUserCode) REFERENCES B1.UserMaster(UserCode),
 	CONSTRAINT CC_TaskProcsssingQueue_LastCompletedCode
-	CHECK (LastCompletedCode < 128),
+	CHECK (LastCompletedCode >= 128),
 	CONSTRAINT CC_TaskProcsssingQueue_IntervalCount
-	CHECK (IntervalCount < 0),
+	CHECK (IntervalCount >= 0),
 	CONSTRAINT CC_TaskProcsssingQueue_IntervalSecondsRequeue
-	CHECK (IntervalSecondsRequeue < 0),
+	CHECK (IntervalSecondsRequeue >= 0),
 ) ON B1Core
 
 GO

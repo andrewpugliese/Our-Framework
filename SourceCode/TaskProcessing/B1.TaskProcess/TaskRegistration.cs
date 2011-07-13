@@ -9,7 +9,7 @@ using System.Data.Common;
 using B1.Core;
 using B1.DataAccess;
 
-namespace B1.TaskProcessingFunctions
+namespace B1.TaskProcessing
 {
     public class TaskRegistration
     {

@@ -27,8 +27,7 @@ using B1.CacheManagement;
 using B1.TraceViewer;
 using B1.Utility.TestConsoleApp;
 using B1.SessionManagement;
-using B1.TaskProcessingEngine;
-using B1.TaskProcessingFunctions;
+using B1.TaskProcessing;
 
 namespace B1.Utility.DatabaseSetup
 {
@@ -94,7 +93,7 @@ namespace B1.Utility.DatabaseSetup
         bool _refreshAppSessions = false;
         Dictionary<Int64, UserSession> _userSessions = null;
         bool _dbSetup = false;
-        TaskProcessEngine _tpe = null;
+        TaskProcessingEngine _tpe = null;
 
         /// <summary>
         /// PagingMgr used by GridConrol
@@ -1776,7 +1775,7 @@ namespace B1.Utility.DatabaseSetup
                 CreateDbMgr();
             if (_appSession == null)
                 StartAppSession();
-            _tpe = new TaskProcessEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
+            _tpe = new TaskProcessingEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
             _tpe.Start();
         }
 
@@ -1811,7 +1810,7 @@ namespace B1.Utility.DatabaseSetup
             {
                 if (_daMgr == null)
                     CreateDbMgr();
-                TaskProcessingFunctions.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, _currentUserCode);
+                TaskProcessing.TaskRegistration.RegisterAssemblyTasks(_daMgr, ofd.SafeFileName, ofd.FileName, _currentUserCode);
                 RefreshRegisteredTasks();
             }
         }
@@ -2143,20 +2142,25 @@ namespace B1.Utility.DatabaseSetup
 
         private void btnRefreshTPQ_Click(object sender, EventArgs e)
         {
+            RefreshTPQ();
+        }
+
+        void RefreshTPQ()
+        {
             if (_daMgr == null)
                 CreateDbMgr();
-            TaskProcessingQueue.QueueListEnum tpqList 
-                    = TaskProcessingQueue.QueueListEnum.All;
+            TaskProcessingQueue.ListEnum tpqList
+                    = TaskProcessingQueue.ListEnum.All;
             if (rbTPQFailed.Checked)
-                tpqList = TaskProcessingQueue.QueueListEnum.Failed;
+                tpqList = TaskProcessingQueue.ListEnum.Failed;
             if (rbTPQInProcess.Checked)
-                tpqList = TaskProcessingQueue.QueueListEnum.InProcess;
+                tpqList = TaskProcessingQueue.ListEnum.InProcess;
             if (rbTPQNotQueued.Checked)
-                tpqList = TaskProcessingQueue.QueueListEnum.NotQueued;
+                tpqList = TaskProcessingQueue.ListEnum.NotQueued;
             if (rbTPQSucceeded.Checked)
-                tpqList = TaskProcessingQueue.QueueListEnum.Succeeded;
+                tpqList = TaskProcessingQueue.ListEnum.Succeeded;
             if (rbTPQqueued.Checked)
-                tpqList = TaskProcessingQueue.QueueListEnum.Queued;
+                tpqList = TaskProcessingQueue.ListEnum.Queued;
 
             DataTable dt = TaskProcessingQueue.TaskProcessingQueueList(
                     _daMgr, tpqList);
@@ -2196,14 +2200,6 @@ namespace B1.Utility.DatabaseSetup
                 _daMgr.DbProviderLib.GetCommandDebugScript(dbCmd));
         }
 
-        private void btnAddTPQItem_Click(object sender, EventArgs e)
-        {
-            if (_daMgr == null)
-                CreateDbMgr();
-            TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr, null);
-            DialogResult dr = taskAdmin.ShowDialog();
-        }
-
         private void btnTestPagingMgrEnumerable_Click(object sender, EventArgs e)
         {
             if (_daMgr == null)
@@ -2219,6 +2215,58 @@ namespace B1.Utility.DatabaseSetup
             {
                 _loggingMgr.WriteToLog(ex);
                 MessageBox.Show(ex.Message + ex.StackTrace);
+            }
+        }
+
+
+        private void btnAddTPQItem_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                RefreshTPQ();
+            TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr, null);
+            DialogResult dr = taskAdmin.ShowDialog();
+            if (dr == System.Windows.Forms.DialogResult.OK)
+            {
+                _daMgr.ExecuteNonQuery(taskAdmin.GetDmlCmd(_currentUserCode), null, null);
+                RefreshTPQ();
+            }
+        }
+
+        private void btnChangeTPQItem_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                RefreshTPQ();
+            if (dgvTPQ.RowCount == 0)
+                MessageBox.Show("No rows found, nothing to change.");
+            else if (dgvTPQ.SelectedRows.Count == 0)
+                MessageBox.Show("No rows select. Please select");
+            else
+            {
+                TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr
+                        , (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row);
+                DialogResult dr = taskAdmin.ShowDialog();
+                if (dr == System.Windows.Forms.DialogResult.OK)
+                {
+                    Int32 rowsChanged = _daMgr.ExecuteNonQuery(taskAdmin.GetDmlCmd(_currentUserCode), null, null);
+                    RefreshTPQ();
+                }
+            }
+        }
+
+        private void btnDelTPQItem_Click(object sender, EventArgs e)
+        {
+            if (_daMgr == null)
+                RefreshTPQ();
+            if (dgvTPQ.RowCount == 0)
+                MessageBox.Show("No rows found, nothing to delete.");
+            else if (dgvTPQ.SelectedRows.Count == 0)
+                MessageBox.Show("No rows select. Please select");
+            else
+            {
+                DataRow dr = (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row;
+                _daMgr.ExecuteNonQuery(TaskProcessingQueueAdmin.GetDeleteQueueItemCmd(_daMgr, dr)
+                        , null, null);
+                RefreshTPQ();
             }
         }
 

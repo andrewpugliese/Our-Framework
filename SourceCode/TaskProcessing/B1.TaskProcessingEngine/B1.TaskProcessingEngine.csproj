@@ -43,9 +43,8 @@
     <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Constants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TaskProcessEngine.cs" />
+    <Compile Include="TaskProcessingEngine.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CacheManagement\B1.CacheManagement\B1.CacheManagement.csproj">
@@ -68,7 +67,7 @@
       <Project>{59DB291F-59BD-4090-94B6-D502A6972874}</Project>
       <Name>B1.SessionManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\B1.TaskProcess\B1.TaskProcess.csproj">
+    <ProjectReference Include="..\B1.TaskProcess\B1.TaskProcessing.csproj">
       <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
       <Name>B1.TaskProcessing</Name>
     </ProjectReference>

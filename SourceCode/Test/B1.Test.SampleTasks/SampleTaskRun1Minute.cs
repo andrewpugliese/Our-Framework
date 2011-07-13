@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using B1.TaskProcessingFunctions;
+using B1.TaskProcessing;
 using B1.DataAccess;
 
 namespace B1.Test.SampleTasks

@@ -46,12 +46,24 @@ DMLMgr
 	120 Limit on all lines
 	
 DDL
-AppMaster
-	Change IsTaskProcessingEngine to AllowMultipleSessions
-	
 
+Documentation
+	Copy setup comments from DTFramework
+	Produce Help files
+	
 Content Galaxy
 - DDL from CG (content galaxy tables) 
 	- Keep dbo schema and LMod key for now;  Add new LastMod key (LastModifiedUserCode, LastModifiedDateTime);
 
-	- 
+	- Create a modified script to update 
+	
+	- Member Registration
+	- Member Signon
+	- New Subscription
+	- Change Password
+	
+	- Shopping Cart
+		- use Database table
+	- Checkout Process
+		- Cookie
+			- UserCode, ShoppingCode, AccessGroupCode : Encrypted
