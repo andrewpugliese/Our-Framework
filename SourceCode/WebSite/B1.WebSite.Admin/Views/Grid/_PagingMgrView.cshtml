@@ -68,8 +68,15 @@
         }
 
         </script>
+
+        <style type="text/css">
+            .webGrid { margin: 4px; border-collapse: collapse; width: 500px; }
+            .header { background-color: #E8E8E8; font-weight: bold; }
+            .webGrid th, .webGrid td { border: 1px solid #C0C0C0; padding: 5px; }
+            .alt { background-color: #E8E8E8; color #000; }
+        </style>
          
-        <div id="pagingMgrContainer" style="border: 1px solid black; margin-top: 10px;">
+        <div id="pagingMgrContainer" style="margin-top: 10px;">
     </text>
 }
 
@@ -84,7 +91,7 @@
 @if (pageData.Count() > 0)
 {
     @* Render the WebGrid HTML *@
-    @webGrid.GetHtml();
+    @webGrid.GetHtml(tableStyle: "webGrid", headerStyle: "header", alternatingRowStyle: "alt");
 }
 else
 {
