@@ -986,10 +986,24 @@ namespace B1.Utility.DatabaseSetup
                                //?? select a;
 
             PagingMgr pagingMgr = new PagingMgr(daMgr, resultsJoin1, DataAccess.Constants.PageSize, 20);
-            DataTable dt = pagingMgr.GetNextPage();
 
+            var dt1 = pagingMgr.GetFirstPage<Models.TestSequence>();
+            DataTable dt = pagingMgr.GetNextPage();
         }
 
+        public static void TestPagingMgrWithDynamic(DataAccessMgr daMgr)
+        {
+            B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();
+
+            var resultsJoin1 = from a in entities.TestSequences
+                               orderby new { a.AppSequenceName, a.AppSequenceId } ascending
+                               select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
+
+            PagingMgr pagingMgr = new PagingMgr(daMgr, resultsJoin1, DataAccess.Constants.PageSize, 20);
+            IEnumerable<dynamic> dd = pagingMgr.GetFirstPage<dynamic>();
+            IEnumerable<object> dd2 = pagingMgr.GetFirstPage<object>();
+        }
+        
         public static void TestPagingMgrEnumerable(DataAccessMgr daMgr)
         {
             B1.Utility.DatabaseSetup.Models.SampleDbEntities entities = new B1.Utility.DatabaseSetup.Models.SampleDbEntities();

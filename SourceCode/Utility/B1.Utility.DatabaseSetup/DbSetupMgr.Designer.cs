@@ -250,6 +250,13 @@
             this.ttPaging = new System.Windows.Forms.ToolTip(this.components);
             this.folderBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.button1 = new System.Windows.Forms.Button();
+            this.rbTPQInProcess = new System.Windows.Forms.RadioButton();
+            this.rbTPQFailed = new System.Windows.Forms.RadioButton();
+            this.rbTPQSucceeded = new System.Windows.Forms.RadioButton();
+            this.btnDelTPQItem = new System.Windows.Forms.Button();
+            this.btnAddTPQItem = new System.Windows.Forms.Button();
+            this.btnTestPagingMgrEnumerable = new System.Windows.Forms.Button();
+            this.btnTestPageMgrDynamic = new System.Windows.Forms.Button();
             this.tabDbSetupControl.SuspendLayout();
             this.tabDbSetup.SuspendLayout();
             this.tabTestDaMgr.SuspendLayout();
@@ -2319,6 +2326,24 @@
             this.btnAddTPQItem.UseVisualStyleBackColor = true;
             this.btnAddTPQItem.Click += new System.EventHandler(this.btnAddTPQItem_Click);
             // 
+            this.btnDelTPQItem.Enabled = false;
+            this.btnDelTPQItem.Location = new System.Drawing.Point(131, 306);
+            this.btnDelTPQItem.Name = "btnDelTPQItem";
+            this.btnDelTPQItem.Size = new System.Drawing.Size(94, 25);
+            this.btnDelTPQItem.TabIndex = 198;
+            this.btnDelTPQItem.Text = "Delete TPQItem";
+            this.btnDelTPQItem.UseVisualStyleBackColor = true;
+            // 
+            // btnAddTPQItem
+            // 
+            this.btnAddTPQItem.Location = new System.Drawing.Point(14, 306);
+            this.btnAddTPQItem.Name = "btnAddTPQItem";
+            this.btnAddTPQItem.Size = new System.Drawing.Size(94, 25);
+            this.btnAddTPQItem.TabIndex = 197;
+            this.btnAddTPQItem.Text = "Add TPQ Item";
+            this.btnAddTPQItem.UseVisualStyleBackColor = true;
+            this.btnAddTPQItem.Click += new System.EventHandler(this.btnAddTPQItem_Click);
+            // 
             // rbTPQNotQueued
             // 
             this.rbTPQNotQueued.AutoSize = true;
@@ -2662,6 +2687,7 @@
             // 
             // tabTestEF
             // 
+            this.tabTestEF.Controls.Add(this.btnTestPageMgrDynamic);
             this.tabTestEF.Controls.Add(this.btnTestPagingMgrEnumerable);
             this.tabTestEF.Controls.Add(this.btnInlineView);
             this.tabTestEF.Controls.Add(this.btnTestPageMgrLINQ);
@@ -2797,6 +2823,30 @@
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 0;
+            // 
+            // btnTestPagingMgrEnumerable
+            // 
+            this.btnTestPagingMgrEnumerable.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestPagingMgrEnumerable.Location = new System.Drawing.Point(753, 68);
+            this.btnTestPagingMgrEnumerable.Name = "btnTestPagingMgrEnumerable";
+            this.btnTestPagingMgrEnumerable.Size = new System.Drawing.Size(194, 24);
+            this.btnTestPagingMgrEnumerable.TabIndex = 19;
+            this.btnTestPagingMgrEnumerable.Text = "Test PagingMgrEnumerable";
+            this.btnTestPagingMgrEnumerable.UseVisualStyleBackColor = true;
+            this.btnTestPagingMgrEnumerable.Click += new System.EventHandler(this.btnTestPagingMgrEnumerable_Click);
+            // 
+            // btnDelTPQItem
+            // 
+            // btnTestPageMgrDynamic
+            // 
+            this.btnTestPageMgrDynamic.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnTestPageMgrDynamic.Location = new System.Drawing.Point(39, 351);
+            this.btnTestPageMgrDynamic.Name = "btnTestPageMgrDynamic";
+            this.btnTestPageMgrDynamic.Size = new System.Drawing.Size(194, 24);
+            this.btnTestPageMgrDynamic.TabIndex = 20;
+            this.btnTestPageMgrDynamic.Text = "Test PageMgr with Dynamic";
+            this.btnTestPageMgrDynamic.UseVisualStyleBackColor = true;
+            this.btnTestPageMgrDynamic.Click += new System.EventHandler(this.btnTestPageMgrDynamic_Click);
             // 
             // DbSetupMgr
             // 
@@ -3063,6 +3113,7 @@
         private System.Windows.Forms.Button btnAddTPQItem;
         private System.Windows.Forms.Button btnTestPagingMgrEnumerable;
         private System.Windows.Forms.Button btnDelTPQItem;
+        private System.Windows.Forms.Button btnTestPageMgrDynamic;
     }
 }
 
