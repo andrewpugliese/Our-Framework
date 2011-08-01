@@ -42,6 +42,7 @@ namespace B1.TaskProcessing
         public const string WaitForNoUsers = "WaitForNoUsers";
         public const string WaitForTasks = "WaitForTasks";
         public const string WaitTaskCompletionCode = "WaitTaskCompletionCode";
+        public const string WaitTaskId = "WaitTaskId";
         public const string WaitTaskQueueCode = "WaitTaskQueueCode";
     }
 }

@@ -105,6 +105,12 @@
       <DependentUpon>DbSetupMgr.cs</DependentUpon>
     </Compile>
     <Compile Include="DbSetupWkr.cs" />
+    <Compile Include="DependentTaskAdmin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DependentTaskAdmin.Designer.cs">
+      <DependentUpon>DependentTaskAdmin.cs</DependentUpon>
+    </Compile>
     <Compile Include="GenerateHash.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -134,6 +140,9 @@
     <Compile Include="TestAppSessionControl.cs" />
     <EmbeddedResource Include="DbSetupMgr.resx">
       <DependentUpon>DbSetupMgr.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DependentTaskAdmin.resx">
+      <DependentUpon>DependentTaskAdmin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GenerateHash.resx">
       <DependentUpon>GenerateHash.cs</DependentUpon>

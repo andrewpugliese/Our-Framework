@@ -4,32 +4,33 @@
     /// <summary>
     /// This namespace contains classes related to database access.
     /// <para>
-    /// Currently supported DBMS backends and minimum version numbers:
+    /// Currently, the supported platforms and their minimum version numbers are:
     /// </para>
     /// <list type="bullet">
-    /// <item><see cref="B1.DataAccess.SqlServer">Microsoft Sql Server Version 10.50.1600</see></item>
-    /// <item><see cref="B1.DataAccess.Oracle">Oracle Version 11.2.0.1.0</see></item>
-    /// <item><see cref="B1.DataAccess.DB2">IBM DB2 UDB Version 9.7.0002</see></item>
+    /// <item>Microsoft Sql Server: Version 10.50.1600</item>
+    /// <item>Oracle: Version 11.2.0.1.0</item>
+    /// <item>IBM DB2 UDB: Version 9.7.0002</item>
     /// </list>
-    /// Some of the supported database operations are:
+    /// <para>
+    /// The main assembly of the data access layer is B1.DataAccess.  The assembly does not contain any references
+    /// to specific back-end database platforms; instead it references the .Net generic classes of System.Data and System.Data.Common. 
+    /// </para>
+    /// <para>All database specific code is referenced in DbProvider helper assembly files:</para>
     /// <list type="bullet">
-    /// <item>Merge (aka Upsert)</item>
-    /// <item>Update with joins</item>
-    /// <item>Delete with joins</item>
-    /// <item>Select: inner/outer/cross joins, case columns, group by, order by, in clause, between clause</item>
-    /// <item>Insert</item>
+    /// <item>B1.DataAccess.DB2.Db2Helper (DB2/UDB)</item>
+    /// <item>B1.DataAccess.OracleDb.OracleHelper (Oracle)</item>
+    /// <item>B1.DataAccess.SqlServer.SqlServerHelper (SqlServer)</item>
     /// </list>
-    /// 
+    /// Any functions are defined by interface <seealso cref="B1.IDataAccess.IDataAccessProvider"/> in assembly: 
+    /// <para>B1.DataAccessProvider.IDataAccess</para>
+    /// <para>The interface is implemented by abstract class: <seealso cref="B1.IDataAccess.IDataAccessProvider"/></para>
+    /// <para>The dbProvider helper assemblies contain classes that derive from the abstract class.</para>
     /// <para>
-    /// The main class used to access a database is <see cref="B1.DataAccess.DataAccessMgr"/>. This class is used to build and
-    /// execute DbCommand objects.
+    /// The DbAccessManager provides a database independant interface to build and execute parameterized database commands.
     /// </para>
-    /// <para>
-    /// <see cref="B1.DataAccess.DataAccessMgr"/> uses the <see cref="B1.DataAccess.DbTableDmlMgr"/> class to build database operations.
-    /// </para>
+    /// <see cref="DealerTrack.DAL.Common.Data.DbAccessManager"/>
+    /// <para>It is the starting point and the main class for your application to use for all its database operations.</para>
     /// </summary>
-    // This class is only needed for SandCastle and its ability to create HTML documenatation for
-    // a given namespace.
     #pragma warning restore 1574
     [System.Runtime.CompilerServices.CompilerGenerated]
     class NamespaceDoc

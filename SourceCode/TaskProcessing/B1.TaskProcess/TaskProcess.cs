@@ -12,7 +12,7 @@ namespace B1.TaskProcessing
     {
         public enum ProcessStatusEnum { Ready = 0, Working = 1, Paused = 2, Stopped = 3, Completed = 4, Failed = -1 };
         public enum TaskStatusEnum { InProcess = 1, Completed = 2, Failed = 3 };
-        public delegate void TaskCompletedDelegate(string taskId, ProcessStatusEnum processStatus);
+        public delegate void TaskCompletedDelegate(int taskQueueCode, ProcessStatusEnum processStatus);
         protected DataAccessMgr _daMgr = null;
         protected ProcessStatusEnum _processStatus = ProcessStatusEnum.Ready;
         protected string _parameters = null;
@@ -20,14 +20,17 @@ namespace B1.TaskProcessing
         ManualResetEvent _resumeEvent = new ManualResetEvent(false);
         TaskCompletedDelegate _taskCompletedHandler = null;
         string _taskId = null;
+        int _taskQueueCode = 0;
 
         public TaskProcess(DataAccessMgr daMgr
             , string taskId
+            , int taskQueueCode
             , string parameters
             , TaskCompletedDelegate taskCompletedHandler)
         {
             _daMgr = daMgr;
             _taskId = taskId;
+            _taskQueueCode = taskQueueCode;
             _parameters = parameters;
             _taskCompletedHandler = taskCompletedHandler;
             _processStatus = ProcessStatusEnum.Ready;
@@ -37,7 +40,8 @@ namespace B1.TaskProcessing
         {
             try
             {
-                while (_processStatus != ProcessStatusEnum.Stopped)
+                while (_processStatus == ProcessStatusEnum.Ready
+                      || _processStatus == ProcessStatusEnum.Working)
                 {
                     if (_processStatus == ProcessStatusEnum.Paused)
                     {
@@ -59,7 +63,7 @@ namespace B1.TaskProcessing
                             _processStatus = ProcessStatusEnum.Completed;
                         if (taskStatus == TaskStatusEnum.Failed)
                             _processStatus = ProcessStatusEnum.Failed;
-                        _taskCompletedHandler(_taskId, _processStatus);
+                        _taskCompletedHandler(_taskQueueCode, _processStatus);
                     }
 
                 }
@@ -70,7 +74,7 @@ namespace B1.TaskProcessing
             }
             finally
             {
-                _taskCompletedHandler(_taskId, _processStatus);
+                _taskCompletedHandler(_taskQueueCode, _processStatus);
             }
         }
 

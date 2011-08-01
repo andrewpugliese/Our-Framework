@@ -37,7 +37,7 @@ namespace B1.TaskProcessing
                         , daMgr.BuildParamName(Constants.TaskId)));
             DbCommand dbCmd = daMgr.BuildMergeDbCommand(dmlMgr);
 
-            int typesFound = 0; ;
+            int typesFound = 0;
             foreach (Type t in ObjectFactory.SearchTypes<TaskProcess>(asm))
             {
                 TaskProcess tp = ObjectFactory.Create<TaskProcess>(assemblyFileName, t.FullName, null, null, null, null);

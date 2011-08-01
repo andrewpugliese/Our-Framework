@@ -567,8 +567,6 @@ namespace B1.DataAccess.OracleDb
                 dbParam.DbType = paramType;
                 dbParam.OracleDbType = oracleDbType;
             }
-            if (dbParam.OracleDbType == OracleDbType.Clob)
-                dbParam.DbType = DbType.String;
             return dbParam;
         }
 
