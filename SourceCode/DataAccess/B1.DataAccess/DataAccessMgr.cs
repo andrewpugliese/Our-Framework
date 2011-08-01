@@ -8,6 +8,7 @@ using System.Data.Common;
 using System.Data.Objects;
 using System.Xml;
 using System.Reflection;
+using System.Dynamic;
 
 using Microsoft.Practices.EnterpriseLibrary.Data;
 
@@ -3266,6 +3267,53 @@ namespace B1.DataAccess
                 foreach (ObjectStateEntry ose in context.ObjectStateManager.GetObjectStateEntries(entityState))
                     collection.Add((T)ose.Entity);
             return collection;
+        }
+
+        /// <summary>
+        /// Returns a collection of dynamic object (Expando objects) which can be used with MVC 3 newer controls
+        /// such as WebGrid.
+        /// </summary>
+        /// <param name="dbCommand">DAAB DbCommand object for select</param>
+        /// <param name="dbTrans">Database transaction object or null</param>
+        /// <param name="parameterNameValues">A set of parameter names and values or null. 
+        /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
+        /// <returns>Collection of dynamic object</returns>
+        public IEnumerable<dynamic> ExecuteDynamic(DbCommand dbCommand
+                        , DbTransaction dbTrans
+                        , params object[] parameterNameValues)
+        {
+            return ExecuteReader(dbCommand, dbTrans,
+                (rdr) =>
+                {
+                    // Get all the fields and their ordinals from the DataReader
+                    var fields = Enumerable.Range(0, rdr.FieldCount)
+                        .Select(i => new KeyValuePair<int, string>(i, rdr.GetName(i)));
+
+                    // Read the DataReader till we find a valid row. Convert each row into dynamic Expando
+                    // object with field name as the property and set the value to the field value.
+                    // ExpandoObject: an object whose members can be dynamically added and removed at run time.
+                    // ExpandoObject are like JavaScript objects which are associative array. 
+                    //?? Compiler is converting code for the dynamic object member access to the indexer lookup
+                    //?? to the internally maintained dictionary?
+                    // .ToArray() Realizes the collection. Lazy collection can not have function with DataReader references.
+                    return EnumerateDataReader(rdr).Select(row =>
+                        fields.Aggregate((IDictionary<string, object>)new ExpandoObject(),
+                                (o, kv) => { o[kv.Value] = rdr.GetValue(kv.Key); return o;}))
+                              .ToArray();
+                },
+                parameterNameValues);
+        }
+
+        /// <summary>
+        /// Creates IEnumerable interface for DataReader enumeration. Each call to the GetNext reads
+        /// the next row.
+        /// </summary>
+        /// <param name="rdr">IDaraReader object which need to be enumerated</param>
+        /// <returns>IEnumerable collection</returns>
+        private static IEnumerable<int> EnumerateDataReader(IDataReader rdr)
+        {
+            int i = 0;
+            while (rdr.Read()) yield return i++;
         }
 
         /// <summary>
