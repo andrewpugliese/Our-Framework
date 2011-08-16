@@ -21,8 +21,8 @@ using B1.IDataAccess;
 namespace B1.DataAccess
 {
     /// <summary>
-    /// Defined as a class instead of a struct because I needed
-    /// to define a lock on the object before access.
+    /// Defined as a class instead of a struct because it needed
+    /// to be locked before access.
     /// </summary>
     internal class UniqueIdCacheInfo
     {
@@ -34,17 +34,45 @@ namespace B1.DataAccess
     }
 
     /// <summary>
-    /// Main class for managing the DataAccess Application Block interface
-    /// for a particular connection key (connection string).  
-    /// This class provides a database independant interface for Building, Executing and Caching DbCommands.
-    /// It also provides methods for accessing the database catalog for metadata about 
-    /// database tables, columns, indexes and constraints that can be used for generating dynamic sql.
-    /// It also provides methods for generating UniqueIds and SequenceNumbers as was as date time
-    /// functions.
+    /// The Database Access Manager class is the main class for an application's data access layer.
+    /// <para>This class provides a database independant interface for Building, Executing, Debugging and 
+    /// Caching parameterized database command operations.</para>
+    /// <para>All database operations are performed via DbCommand objects and the Enterprise Library's Data 
+    /// Access Application Block interface.</para>
+    /// <para>The DbCommand is database agnostic and is used to contain the Data Manipulation Language (DML) 
+    /// in the CommandText property and the collection of parameters in the DbParameterCollection.</para>
+    /// <para>There are several constructor methods, but the basic parameter is the DbConnection key;
+    /// which refers to a specific connection string in the connection strings section of the configuration file.</para>
+    /// </summary>
+    /// <remarks>
+    /// for a particular connection key (
+    /// <para>It also provides methods for accessing the database catalog for metadata about 
+    /// database tables, columns, indexes and constraints that can be used for generating dynamic sql.</para>
+    /// It also provides methods for generating UniqueIds and SequenceNumbers.
+    /// Some of the supported database operations are:
+    /// <list type="bullet">
+    /// <item>Select:
+    /// <list type="bullet">
+    /// <item>inner joins</item>
+    /// <item>outer joins</item>
+    /// <item>cross joins</item>
+    /// <item>inline queries</item>
+    /// <item>nested queries</item>
+    /// <item>case columns</item>
+    /// <item>group by</item>
+    /// <item>order by</item>
+    /// <item>in clause</item>
+    /// <item>between clause</item>
+    /// </list></item>
+    /// <item>Insert</item>
+    /// <item>Update with joins</item>
+    /// <item>Delete with joins</item>
+    /// <item>Merge (aka Upsert)</item>
+    /// </list>
     /// 
     /// NOTE: To build DbCommand blocks (multiple dbCommands as a single DbCommand), please review
-    /// the DbCommandMgr class which accepts this class in its constructor.
-    /// </summary>
+    /// the DbCommandManager class which accepts this class in its constructor.
+    /// </remarks>
     public class DataAccessMgr
     {
 #pragma warning disable 1591 // disable the xmlComments warning
@@ -61,34 +89,59 @@ namespace B1.DataAccess
         /// </summary>
         public enum EnumDateDiff { Day, Hour, Minute, Second, MilliSecond };
 #pragma warning restore 1591 // restore the xmlComments warning
-        private DbCatalogMgr _dbCatalogMgr = null;
-        private DataConfigMgr _dataConfigMgr = null;
+        // the DAAB database object
         private Database _database = null;
+        // manages the database catalog metadata
+        private DbCatalogMgr _dbCatalogMgr = null;
+        // manages the functionality for maintaining configuration settings in the database
+        private DataConfigMgr _dataConfigMgr = null;
+        // the database provider helper library
         private DataAccessProvider _dbProviderLib = null;
+        // identifier for the connection string entry
         private string _connectionKey = null;
+        // string version of the database provider library
         private string _dbProviderVersion = null;
+        // name of the database
         private string _dbName = null;
+        // string version of the database
         private string _dbServerVersion = null;
+        // the type of database
         private EnumDbType _dbType = EnumDbType.SqlServer; // default
+        // the provider of the database library
         private EnumDbProvider _dbProvider = EnumDbProvider.Microsoft; // default
+        // valid SQL syntax that result in no operation at the server
+        // used for compound commands and parameter collections
         private string _noOpDbCommandText = null;
+
+        // holds the cached unique ids
         private CacheMgr<UniqueIdCacheInfo> _uniqueIdCache 
                 = new CacheMgr<UniqueIdCacheInfo>(StringComparer.CurrentCultureIgnoreCase);
+        // cache for the interval data access manager database commands
         private CacheMgr<DbCommand> _internalDbCmdCache 
                 = new CacheMgr<DbCommand>(StringComparer.CurrentCultureIgnoreCase);
+        // cache for the caller's database commands
         private CacheMgr<DbCommand> _externalDbCmdCache 
                 = new CacheMgr<DbCommand>(StringComparer.CurrentCultureIgnoreCase);
+        // maintains the timespan (milliseconds between the application server and the database server)
         private TimeSpan _timeSpanFromDb = new TimeSpan(0, 0, 0);
+        // points to an event/exception logging component
         private ILoggingMgr _loggingMgr = null;
 
         /// <summary>
-        /// Main constructor for the DataAccess Manager class.  
+        /// Main constructor for the DataAccess Manager class.
+        /// <para>
         /// It expects a Data Access Application Block Configuration Key or null for the default.
         /// An Interface for exceptions can also be passed which will be used in the event of a DbException.
         /// In any case, the exception will always be thrown so that the caller may take specific
         /// action.
-        /// If appConfigSetName and globalConfigSetName parameters are set, then a DataConfigMgr will also
+        /// </para>
+        /// <para>Since the database provider libray is loaded dynamically, the helper assembly meta data
+        /// is required in the ObjectFactories configuration section of app.config.  An entry for the given
+        /// connectionKey must be found or an exception will be thrown.
+        ///</para>
+        /// <para>If appConfigSetName and globalConfigSetName parameters are set, then a DataConfigMgr will also
         /// be constructed based on those values; otherwise it will default to an empty collection
+        /// </para>
         /// </summary>
         /// <param name="connectionKey">string entry in configuration file for connection string</param>
         /// <param name="loggingMgr">Interface for logging exceptions or tracing event messages.</param>
@@ -117,10 +170,12 @@ namespace B1.DataAccess
             // exception under the Debug->Exceptions menu.
             else _database = DatabaseFactory.CreateDatabase();
 
+            // opens the ObjectFactories configuration section
             ObjectFactoryConfiguration dbProviderHelper
                     = AppConfigMgr.GetSection<ObjectFactoryConfiguration>(ObjectFactoryConfiguration.ConfigSectionName); 
 
             DataTable dbFactories = DbProviderFactories.GetFactoryClasses();
+            // load the provider helper assembly for the give database type
             if (_database is Microsoft.Practices.EnterpriseLibrary.Data.Sql.SqlDatabase)
             {
                 _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(string.Format("{0}\\{1}.dll"
@@ -185,6 +240,7 @@ namespace B1.DataAccess
             else throw new ExceptionEvent(enumExceptionEventCodes.FunctionNotImplementedForDbType
                             , _database.ToString());
 
+            // initialize member variables and helper classes
             _dbProviderVersion = _dbProviderLib.Version;
             _dbServerVersion = _dbProviderLib.ServerVersion;
             _dbName = _dbProviderLib.DatabaseName;
@@ -193,9 +249,10 @@ namespace B1.DataAccess
             _dataConfigMgr = new DataConfigMgr(this);
             _dbCatalogMgr = new DbCatalogMgr(this);
 
+            // build and cache all the needed DbCommand objects
              BuildUniqueIdCommands();
-
-             _timeSpanFromDb = GetServerTime(EnumDateTimeLocale.UTC) - DateTime.UtcNow;
+            // obtain the timespan difference between this server and the database.
+            _timeSpanFromDb = GetServerTime(EnumDateTimeLocale.UTC) - DateTime.UtcNow;
         }
 
         /// <summary>
@@ -531,22 +588,35 @@ namespace B1.DataAccess
         /// <summary>
         /// Function takes any select statement and will turn it into a select statement
         /// that will return only the number of rows defined by parameter BufferSize.
+        /// <para>
         /// If BufferSize is a string, then it will be assumed be a bind variable.
         /// If it is an Int, then the constant will be used.
+        /// </para>
+        /// <para>
         /// NOTE: If for some executions you want a full result set without rewriting query
         ///         set BufferSize Param Value = 0;
         ///         Value CANNOT BE SET TO NULL
+        ///</para>
+        /// <para>
         /// DB2 USERS: In order to implement a dynamic buffer size, the row_number() function was applied
-        /// however, this column would then be returned in the result set as (row_num);  This function
+        /// however, this column would then be returned in the result set as (row_num);  
+        /// </para>
+        /// <para>
+        /// This function
         /// will attempt to remove it from the statement.  In order to do this, we require a unique set
         /// a column names so if there are joins with the same column then they must be uniquely aliased.
+        /// </para>
         /// </summary>
         /// <param name="selectStatement">A valid SQL select statement with UNIQUE column names</param>
         /// <param name="bufferSize">Limits the number of rows returned.  If the param is a constant number
-        /// , then it will be a fixed number of records returned each time.  If the param is a string
+        /// , then it will be a fixed number of records returned each time.  
+        /// <para>If the param is a string
         /// , then a parameter will be created with the name equal to the string provided.  This
-        /// can be used to change the buffer size for each execution of the dbCommand.  Null indicates
-        /// all rows are returned.</param>
+        /// can be used to change the buffer size for each execution of the dbCommand.
+        /// </para>
+        /// <para>Null indicates all rows are returned.
+        /// </para>
+        /// </param>
         /// <returns>Select statement with max rows</returns>
         public string FormatSQLSelectWithMaxRows(string selectStatement, object bufferSize)
         {
@@ -584,10 +654,11 @@ namespace B1.DataAccess
         /// Provides the back-end specific date math operation string
         /// for the given start date (or current datetime if null)
         /// </summary>
-        /// <param name="dateDiffInterval"></param>
-        /// <param name="duration"></param>
-        /// <param name="startDate"></param>
-        /// <returns></returns>
+        /// <param name="dateDiffInterval">Enumeration of date/time intervals (day, month, hour)</param>
+        /// <param name="duration">Amount of time; can be string which will create parameter or constant</param>
+        /// <param name="startDate">If startDate is a string, it will be assumed to be a column name;
+        /// if it is a dateEnumeration, then it can be either UTC, Local or default.</param>
+        /// <returns>A code fragment which will perform the appropriate date add operation.</returns>
         public string FormatDateMathSql(EnumDateDiffInterval dateDiffInterval
                                         , object duration
                                         , string startDate)
@@ -693,9 +764,10 @@ namespace B1.DataAccess
 
         /// <summary>
         /// Builds a Select DbCommand object that is compliant with the back-end database
-        /// for the give Select Statement and parameter collection.
+        /// for the given SQL compliant Select Statement and parameter collection.
         /// </summary>
-        /// <param name="selectStatement">A back-end compliant select statement</param>
+        /// <param name="selectStatement">An Ansi standard compliant SQL select statement with optional bind variable parameters
+        /// to match the </param>
         /// <param name="dbParams">A DbParameter Collection</param>
         /// <returns>DAAB DbCommand Object with DbParameters (initialized to the values provided
         /// or DbNull.  The CommandType is Text.</returns>
@@ -738,16 +810,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Builds a select DbCommand and parameter collection
         /// which can be executed against the multiple back-end
-        /// supported databases.  In addition, the number of rows
-        /// returned can be limited to the given buffersize parameter.
-        /// Null indicates all rows.
-        /// Numeric constant indicates a fixed size across all executions.
-        /// String causes a parameter to be created which will allow
-        /// programmer to set buffersize dynamically.
-        /// 
-        /// NOTE: You will need to define the parameters as well
-        /// and consider any database specific syntax if you wish to
-        /// run it against multiple back ends.
+        /// supported databases.  
+        /// <para>The number of rows returned can be limited to the 
+        /// given buffersize parameter. Null indicates all rows.
+        /// </para>
         /// </summary>
         /// <param name="dmlSelect">MetaData Structure describing the select columns and conditions</param>
         /// <param name="bufferSize">Limits the number of rows returned.  If the param is a constant number
@@ -764,6 +830,48 @@ namespace B1.DataAccess
             return BuildSelectDbCommand(result.Item1, result.Item2);
         }
 
+        /// <summary>
+        /// Returns the SQL statement and any parameters based upon the given DML meta data structure.
+        /// <para>This is a recursive function when there are nested SQL statements</para>
+        /// </summary>
+        /// <param name="dmlSelect">MetaData Structure describing the select columns and conditions</param>
+        /// <param name="bufferSize">Limits the number of rows returned.  If the param is a constant number
+        /// , then it will be a fixed number of records returned each time.  If the param is a string
+        /// , then a parameter will be created with the name equal to the string provided.  This
+        /// can be used to change the buffer size for each execution of the dbCommand.  Null indicates
+        /// all rows are returned.</param>
+        /// <param name="dbParams">A collection of DbParameters associated with the select statement</param>
+        /// <returns>A tuple containing the SQL statement and any parameters</returns>
+        /// <remarks>
+        /// <para>Sample Select SQL For SqlServer with bufferSize (PageSize)</para>
+        /// 
+        /// <para>SET ROWCOUNT @PAGESIZE </para>
+        /// <para>SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, </para>
+        /// <para>T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA </para>
+        /// <para>FROM B1.TESTSEQUENCE T1 </para>
+        /// <para>ORDER BY T1.APPSEQUENCEID ASC </para>
+        ///
+        /// <para>Sample Select SQL For Oracle with bufferSize (PageSize)</para>
+        /// 
+        /// <para>BEGIN OPEN :REFCURSOR FOR </para>
+        /// <para>SELECT * FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, </para>
+        /// <para>T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+        /// <para>FROM   B1.TESTSEQUENCE T1</para>
+        /// <para>ORDER BY T1.APPSEQUENCEID ASC )</para>
+        /// <para>WHERE (:PAGESIZE = 0 OR (:PAGESIZE > 0 AND ROWNUM &lt;= :PAGESIZE));</para>
+        /// 
+        /// <para>Sample Select SQL For Db1 with bufferSize (PageSize)</para>
+        ///
+        /// <para>SELECT APPSEQUENCEID, DBSEQUENCEID, APPSYNCHTIME, APPLOCALTIME, DBSERVERTIME, </para>
+        /// <para>APPSEQUENCENAME, REMARKS, EXTRADATA  </para>
+        /// <para>FROM (SELECT X.*, ROW_NUMBER() OVER () AS ROW_NUM </para>
+        /// <para>FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME</para>
+        /// <para>, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+        /// <para>FROM B1.TESTSEQUENCE T1</para>
+        /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC</para>
+        /// <para>) X ) Y WHERE (@PAGESIZE = 0 OR (@PAGESIZE > 0 AND Y.ROW_NUM &lt;= @PAGESIZE))</para>
+        ///
+        /// </remarks>
         internal Tuple<string, DbParameterCollection> BuildSelect(DbTableDmlMgr dmlSelect
             , object bufferSize
             , DbParameterCollection dbParams)
@@ -773,17 +881,20 @@ namespace B1.DataAccess
                             , "Cant build select dbcommand with no tables");
 
             StringBuilder selectClause = new StringBuilder();
+            // add all the qualified column names
             foreach (string columnName in dmlSelect.QualifiedColumns)
                 selectClause.AppendFormat("{0}{1}", 
                         selectClause.Length > 0 ? ", " : 
                             dmlSelect.SelectDistinct ? "select distinct " : "select ",
                         columnName);
 
-            if(dmlSelect.CaseColumns.Count > 0)
+            // add any case statements
+            if (dmlSelect.CaseColumns.Count > 0)
                 selectClause.AppendFormat("{0}{1}{2}", dmlSelect.QualifiedColumns.Count() > 0 ? ", " : "",
                         Environment.NewLine, 
                         BuildCaseStatementsForSelect(dmlSelect));
 
+            // for every nested statement (inline view) used as a column, add to the statement
             foreach (InlineViewColumn inlineView in dmlSelect.InlineViewColumns)
             {
                 selectClause.AppendFormat("{0}{1}({2}) as {3}", selectClause.Length > 0 ? ", " : "",
@@ -798,12 +909,15 @@ namespace B1.DataAccess
                             CopyParameterToCollection(dbParams, dbParam);
             }
 
+            // build the join clause (which may recursively call this method when there are nested
+            // statements in the join expression.)
             Tuple<string, DbParameterCollection> inLineView = BuildJoinClause(dmlSelect, dbParams);
             dbParams = inLineView.Item2;
             selectClause.AppendFormat("{0} from {1} "
                          , Environment.NewLine
                          , inLineView.Item1);
-            
+
+            // build the where condition
             StringBuilder whereClause = new StringBuilder();
             if (dmlSelect._whereCondition != null)
                 whereClause.AppendFormat("where {0}", dmlSelect._whereCondition.ToString(this));
@@ -879,6 +993,11 @@ namespace B1.DataAccess
             return new Tuple<string,DbParameterCollection>(cmdText, dbParams);
         }
 
+        /// <summary>
+        /// Returns the SQL statement and a list of parameters based upon the given LinqQueryParser
+        /// </summary>
+        /// <param name="parser">Class object that parsers linq queries</param>
+        /// <returns>A Tuple containing SQL statement and list of parameters</returns>
         internal Tuple<string, List<DbPredicateParameter>> BuildSelect(LinqQueryParser parser)
         {
             string select = parser.GetOuterSelect();
@@ -915,10 +1034,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Used for building sub-selects by the LinqParser class.
         /// </summary>
-        /// <param name="expression"></param>
-        /// <param name="tableMgr"></param>
-        /// <param name="defaultSchema"></param>
-        /// <returns></returns>
+        /// <param name="expression">Linq MethodCallExpression object to parse</param>
+        /// <param name="tableMgr">Object which manages all the parsed assets of the expression</param>
+        /// <param name="defaultSchema">Optional schema value to associate all assets with</param>
+        /// <returns>A Tuple containing SQL statement and list of parameters</returns>
         internal Tuple<string, List<DbPredicateParameter>> BuildSelect(MethodCallExpression expression, 
                 LinqTableMgr tableMgr, string defaultSchema = null)
         {
@@ -929,10 +1048,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Used internaly for building selects from IQueryable or LINQ expression.
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="queryable"></param>
-        /// <param name="defaultSchema"></param>
-        /// <returns></returns>
+        /// <typeparam name="TEntity">The type of the object</typeparam>
+        /// <param name="queryable">Linq Query or IQueryable method calls</param>
+        /// <param name="defaultSchema">Optional schema value to associate all assets with</param>
+        /// <returns>A Tuple containing SQL statement and list of parameters</returns>
         internal Tuple<string, List<DbPredicateParameter>> BuildSelect<TEntity>(IQueryable<TEntity> queryable, 
                 string defaultSchema = null)
         {
@@ -943,31 +1062,37 @@ namespace B1.DataAccess
         /// <summary>
         /// Builds a DB command based on a LINQ query or any IQueryable result. Commands will be parameterized if the 
         /// LINQ expression references an external variable such as the variable n in the following:
-        /// 
+        /// <para>
         /// <code>
         /// int n = 1;
+        /// <para>
         /// entities.TestSequences.Where( t => t.AppSequenceId > n);
-        /// 
+        /// </para>
+        /// <para>
         /// DbCommand dbCmd = BuildSelectDbCommand(entities.TestSequences.Where( t => t.AppSequenceId > n), null);
-        /// 
+        /// </para>
+        /// <para>
         /// DataTable tbl = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
-        /// 
+        /// </para>
+        /// <para>
         /// // Reusing the same DbCommand and changing the value of parameter n:
+        /// </para>
         /// n = 10;
         /// tble = _daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         /// 
-        /// 
+        /// <para>
         /// A parameter named n will be created for that DbCommand and the variable n is linked to the parameter 
         /// in the dbCmd for the lifetime of that dbCmd. You can reuse the DbCommand along with the integer n.
+        /// </para>
         /// </code>
-        ///
+        ///</para>
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TEntity">The type of the object</typeparam>
         /// <param name="queryable">Linq Query or IQueryable method calls</param>
         /// <param name="bufferSize">number of rows to return</param>
         /// <param name="defaultSchema">Currently not used. Will be used in future for classes not in Entity Framework.
         /// </param>
-        /// <returns></returns>
+        /// <returns>A DbCommand object of the query</returns>
         public DbCommand BuildSelectDbCommand<TEntity>(IQueryable<TEntity> queryable, object bufferSize, 
                 string defaultSchema = null) where TEntity : class
         {
@@ -985,35 +1110,48 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// Creates an update command with a where condition based on the (Non Qualified) columns (of the MainTable)
-        /// in lastModColumns.  If you need qualified columns use the overloaded version of this method.
-        /// If the the passed in DbTableDmlMgr already has a where condition, the where condition will be 
-        /// modified to include these additional column predicates. TWO paremeters will be generated for each last 
-        /// mod column. One for there where condition, and one for the new value. 
-        /// Use BuildParamName(string fieldName, bool isNewValueParam) to generate the names for the new/where paramaters.
-        /// </summary>
-        /// <param name="dmlChange">DbTableDmlMgr representing table to be updated. Can have where condition.</param>
-        /// <param name="lastModColumns">NON qualified column names that MUST belong to the MainTable.</param>
-        /// <returns>DbCommand</returns>
-        public DbCommand BuildChangeDbCommand(DbTableDmlMgr dmlChange, params string[] lastModColumns)
-        {
-            DbQualifiedObject<string>[] qualifiedColumns = new DbQualifiedObject<string>[lastModColumns.Length];
-            for (int i = 0; i < lastModColumns.Length; i++ )
-                qualifiedColumns[i] = new DbQualifiedObject<string>(
-                        dmlChange.MainTable.SchemaName, dmlChange.MainTable.TableName, lastModColumns[i]);
-            return BuildChangeDbCommand(dmlChange, qualifiedColumns);
-        }
-
-        /// <summary>
-        /// Creates an update command with a where condition based on the columns in lastModColumns.
-        /// If the the passed in DbTableDmlMgr already has a where condition, the where condition will be 
-        /// modified to include these additional column predicates. TWO paremeters will be generated for each last 
-        /// mod column. One for there where condition, and one for the new value. 
-        /// Use BuildParamName(string fieldName, bool isNewValueParam) to generate the names for the new/where paramaters.
+        /// Creates an update command with a where condition based on the columns given in the lastModColumns params.
+        /// <para>
+        /// If the the passed in DbTableDmlMgr already has a where condition (e.g. with primary key columns), 
+        /// the where condition will be expanded to include these additional column predicates. 
+        /// </para>
+        /// <para>
+        /// In addition, the set clause of the update, will be modified to include the lastModColumns so that when
+        /// the update succeeds the lastModColumns' values will be set to a new value.
+        /// </para>
+        /// <para>
+        /// Thus, an update statement cannot succeed when execute more than once without first setting the values of
+        /// the where condition lastModColumns to the new values that were set in the previous execution. 
+        /// </para>
+        /// <para>
+        /// This method will require two parameters for each column specified in the lastModColumns.
+        /// </para>
+        /// <para>
+        /// The parameter names used in the where condition are created with BuildParamName(fieldName, false);
+        /// </para>
+        /// <para>
+        /// The parameter names used in the set clause are created with BuildParamName(fieldName, true);  
+        /// (these names will have a suffix)
+        /// </para>
+        /// <para><seealso cref="BuildParamName(string, bool)"></seealso> for more details</para>
         /// </summary>
         /// <param name="dmlChange">DbTableDmlMgr representing table to be updated. Can have where condition.</param>
         /// <param name="lastModColumns">Fully qualified column names.</param>
-        /// <returns>DbCommand</returns>
+        /// <returns>DbCommand object of CommandType = Text</returns>
+        /// <remarks>
+        /// Example SQL update statement (using SqlServer parameters) implementing a Change DbCommand:
+        /// <para>update T1 set T1.StatusCode = @StatusCode</para>
+        /// <para>, T1.CompletedDateTime = @CompletedDateTime</para>
+        /// <para>, T1.TaskRemark = @TaskRemark</para>
+        /// <para>, T1.LastModifiedUserCode = @LastModifiedUserCode_sv</para>
+        /// <para>, T1.LastModifiedDateTime = @LastModifiedDateTime_sv</para>
+        /// <para>from </para>
+        /// <para>B1.TaskProcessingQueue T1 </para>
+        /// <para>where (T1.LastModifiedUserCode = @LastModifiedUserCode </para>
+        /// <para>OR (@LastModifiedUserCode is NULL AND T1.LastModifiedUserCode is NULL)) </para>
+        /// <para>AND (T1.LastModifiedDateTime = @LastModifiedDateTime </para>
+        /// <para>OR (@LastModifiedDateTime is NULL AND T1.LastModifiedDateTime is NULL))</para>
+        /// </remarks>
         public DbCommand BuildChangeDbCommand(DbTableDmlMgr dmlChange, params DbQualifiedObject<string>[] lastModColumns)
         {
             if(lastModColumns.Length == 0)
@@ -1023,10 +1161,7 @@ namespace B1.DataAccess
             foreach(var lastModCol in lastModColumns)
             {
                 if (!dmlChange.ColumnsForUpdateOrInsert.ContainsKey(lastModCol))
-                {
-                    //DbColumnStructure column = DbCatalogGetColumn(lastModCol.SchemaName, lastModCol.TableName, lastModCol.DbObject);
-                    dmlChange.AddColumn(lastModCol.DbObject, BuildParamName(lastModCol.DbObject, true));
-                }
+                     dmlChange.AddColumn(lastModCol.DbObject, BuildParamName(lastModCol.DbObject, true));
                 else if (dmlChange.ColumnsForUpdateOrInsert[lastModCol].ToString()
                         != BuildParamName(lastModCol.DbObject, true))
                     dmlChange.ColumnsForUpdateOrInsert[lastModCol] = BuildParamName(lastModCol.DbObject, true); 
@@ -1067,24 +1202,63 @@ namespace B1.DataAccess
             return BuildUpdateDbCommand(dmlChange);
         }
 
+        /// <param name="dmlChange">DbTableDmlMgr representing table to be updated. Can have where condition.</param>
+        /// <param name="lastModColumns">NON qualified column names that MUST belong to the MainTable.</param>
+        /// <returns>DbCommand</returns>
+        public DbCommand BuildChangeDbCommand(DbTableDmlMgr dmlChange, params string[] lastModColumns)
+        {
+            DbQualifiedObject<string>[] qualifiedColumns = new DbQualifiedObject<string>[lastModColumns.Length];
+            for (int i = 0; i < lastModColumns.Length; i++)
+                qualifiedColumns[i] = new DbQualifiedObject<string>(
+                        dmlChange.MainTable.SchemaName, dmlChange.MainTable.TableName, lastModColumns[i]);
+            return BuildChangeDbCommand(dmlChange, qualifiedColumns);
+        }
+
+
         /// <summary>
         /// Builds an update DbCommand and parameter collection
         /// which can be executed against the multiple back-end
-        /// supported databases.  
-        /// 
-        /// NOTE: You will need to define the parameters as well
-        /// and consider any database specific syntax if you wish to
-        /// run it against multiple back ends.
+        /// supported databases.  The given meta data structure can contain join criteria
+        /// to support updates based upon a multi table join.
         /// </summary>
-        /// <param name="dmlUpdate">MetaData Structure describing table(s) that will be used for SQL</param>
-        /// <returns>DAAB DbCommand Object with DbParameters (initialized to the values provided
+        /// <param name="dmlUpdate">MetaData Structure describing table(s), views, and subqueries that will be used for SQL</param>
+        /// <returns>DbCommand Object with DbParameters (initialized to the values provided
         /// or DbNull.  The CommandType is Text.</returns>
+        /// <remarks>
+        /// <para>Sample Update SQL For SqlServer</para>
+        /// 
+        /// <para> UPDATE T1 SET T1.REMARKS = @REMARKS</para>
+        /// <para> , T1.EXTRADATA = @EXTRADATA</para>
+        /// <para> , T1.APPSYNCHTIME = @APPSYNCHTIME</para>
+        /// <para> , T1.APPLOCALTIME = @APPLOCALTIME</para>
+        /// <para> , T1.DBSERVERTIME = GETUTCDATE()</para>
+        /// <para> FROM B1.TESTSEQUENCE T1</para>
+        /// <para> WHERE T1.APPSEQUENCEID = @APPSEQUENCEID</para>
+        ///
+        /// <para>Sample Update SQL For Oracle uses inline view</para>
+        /// 
+        /// <para> UPDATE  (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME</para>
+        /// <para> , T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA  </para>
+        /// <para> , FROM   B1.TESTSEQUENCE T1  WHERE T1.APPSEQUENCEID = :APPSEQUENCEID ) T </para>
+        /// <para> SET T.REMARKS = :REMARKS , T.EXTRADATA = :EXTRADATA , T.APPSYNCHTIME = :APPSYNCHTIME , </para>
+        /// <para> T.APPLOCALTIME = :APPLOCALTIME , T.DBSERVERTIME = SYS_EXTRACT_UTC(SYSTIMESTAMP) ; </para>
+        /// 
+        /// <para>Sample Update SQL For DB2 uses inline view</para>
+        /// 
+        /// <para> UPDATE  (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME</para>
+        /// <para> , T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA  </para>
+        /// <para> , FROM   B1.TESTSEQUENCE T1  WHERE T1.APPSEQUENCEID = @APPSEQUENCEID ) T </para>
+        /// <para> SET T.REMARKS = @REMARKS </para>
+        /// <para> , T.EXTRADATA = @EXTRADATA </para>
+        /// <para> , T.APPSYNCHTIME = @APPSYNCHTIME </para>
+        /// <para> , T.APPLOCALTIME = @APPLOCALTIME </para>
+        /// <para> , T.DBSERVERTIME = CURRENT_TIMESTAMP - CURRENT_TIMEZONE; </para>
+        /// </remarks>
         public DbCommand BuildUpdateDbCommand(DbTableDmlMgr dmlUpdate)
         {
             if (dmlUpdate.ColumnsForUpdateOrInsert == null || dmlUpdate.ColumnsForUpdateOrInsert.Count == 0)
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
                             , "Cant build update dbcommand with no columns");
-
 
             string updateTable = null;
 
@@ -1191,19 +1365,104 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(updateClause.ToString(), dbParams);
         }
 
-        
+
+        /// <summary>
+        /// Builds an update command for one Entity Framework Entity. Does not execute the command or change the 
+        /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
+        /// paramater name. Only supplied values will be parameterized.
+        /// <para>This method does NOT update the entityContext.</para>
+        /// <para>
+        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (updateObject)
+        /// passed into this method.
+        /// </para>
+        /// </summary>
+        /// <param name="entityContext">Object context of entity</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <param name="propertyDbFunctions">DB Functions to be evaluated for that particular column</param>
+        /// <returns>New DbCommand object with and Update Command Text</returns>
+        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
+            , object updateObject
+            , Dictionary<PropertyInfo, object> propertyDbFunctions)
+        {
+            ObjectParser updateParser = new ObjectParser(entityContext, updateObject, this);
+
+            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
+
+            Tuple<string, List<DbPredicateParameter>> updateSqlandParams
+                    = updateParser.GetUpdateSqlAndParams(entityContext, updateObject, propertyDbFunctions);
+
+            foreach (DbPredicateParameter param in updateSqlandParams.Item2)
+            {
+                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
+                        updateParser.QualifiedTable.EntityName,
+                        param.ColumnName);
+
+                AddNewParameterToCollection(dbParams
+                    , param.ParameterName
+                    , column.DataTypeGenericDb
+                    , column.DataTypeNativeDb
+                    , column.MaxLength
+                    , ParameterDirection.Input
+                    , param.Value);
+            }
+
+            // return the new dbCommand
+            DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSqlandParams.Item1, dbParams);
+            cmdUpdate.Site = new ParameterSite(updateSqlandParams.Item2);
+            return cmdUpdate;
+        }
+
+        /// <summary>
+        /// Builds an update command for one Entity Framework Entity. Does not execute the command or change the 
+        /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
+        /// paramater name. Only supplied values will be parameterized.
+        /// <para>This method does NOT update the entityContext.</para>
+        /// <para>
+        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (updateObject)
+        /// passed into this method.
+        /// </para>
+        /// </summary>
+        /// <param name="entityContext">Object context of entity</param>
+        /// <param name="updateObject">Entity to update</param>
+        /// <returns>New DbCommand object with and Update Command Text</returns>
+        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext, object updateObject)
+        {
+            return BuildUpdateDbCommand(entityContext
+                    , updateObject
+                    , new Dictionary<PropertyInfo, object>());
+        }
+       
         /// <summary>
         /// Builds a delete DbCommand and parameter collection
         /// which can be executed against the multiple back-end
-        /// supported databases.  
-        ///  
-        /// NOTE: You will need to define the paramenters as well
-        /// and consider any database specific syntax if you wish to
-        /// run it against multiple back ends.
+        /// supported databases.  The given meta data structure can contain join criteria
+        /// to support deletes based upon a multi table join.
         /// </summary>
         /// <param name="dmlDelete">MetaData Structure describing the delete conditions</param>
         /// <returns>DAAB DbCommand Object with DbParameters (initialized to the values provided
         /// or DbNull.  The CommandType is Text.</returns>
+        /// <remarks>
+        /// <para>Sample Delete SQL For SqlServer</para>
+        /// 
+        /// <para> DELETE FROM (SELECT T1.*
+        ///        FROM B1.TESTSEQUENCE T1
+        ///        WHERE T1.APPSEQUENCEID = @APPSEQUENCEID)
+        /// </para>
+        ///
+        /// <para>Sample Delete SQL For Oracle uses inline view</para>
+        /// 
+        /// <para> DELETE FROM (SELECT T1.*  
+        ///        FROM   B1.TESTSEQUENCE T1  
+        ///        WHERE T1.APPSEQUENCEID = :APPSEQUENCEID ) ;
+        /// </para>
+        /// 
+        /// <para>Sample Delete SQL For DB2 uses inline view</para>
+        /// 
+        /// <para> DELETE FROM (SELECT T1.*
+        ///        FROM B1.TESTSEQUENCE T1
+        ///        WHERE T1.APPSEQUENCEID = @APPSEQUENCEID) ;
+        /// </para>
+        /// </remarks>
         public DbCommand BuildDeleteDbCommand(DbTableDmlMgr dmlDelete)
         {
             StringBuilder deleteSQL = new StringBuilder();
@@ -1250,6 +1509,51 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(deleteSQL.ToString(), dbParams);
         }
 
+
+        /// <summary>
+        /// Builds a delete command for one Entity Framework Entity. Does not execute the command or change the 
+        /// Object Context. Commands will be parameterized with the property name of the entity that make up 
+        /// the primary key.
+        /// <para>This method does NOT update the entityContext.</para>
+        /// <para>
+        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (deleteObject)
+        /// passed into this method.
+        /// </para>
+        /// </summary>
+        /// 
+        /// <param name="entityContext">Object context of entity</param>
+        /// <param name="deleteObject">Entity to delete</param>
+        /// <returns>New DbCommand object with and Delete Command Text</returns>
+        public DbCommand BuildDeleteDbCommand(ObjectContext entityContext
+            , object deleteObject)
+        {
+            ObjectParser updateParser = new ObjectParser(entityContext, deleteObject, this);
+
+            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
+
+            Tuple<string, List<DbPredicateParameter>> deleteSqlandParams
+                    = updateParser.GeDeleteSqlAndParams(entityContext, deleteObject);
+
+            foreach (DbPredicateParameter param in deleteSqlandParams.Item2)
+            {
+                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
+                        updateParser.QualifiedTable.EntityName,
+                        param.ColumnName);
+
+                AddNewParameterToCollection(dbParams
+                    , param.ParameterName
+                    , column.DataTypeGenericDb
+                    , column.DataTypeNativeDb
+                    , column.MaxLength
+                    , ParameterDirection.Input
+                    , param.Value);
+            }
+
+            // return the new dbCommand
+            DbCommand cmdDelete = BuildNonQueryDbCommand(deleteSqlandParams.Item1, dbParams);
+            cmdDelete.Site = new ParameterSite(deleteSqlandParams.Item2);
+            return cmdDelete;
+        }
        
         /// <summary>
         /// Builds an insert DbCommand object from the given DbTableDml
@@ -1259,7 +1563,56 @@ namespace B1.DataAccess
         /// </summary>
         /// <param name="dmlInsert">DbTable Dml Meta Data structure.</param>
         /// <returns>DAAB DbCommand Object with DbParameters (initialized to the values provided
-        /// or DbNull.  The CommandType is Text.</returns>
+        /// or DbNull.  The CommandType is Text.
+        /// </returns>
+        /// <remarks>
+        /// <para>Sample Insert SQL For SqlServer</para>
+        /// 
+        /// <para> INSERT INTO B1.TESTSEQUENCE (APPSEQUENCEID</para>
+        /// <para> , APPSEQUENCENAME</para>
+        /// <para> , APPLOCALTIME</para>
+        /// <para> , APPSYNCHTIME</para>
+        /// <para> , REMARKS</para>
+        /// <para> , EXTRADATA)</para>
+        /// <para> VALUES (@APPSEQUENCEID</para>
+        /// <para> , @APPSEQUENCENAME</para>
+        /// <para> , @APPLOCALTIME</para>
+        /// <para> , @APPSYNCHTIME</para>
+        /// <para> , @REMARKS</para>
+        /// <para> , @EXTRADATA)</para>
+        ///
+        /// <para>Sample Insert SQL For Oracle with Sequence Number</para>
+        /// 
+        /// <para> INSERT INTO B1.TESTSEQUENCE (APPSEQUENCEID</para>
+        /// <para> , APPSEQUENCENAME</para>
+        /// <para> , APPLOCALTIME</para>
+        /// <para> , APPSYNCHTIME</para>
+        /// <para> , REMARKS</para>
+        /// <para> , EXTRADATA</para>
+        /// <para> , DBSEQUENCEID)</para>
+        /// <para> VALUES (:APPSEQUENCEID</para>
+        /// <para> , :APPSEQUENCENAME</para>
+        /// <para> , :APPLOCALTIME</para>
+        /// <para> , :APPSYNCHTIME</para>
+        /// <para> , :REMARKS</para>
+        /// <para> , :EXTRADATA</para>
+        /// <para> , CORE.DBSEQUENCEID_SEQ.NEXTVAL)</para>
+        /// 
+        /// <para>Sample Insert SQL For DB2</para>
+        /// 
+        /// <para> INSERT INTO B1.TESTSEQUENCE (APPSEQUENCEID</para>
+        /// <para> , APPSEQUENCENAME</para>
+        /// <para> , APPLOCALTIME</para>
+        /// <para> , APPSYNCHTIME</para>
+        /// <para> , REMARKS</para>
+        /// <para> , EXTRADATA)</para>
+        /// <para> VALUES (@APPSEQUENCEID</para>
+        /// <para> , @APPSEQUENCENAME</para>
+        /// <para> , @APPLOCALTIME</para>
+        /// <para> , @APPSYNCHTIME</para>
+        /// <para> , @REMARKS</para>
+        /// <para> , @EXTRADATA);</para>
+        /// </remarks>
         public DbCommand BuildInsertDbCommand(DbTableDmlMgr dmlInsert)
         {
             if (dmlInsert.ColumnsForUpdateOrInsert == null || dmlInsert.ColumnsForUpdateOrInsert.Count == 0)
@@ -1360,11 +1713,11 @@ namespace B1.DataAccess
         /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
         /// paramater name. Only supplied values will be parameterized, not autogenerated columns such as 
         /// identities. 
-        /// 
-        /// This method does NOT update the entityContext.
-        /// 
+        /// <para>This method does NOT update the entityContext.</para>
+        /// <para>
         /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (insertObject)
         /// passed into this method.
+        /// </para>
         /// </summary>
         /// <param name="entityContext">Object context of entity</param>
         /// <param name="insertObject">Entity to insert</param>
@@ -1421,11 +1774,11 @@ namespace B1.DataAccess
         /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
         /// paramater name. Only supplied values will be parameterized, not autogenerated columns such as 
         /// identities. 
-        /// 
-        /// This method does NOT update the entityContext.
-        /// 
+        /// <para>This method does NOT update the entityContext.</para>
+        /// <para>
         /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (insertObject)
         /// passed into this method.
+        /// </para>
         /// </summary>
         /// <param name="entityContext">Object context of entity</param>
         /// <param name="insertObject">Entity to insert</param>
@@ -1437,119 +1790,6 @@ namespace B1.DataAccess
             return BuildInsertDbCommand(entityContext
                     , insertObject
                     , new Dictionary<PropertyInfo, object>(), getRowId);
-        }
-
-        /// <summary>
-        /// Builds an update command for one Entity Framework Entity. Does not execute the command or change the 
-        /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
-        /// paramater name. Only supplied values will be parameterized.
-        /// 
-        /// This method does NOT update the entityContext.
-        /// 
-        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (updateObject)
-        /// passed into this method.
-        /// </summary>
-        /// 
-        /// <param name="entityContext">Object context of entity</param>
-        /// <param name="updateObject">Entity to update</param>
-        /// <param name="propertyDbFunctions">DB Functions to be evaluated for that particular column</param>
-        /// <returns>New DbCommand</returns>
-        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext
-            , object updateObject
-            , Dictionary<PropertyInfo, object> propertyDbFunctions)
-        {
-            ObjectParser updateParser = new ObjectParser(entityContext, updateObject, this);
-
-            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
-
-            Tuple<string, List<DbPredicateParameter>> updateSqlandParams 
-                    = updateParser.GetUpdateSqlAndParams(entityContext, updateObject, propertyDbFunctions);
-
-            foreach (DbPredicateParameter param in updateSqlandParams.Item2)
-            {
-                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
-                        updateParser.QualifiedTable.EntityName,
-                        param.ColumnName);
-
-                AddNewParameterToCollection(dbParams
-                    , param.ParameterName
-                    , column.DataTypeGenericDb
-                    , column.DataTypeNativeDb
-                    , column.MaxLength
-                    , ParameterDirection.Input
-                    , param.Value);
-            }
-            
-            // return the new dbCommand
-            DbCommand cmdUpdate = BuildNonQueryDbCommand(updateSqlandParams.Item1, dbParams);
-            cmdUpdate.Site = new ParameterSite(updateSqlandParams.Item2);
-            return cmdUpdate;
-        }
-
-        /// <summary>
-        /// Builds an update command for one Entity Framework Entity. Does not execute the command or change the 
-        /// Object Context. Commands will be parameterized with the property name of the entity used to create the 
-        /// paramater name. Only supplied values will be parameterized.
-        /// 
-        /// This method does NOT update the entityContext.
-        /// 
-        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (updateObject)
-        /// passed into this method.
-        /// </summary>
-        /// 
-        /// <param name="entityContext">Object context of entity</param>
-        /// <param name="updateObject">Entity to update</param>
-        /// <returns>New DbCommand</returns>
-        public DbCommand BuildUpdateDbCommand(ObjectContext entityContext, object updateObject)
-        {
-            return BuildUpdateDbCommand(entityContext
-                    , updateObject
-                    , new Dictionary<PropertyInfo, object>());
-        }
-
-        /// <summary>
-        /// Builds a delete command for one Entity Framework Entity. Does not execute the command or change the 
-        /// Object Context. Commands will be parameterized with the property name of the entity that make up 
-        /// the primary key.
-        /// 
-        /// This method does NOT update the entityContext.
-        /// 
-        /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (updateObject)
-        /// passed into this method.
-        /// </summary>
-        /// 
-        /// <param name="entityContext">Object context of entity</param>
-        /// <param name="deleteObject">Entity to delete</param>
-        /// <returns>New DbCommand</returns>
-        public DbCommand BuildDeleteDbCommand(ObjectContext entityContext
-            , object deleteObject)
-        {
-            ObjectParser updateParser = new ObjectParser(entityContext, deleteObject, this);
-
-            DbParameterCollection dbParams = _database.GetSqlStringCommand(_noOpDbCommandText).Parameters;
-
-            Tuple<string, List<DbPredicateParameter>> deleteSqlandParams
-                    = updateParser.GeDeleteSqlAndParams(entityContext, deleteObject);
-
-            foreach (DbPredicateParameter param in deleteSqlandParams.Item2)
-            {
-                DbColumnStructure column = DbCatalogGetColumn(updateParser.QualifiedTable.SchemaName,
-                        updateParser.QualifiedTable.EntityName,
-                        param.ColumnName);
-
-                AddNewParameterToCollection(dbParams
-                    , param.ParameterName
-                    , column.DataTypeGenericDb
-                    , column.DataTypeNativeDb
-                    , column.MaxLength
-                    , ParameterDirection.Input
-                    , param.Value);
-            }
-
-            // return the new dbCommand
-            DbCommand cmdDelete = BuildNonQueryDbCommand(deleteSqlandParams.Item1, dbParams);
-            cmdDelete.Site = new ParameterSite(deleteSqlandParams.Item2);
-            return cmdDelete;
         }
 
         private string BuildCaseStatementsForSelect(DbTableDmlMgr dmlSelect)
@@ -1574,44 +1814,92 @@ namespace B1.DataAccess
         /// meta data structure.  It will initialize the DbParameter collection
         /// to what was provided in the meta data and will return a DAAB DbCommand
         /// object of command type = Text.
-        /// <![CDATA[
-        /// Merge command for Microsoft SQL Server:
-        /// 
-        /// MERGE INTO TableName AS T1
-        /// USING (VALUES ( @valFld1, @valFld2 )) AS Source ( Fld1, Fld2 )
-        /// ON (T1.KeyFld = @valKeyFld)
-        /// WHEN MATCHED THEN
-        /// UPDATE SET Fld1 = Source.Fld1, Fld2 = Source.Fld2
-        /// WHEN NOT MATCHED THEN
-        /// INSERT (KeyFld, Fld1, Fld2) VALUES (@valKeyFld, Source.Fld1, Source.Fld2)
-        /// 
-        ///
-        /// Merge command for Oracle:
-        /// 
-        /// MERGE INTO TableName T1
-        /// USING (SELECT @valFld1 Fld1, @valFld2 Fld2 FROM dual) Source
-        /// ON (T1.KeyFld = @valKeyFld)
-        /// WHEN MATCHED THEN
-        /// UPDATE SET Fld1 = Source.Fld1, Fld2 = Source.Fld2
-        /// WHEN NOT MATCHED THEN
-        /// INSERT (KeyFld, Fld1, Fld2) VALUES (@valKeyFld, Source.Fld1, Source.Fld2)
-        /// 
-        ///
-        /// Merge command for DB2:
-        /// 
-        /// MERGE INTO TableName AS T1
-        /// USING TABLE(VALUES ( @valFld1, @valFld2 )) AS Source ( Fld1, Fld2 )
-        /// ON (T1.KeyFld = @valKeyFld)
-        /// WHEN MATCHED THEN
-        /// UPDATE SET Fld1 = Source.Fld1, Fld2 = Source.Fld2
-        /// WHEN NOT MATCHED THEN
-        /// INSERT (KeyFld, Fld1, Fld2) VALUES (@valKeyFld, Source.Fld1, Source.Fld2)
-        /// 
-        /// ]]>
         /// </summary>
         /// <param name="dmlMerge">DbTable Dml Meta Data structure.</param>
         /// <returns>DAAB DbCommand Object with DbParameters (initialized to the values provided
         /// or DbNull.  The CommandType is Text.</returns>
+        /// <remarks>
+        /// <para>Sample Merge SQL For SqlServer</para>
+        /// 
+        /// <para> MERGE INTO B1.TESTSEQUENCE AS T1</para>
+        /// <para> USING (VALUES ( 1 )) AS SOURCE ( DUMMYCOL )</para>
+        /// <para> ON (T1.APPSEQUENCEID = @APPSEQUENCEID)</para>
+        /// <para> WHEN MATCHED THEN</para>
+        /// <para> UPDATE SET REMARKS = @REMARKS</para>
+        /// <para> , EXTRADATA = @EXTRADATA</para>
+        /// <para> , APPSYNCHTIME = @APPSYNCHTIME</para>
+        /// <para> , APPLOCALTIME = @APPLOCALTIME</para>
+        /// <para> , DBSERVERTIME = GETUTCDATE()</para>
+        /// <para> WHEN NOT MATCHED THEN</para>
+        /// <para> INSERT ( REMARKS</para>
+        /// <para> , EXTRADATA</para>
+        /// <para> , APPSYNCHTIME</para>
+        /// <para> , APPLOCALTIME</para>
+        /// <para> , DBSERVERTIME</para>
+        /// <para> , APPSEQUENCEID</para>
+        /// <para> , APPSEQUENCENAME )</para>
+        /// <para> VALUES ( @REMARKS</para>
+        /// <para> , @EXTRADATA</para>
+        /// <para> , @APPSYNCHTIME</para>
+        /// <para> , @APPLOCALTIME</para>
+        /// <para> , GETUTCDATE()</para>
+        /// <para> , @APPSEQUENCEID</para>
+        /// <para> , @APPSEQUENCENAME );</para>
+        ///
+        /// <para>Sample Merge SQL For Oracle with Sequence Number</para>
+        /// 
+        /// <para> MERGE INTO B1.TESTSEQUENCE T1 </para>
+        /// <para> USING (SELECT 1 DUMMYCOL FROM DUAL) SOURCE </para>
+        /// <para> ON (T1.APPSEQUENCEID = :APPSEQUENCEID) </para>
+        /// <para> WHEN MATCHED THEN </para>
+        /// <para> UPDATE SET REMARKS = :REMARKS </para>
+        /// <para> , EXTRADATA = :EXTRADATA </para>
+        /// <para> , APPSYNCHTIME = :APPSYNCHTIME </para>
+        /// <para> , APPLOCALTIME = :APPLOCALTIME </para>
+        /// <para> , DBSERVERTIME = SYS_EXTRACT_UTC(SYSTIMESTAMP) </para>
+        /// <para> WHEN NOT MATCHED THEN  </para>
+        /// <para> INSERT ( REMARKS </para>
+        /// <para> , EXTRADATA </para>
+        /// <para> , APPSYNCHTIME </para>
+        /// <para> , APPLOCALTIME </para>
+        /// <para> , DBSERVERTIME </para>
+        /// <para> , APPSEQUENCEID </para>
+        /// <para> , APPSEQUENCENAME ) </para>
+        /// <para> VALUES ( :REMARKS </para>
+        /// <para> , :EXTRADATA </para>
+        /// <para> , :APPSYNCHTIME </para>
+        /// <para> , :APPLOCALTIME </para>
+        /// <para> , SYS_EXTRACT_UTC(SYSTIMESTAMP) </para>
+        /// <para> , :APPSEQUENCEID</para> 
+        /// <para> , :APPSEQUENCENAME ) ; </para>
+        /// 
+        /// <para>Sample Merge SQL For DB2</para>
+        /// 
+        /// <para> MERGE INTO B1.TESTSEQUENCE AS T1</para>
+        /// <para> USING (VALUES ( 1 )) AS SOURCE ( DUMMYCOL )</para>
+        /// <para> ON (T1.APPSEQUENCEID = @APPSEQUENCEID)</para>
+        /// <para> WHEN MATCHED THEN</para>
+        /// <para> UPDATE SET REMARKS = @REMARKS</para>
+        /// <para> , EXTRADATA = @EXTRADATA</para>
+        /// <para> , APPSYNCHTIME = @APPSYNCHTIME</para>
+        /// <para> , APPLOCALTIME = @APPLOCALTIME</para>
+        /// <para> , DBSERVERTIME = CURRENT_TIMESTAMP - CURRENT_TIMEZONE</para>
+        /// <para> WHEN NOT MATCHED THEN</para>
+        /// <para> INSERT ( REMARKS</para>
+        /// <para> , EXTRADATA</para>
+        /// <para> , APPSYNCHTIME</para>
+        /// <para> , APPLOCALTIME</para>
+        /// <para> , DBSERVERTIME</para>
+        /// <para> , APPSEQUENCEID</para>
+        /// <para> , APPSEQUENCENAME )</para>
+        /// <para> VALUES ( @REMARKS</para>
+        /// <para> , @EXTRADATA</para>
+        /// <para> , @APPSYNCHTIME</para>
+        /// <para> , @APPLOCALTIME</para>
+        /// <para> , CURRENT_TIMESTAMP - CURRENT_TIMEZONE</para>
+        /// <para> , @APPSEQUENCEID</para>
+        /// <para> , @APPSEQUENCENAME );</para>
+        /// </remarks>
         public DbCommand BuildMergeDbCommand(DbTableDmlMgr dmlMerge)
         {
             if (dmlMerge.ColumnsForUpdateOrInsert == null || dmlMerge.ColumnsForUpdateOrInsert.Count == 0)
@@ -1649,6 +1937,7 @@ namespace B1.DataAccess
             DbQualifiedObject<string> qualifiedColumn;
             Dictionary<DbQualifiedObject<string>, object> columnsCollection = null;
 
+            // for each of the column types, determine whether they require parameters
             foreach (DbTableColumnType columnType in Enum.GetValues(typeof(DbTableColumnType)))
             {
                 if (columnType == DbTableColumnType.None)
@@ -1734,6 +2023,7 @@ namespace B1.DataAccess
                 }
             }
 
+            // build sql body
             if (DatabaseType == EnumDbType.Oracle)
             {
                 sqlMerge.AppendFormat( "MERGE INTO {0} {1}{2}", mergeTable, tableAlias, Environment.NewLine );
@@ -1745,13 +2035,16 @@ namespace B1.DataAccess
                 sqlMerge.AppendFormat( "USING (VALUES ( 1 )) AS Source ( DummyCol ){0}", Environment.NewLine );
             }
 
-            sqlMerge.AppendFormat( "ON ({0}){1}", whereClause.ToString(), Environment.NewLine );
+            // append where clause
+            sqlMerge.AppendFormat("ON ({0}){1}", whereClause.ToString(), Environment.NewLine);
 
+            // add update portion
             if (updateClause.Length > 0)
             {
                 sqlMerge.AppendFormat( "WHEN MATCHED THEN{0}{1}{2}", Environment.NewLine, updateClause, Environment.NewLine );
             }
 
+            // append insert portion
             if (insertColumns.Length > 0)
             {
                 sqlMerge.AppendFormat( "WHEN NOT MATCHED THEN{0} INSERT ( {1} ){2}VALUES ( {3} )",
@@ -1764,6 +2057,13 @@ namespace B1.DataAccess
             return BuildNonQueryDbCommand(sqlMerge.ToString(), dbParams);
         }
 
+        /// <summary>
+        /// Builds an SQL string of the join predicates defined in the given meta data
+        /// and defines the required parameters from the given meta data.
+        /// </summary>
+        /// <param name="joinMgr">DbTableDmlMgr object</param>
+        /// <param name="dbParams">A given set of dbParameters</param>
+        /// <returns>SQL join predicates and update DbParameter collection</returns>
         private Tuple<string, DbParameterCollection> BuildJoinClause(DbTableDmlMgr joinMgr
             , DbParameterCollection dbParams)
         {
@@ -1797,6 +2097,11 @@ namespace B1.DataAccess
             return new Tuple<string, DbParameterCollection>(joinClause.ToString(), dbParams);
         }
 
+        /// <summary>
+        /// Returns the where clause with bind variables given the collection of columns
+        /// </summary>
+        /// <param name="ColumnValues">Dictionary of column names and values</param>
+        /// <returns>Where clause with bind variables</returns>
         private string BuildWhereClause(Dictionary<string, object> ColumnValues)
         {
             StringBuilder whereClause = new StringBuilder();
@@ -1874,6 +2179,14 @@ namespace B1.DataAccess
             return BuildWhereClauseParams(null, SchemaName, TableName, ColumnValues);
         }
 
+        /// <summary>
+        /// Returns the DbParameter collection needed for the given collection of Column Names and Values
+        /// </summary>
+        /// <param name="DbParams">Existing DbParameter Collection</param>
+        /// <param name="SchemaName">Schema name of table containing columns</param>
+        /// <param name="TableName">Table name containing columns</param>
+        /// <param name="ColumnValues">Dictionary of column name and values</param>
+        /// <returns></returns>
         internal DbParameterCollection BuildWhereClauseParams(DbParameterCollection DbParams
                     , string SchemaName
                     , string TableName
@@ -2018,6 +2331,9 @@ namespace B1.DataAccess
             return dbParams;
         }
 
+        /// <summary>
+        /// builds the internal DbCommands used for Unique ids
+        /// </summary>
         void BuildUniqueIdCommands()
         {
             DbCommand dbCmd = _database.GetStoredProcCommand(Constants.USP_UniqueIdsGetNextBlock);
@@ -2477,8 +2793,11 @@ namespace B1.DataAccess
                     , paramValue);
         }
 
-
-
+        /// <summary>
+        /// Returns a copy of the given DbParameter collection
+        /// </summary>
+        /// <param name="dbParameters">DbParameter Collection</param>
+        /// <returns>Copy of the given parameter collection</returns>
         internal DbParameterCollection CloneParameterCollection(DbParameterCollection dbParameters)
         {
             return _dbProviderLib.CloneParameterCollection(dbParameters);
@@ -2534,9 +2853,9 @@ namespace B1.DataAccess
         /// Returns the DbColumn (database catalog data) for the given 
         /// database table name, Schema and, Table.
         /// </summary>
-        /// <param name="schemaName"></param>
-        /// <param name="tableName"></param>
-        /// <param name="columnName"></param>
+        /// <param name="schemaName">Schema that table belongs to</param>
+        /// <param name="tableName">Table that column belongs to</param>
+        /// <param name="columnName">Column to lookup in catalog</param>
         /// <returns>Database Catalog Meta Data for a column of table Structure</returns>
         public DbColumnStructure DbCatalogGetColumn(string schemaName, string tableName, string columnName)
         {
@@ -2548,8 +2867,8 @@ namespace B1.DataAccess
         /// Returns the DbTable (database catalog data) for the given 
         /// database table name.
         /// </summary>
-        /// <param name="schemaName"></param>
-        /// <param name="tableName"></param>
+        /// <param name="schemaName">Schema that table belongs to</param>
+        /// <param name="tableName">Table to lookup in catalog</param>
         /// <returns>Database Catalog Meta Data for a table Structure</returns>
         public DbTableStructure DbCatalogGetTable(string schemaName, string tableName)
         {
@@ -2571,8 +2890,8 @@ namespace B1.DataAccess
         /// Returns a DbTableDmlMgr class used for defining Dynamic sql. The meta data of the table that is passed in 
         /// is included in the instance.
         /// </summary>
-        /// <param name="schemaName"></param>
-        /// <param name="tableName"></param>
+        /// <param name="schemaName">Schema that table belongs to</param>
+        /// <param name="tableName">Table to lookup in catalog</param>
         /// <param name="selectColumns">Columns to include in a select, if this will be used for a select.
         /// If non are included, all will be returned for a select.</param>
         /// <returns>Meta Data structure (with empty collection structures) to be used for building dynamic sql></returns>
@@ -2867,13 +3186,14 @@ namespace B1.DataAccess
         /// in the cache; if it is not found it will create and store a DbCommand
         /// after discovering its parameters.  It will then set the param values
         /// and execute the DbCommand.
+        /// <para>
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
-        /// NOTE: storedProcedure cannot be null or empty.
+        /// </para>
         /// </summary>
-        /// <param name="storedProcedure">Fully qualified stored procedure name</param>
+        /// <param name="storedProcedure">Fully qualified stored procedure name (cannot be null or empty)</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
@@ -3186,9 +3506,8 @@ namespace B1.DataAccess
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
-        /// NOTE: storedProcedure cannot be null or empty.
         /// </summary>
-        /// <param name="storedProcedure">Fully qualified stored procedure name</param>
+        /// <param name="storedProcedure">Fully qualified stored procedure name(cannot be null or empty)</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
@@ -3271,13 +3590,14 @@ namespace B1.DataAccess
         /// in the cache; if it is not found it will create and store a DbCommand
         /// after discovering its parameters.  It will then set the param values
         /// and execute the DbCommand.
+        /// <para>
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
-        /// NOTE: storedProcedure cannot be null or empty.
+        /// </para>
         /// </summary>
-        /// <param name="storedProcedure">Fully qualified stored procedure name</param>
+        /// <param name="storedProcedure">Fully qualified stored procedure name (cannot be null or empty)</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
         /// <param name="parameterNameValues">A set of parameter names and values or null. 
         /// Example: "FirstName", "Ernest", "LastName", "Hemingway"</param>
@@ -3344,12 +3664,14 @@ namespace B1.DataAccess
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
+        /// <para>
         /// NOTE: storedProcedure cannot be null or empty.
         /// A dataReader requires that a connection remain open and there is no
         /// control over whether the client using the reader will close it.
         /// So it is recommended to use the overload function ExecuteReader which
         /// accepts a function as a parameter.  Then the function consumes the dataReader
         /// and the ExecuteReader function closes the dataReader.
+        /// </para>
         /// </summary>
         /// <param name="storedProcedure">Fully qualified stored procedure name</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
@@ -3376,12 +3698,14 @@ namespace B1.DataAccess
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
+        /// <para>
         /// NOTE:
         /// A dataReader requires that a connection remain open and there is no
         /// control over whether the client using the reader will close it.
         /// So it is recommended to use the overload function ExecuteReader which
         /// accepts a function as a parameter.  Then the function consumes the dataReader
         /// and the ExecuteReader function closes the dataReader.
+        /// </para>
         /// </summary>
         /// <param name="dbCommand">DbCommand object</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
@@ -3422,16 +3746,20 @@ namespace B1.DataAccess
         /// in the cache; if it is not found it will create and store a DbCommand
         /// after discovering its parameters.  It will then set the param values
         /// and execute the DbCommand.
+        /// <para>
         /// NOTE: storedProcedure cannot be null or empty.
         /// It returns the result of the dataReaderHandler 
         /// function delegate.  It will be given the DataReader and after its execution,
         /// the DataReader will be destroyed. This prevents from caller to have an active
         /// DataReader where they can leave a connection open. If there are errors in the
         /// delegate functions, the datareader is still closed.
+        /// </para>
+        /// <para>
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
+        /// </para>
         /// </summary>
         /// <param name="storedProcedure">Fully qualified stored procedure name</param>
         /// <param name="dataReaderHandler">Delegate which will be called to consume the DataReader.</param>
@@ -3460,10 +3788,12 @@ namespace B1.DataAccess
         /// the DataReader will be destroyed. This prevents from caller to have an active
         /// DataReader where they can leave a connection open. If there are errors in the
         /// delegate functions, the datareader is still closed.
+        /// <para>
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.
+        /// </para>
         /// </summary>
         /// <param name="dbCommand">Database Command Object to execute.</param>
         /// <param name="dataReaderHandler">Delegate which will be called to consume the DataReader.</param>
@@ -3511,12 +3841,14 @@ namespace B1.DataAccess
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.        
+        /// <para>
         /// NOTE: storedProcedure cannot be null or empty.
         /// An xmlReader requires that a connection remain open and there is no
         /// control over whether the client using the reader will close it.
         /// So it is recommended to use the overload function ExecuteXmlReader which
         /// accepts a function as a parameter.  Then the function consumes the xmlReader
         /// and the ExecuteReader function closes the xmlReader.
+        /// </para>
         /// </summary>
         /// <param name="storedProcedure">Fully qualified stored procedure name</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
@@ -3542,13 +3874,15 @@ namespace B1.DataAccess
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
-        /// In either case, the exception will be thrown.        
+        /// In either case, the exception will be thrown.  
+        /// <para>
         /// NOTE:
         /// An xmlReader requires that a connection remain open and there is no
         /// control over whether the client using the reader will close it.
         /// So it is recommended to use the overload function ExecuteXmlReader which
         /// accepts a function as a parameter.  Then the function consumes the xmlReader
         /// and the ExecuteXmlReader function closes the xmlReader.
+        /// </para>
         /// </summary>
         /// <param name="dbCommand">DbCommand object</param>
         /// <param name="dbTrans">A valid DbTransaction or null</param>
@@ -3586,17 +3920,22 @@ namespace B1.DataAccess
         /// in the cache; if it is not found it will create and store a DbCommand
         /// after discovering its parameters.  It will then set the param values
         /// and execute the DbCommand.
+        /// <para>
         /// Executes the given DbCommand and returns the result of the xmlReaderHandler 
         /// function delegate.  It will be given the DataReader and after its execution,
         /// the xmlReader will be destroyed. This prevents from caller to have an active
         /// xmlReader where they can leave a connection open. If there are errors in the
         /// delegate functions, the xmlareader is still closed.
+        /// </para>
+        /// <para>
         /// If a DbException is raised and a logger class had been provided,
         /// the method will attempt to Log a debug text version of the dbCommand
         /// that is backend specific or just log the exception.
         /// In either case, the exception will be thrown.
+        /// </para>
+        /// <para>
         /// NOTE: storedProcedure cannot be null or empty.
-        /// 
+        /// </para>
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="storedProcedure">Fully qualified stored procedure name</param>
@@ -3936,9 +4275,10 @@ namespace B1.DataAccess
         /// to create the paramater name. Only supplied values will be parameterized, not autogenerated columns such as
         /// identities. Updates the entity object with any database generated columns. Entity is then added to
         /// Object Context.
-        /// 
+        /// <para>
         /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (insertObject)
         /// passed into this method.
+        /// </para>
         /// </summary>
         /// <param name="entityContext">Object context of entity</param>
         /// <param name="insertObject">Entity to insert</param>
@@ -3959,9 +4299,10 @@ namespace B1.DataAccess
         /// to create the paramater name. Only supplied values will be parameterized, not autogenerated columns such as
         /// identities. Updates the entity object with any database generated columns. Entity is then added to
         /// Object Context.
-        /// 
+        /// <para>
         /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (insertObject)
         /// passed into this method.
+        /// </para>
         /// </summary>
         /// <param name="entityContext">Object context of entity</param>
         /// <param name="insertObject">Entity to insert</param>
@@ -3992,15 +4333,16 @@ namespace B1.DataAccess
         /// The DbCmdIn is optional. If it is passed in, it will be used and any parameters will be changed to the 
         /// value of the deleteObject. If it is not passed in, a new DbCommand will be created with the parameters pointing
         /// to the properties of the deleteObject instance.
-        /// 
+        /// <para>
         /// NOTE: The DbCommand parameters will be bound to the properties of the entity instance (deleteObject)
         /// passed into this method.
+        /// </para>
         /// </summary>
         /// <param name="entityContext">Context to remove object from</param>
         /// <param name="deleteObject">Object to remove from context</param>
         /// <param name="dbTransaction">Transacition. Can be null. Ignored if NULL</param>
         /// <param name="dbCmdIn">Optional. See summary.</param>
-        /// <returns></returns>
+        /// <returns>New DbCommand and Object Context</returns>
         public Tuple<ObjectContext, DbCommand> DeleteEntity(ObjectContext entityContext, object deleteObject,
                 DbTransaction dbTransaction = null, DbCommand dbCmdIn = null)
         {
@@ -4035,7 +4377,7 @@ namespace B1.DataAccess
         /// </summary>
         /// <param name="entityContext">Object Context of entity.</param>
         /// <param name="oneTransaction">If true the compound command will be one database transcation.</param>
-        /// <returns></returns>
+        /// <returns>Updated Object Context</returns>
         public ObjectContext SaveContext(ObjectContext entityContext, bool oneTransaction)
         {
             IEnumerable<ObjectStateEntry> addedEntities = entityContext.ObjectStateManager.GetObjectStateEntries(
@@ -4125,9 +4467,9 @@ namespace B1.DataAccess
         /// <summary>
         /// Updates the entity object with FIRST ROW of data from the data reader.
         /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="reader"></param>
-        /// <returns></returns>
+        /// <param name="entity">Entity object</param>
+        /// <param name="reader">IDataReader object contains results of last database operation to apply to entity</param>
+        /// <returns>update entity collection</returns>
         internal object UpdateEntitiesFromReader(object entity, IDataReader reader)
         {
             return UpdateEntitiesFromReader(new List<object> { entity }, reader);
@@ -4136,9 +4478,9 @@ namespace B1.DataAccess
         /// <summary>
         /// Updates the entity objects with data from the data reader.
         /// </summary>
-        /// <param name="entities"></param>
-        /// <param name="reader"></param>
-        /// <returns></returns>
+        /// <param name="entities">Entity collection</param>
+        /// <param name="reader">IDataReader object contains results of last database operation to apply to entity</param>
+        /// <returns>update entity collection</returns>
         internal List<object> UpdateEntitiesFromReader(List<object> entities, IDataReader reader)
         {
             if(entities.Count == 0)
@@ -4244,7 +4586,7 @@ namespace B1.DataAccess
         /// Looks for special ISite implementation to use lambda member access to access any closures
         /// that were associated with the parameter.
         /// </summary>
-        /// <param name="dbCommand"></param>
+        /// <param name="dbCommand">The database command being executed</param>
         private void UpdateParameterValues(DbCommand dbCommand)
         {
             if(dbCommand.Site != null && dbCommand.Site is ParameterSite)

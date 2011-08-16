@@ -209,6 +209,13 @@ namespace B1.Utility.DatabaseSetup
 
             tbLoggingKey.Text = AppConfigMgr.GetValue(Constants.LoggingKey);
 
+            string engineId = AppConfigMgr.GetValueOrDefault("EngineId", null);
+            string assemblyPath = AppConfigMgr.GetValueOrDefault("TaskAssemblyPath", null);
+            string configId = AppConfigMgr.GetValueOrDefault("ConfigId", null);
+            tbConfigId.Text = configId;
+            tbTaskAssemblyPath.Text = assemblyPath;
+            tbEngineId.Text = engineId;
+
             tbMemFileDirectory.Text = Environment.CurrentDirectory;
             btnChgAppCtrl.Enabled = false;
             tbSignoffWarningMsg.Enabled = false;
@@ -535,7 +542,7 @@ namespace B1.Utility.DatabaseSetup
             }
         }
 
-        void CreateDbMgr()
+        internal void CreateDbMgr()
         {
             string connectionKey = tbConnectionKey.Text;
 
@@ -1771,11 +1778,17 @@ namespace B1.Utility.DatabaseSetup
         {
             btnStopTPE.Enabled = btnPauseTPE.Enabled = true;
             btnStartTPE.Enabled = false;
+            string engineId = AppConfigMgr.GetValue("EngineId");
+            string assemblyPath = AppConfigMgr.GetValue("TaskAssemblyPath");
+            string configId = AppConfigMgr.GetValueOrDefault("ConfigId", null);
+            tbConfigId.Text = configId;
+            tbTaskAssemblyPath.Text = assemblyPath;
+            tbEngineId.Text = engineId;
             if (_daMgr == null)
                 CreateDbMgr();
             if (_appSession == null)
                 StartAppSession();
-            _tpe = new TaskProcessingEngine(_daMgr, null, "TPE1", null, _appSession.SignonControl);
+            _tpe = new TaskProcessingEngine(_daMgr, assemblyPath, engineId, configId, _appSession.SignonControl);
             _tpe.Start();
         }
 
@@ -2223,11 +2236,17 @@ namespace B1.Utility.DatabaseSetup
         {
             if (_daMgr == null)
                 RefreshTPQ();
-            TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr, null);
+            TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr, null, _currentUserCode);
             DialogResult dr = taskAdmin.ShowDialog();
             if (dr == System.Windows.Forms.DialogResult.OK)
             {
-                _daMgr.ExecuteNonQuery(taskAdmin.GetDmlCmd(_currentUserCode), null, null);
+                Int32 rowsChanged = _daMgr.ExecuteNonQuery(TaskProcessingQueue.GetDmlCmd(
+                            _daMgr
+                            , null
+                            , taskAdmin.EditedColumns
+                            , _currentUserCode)
+                        , null
+                        , null);
                 RefreshTPQ();
             }
         }
@@ -2243,11 +2262,18 @@ namespace B1.Utility.DatabaseSetup
             else
             {
                 TaskProcessingQueueAdmin taskAdmin = new TaskProcessingQueueAdmin(_daMgr
-                        , (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row);
+                        , (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row
+                        , _currentUserCode);
                 DialogResult dr = taskAdmin.ShowDialog();
                 if (dr == System.Windows.Forms.DialogResult.OK)
                 {
-                    Int32 rowsChanged = _daMgr.ExecuteNonQuery(taskAdmin.GetDmlCmd(_currentUserCode), null, null);
+                    Int32 rowsChanged = _daMgr.ExecuteNonQuery(TaskProcessingQueue.GetDmlCmd(
+                                _daMgr
+                                , (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row
+                                , taskAdmin.EditedColumns
+                                , _currentUserCode)
+                            , null
+                            , null);
                     RefreshTPQ();
                 }
             }
@@ -2263,9 +2289,15 @@ namespace B1.Utility.DatabaseSetup
                 MessageBox.Show("No rows select. Please select");
             else
             {
-                DataRow dr = (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row;
-                _daMgr.ExecuteNonQuery(TaskProcessingQueueAdmin.GetDeleteQueueItemCmd(_daMgr, dr)
-                        , null, null);
+                DialogResult dlg =  MessageBox.Show("Are you sure you want to delete this queue item?"
+                        , "Delete Queue Item"
+                        , MessageBoxButtons.YesNo);
+                if (dlg == System.Windows.Forms.DialogResult.Yes)
+                {
+                    DataRow dr = (dgvTPQ.CurrentRow.DataBoundItem as DataRowView).Row;
+                    _daMgr.ExecuteNonQuery(TaskProcessingQueue.GetDeleteQueueItemCmd(_daMgr, dr)
+                            , null, null);
+                }
                 RefreshTPQ();
             }
         }

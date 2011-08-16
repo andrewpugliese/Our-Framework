@@ -31,7 +31,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
+            this.lblStatusDateTime = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.cbWaitForTasks = new System.Windows.Forms.CheckBox();
             this.dgvWaitForTasks = new System.Windows.Forms.DataGridView();
@@ -69,6 +69,9 @@
             this.cbWaitedDtNull = new System.Windows.Forms.CheckBox();
             this.cmbTaskId = new System.Windows.Forms.ComboBox();
             this.cbCompletedDtNull = new System.Windows.Forms.CheckBox();
+            this.btnDelDepTask = new System.Windows.Forms.Button();
+            this.btnChangeDepTask = new System.Windows.Forms.Button();
+            this.btnAddDepTask = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dgvWaitForTasks)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.nudIntervalRequeueSec)).BeginInit();
             this.groupBox1.SuspendLayout();
@@ -102,14 +105,14 @@
             this.label4.TabIndex = 3;
             this.label4.Text = "PriorityCode";
             // 
-            // label5
+            // lblStatusDateTime
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(721, 27);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(83, 13);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "StatusDateTime";
+            this.lblStatusDateTime.AutoSize = true;
+            this.lblStatusDateTime.Location = new System.Drawing.Point(721, 27);
+            this.lblStatusDateTime.Name = "lblStatusDateTime";
+            this.lblStatusDateTime.Size = new System.Drawing.Size(83, 13);
+            this.lblStatusDateTime.TabIndex = 4;
+            this.lblStatusDateTime.Text = "StatusDateTime";
             // 
             // label6
             // 
@@ -129,6 +132,7 @@
             this.cbWaitForTasks.TabIndex = 6;
             this.cbWaitForTasks.Text = "Wait For Other Tasks";
             this.cbWaitForTasks.UseVisualStyleBackColor = true;
+            this.cbWaitForTasks.CheckedChanged += new System.EventHandler(this.cbWaitForTasks_CheckedChanged);
             // 
             // dgvWaitForTasks
             // 
@@ -252,14 +256,16 @@
             // 
             // dtpWaitForDateTime
             // 
+            this.dtpWaitForDateTime.CustomFormat = "yyyy/MM/dd hh:mm:ss";
             this.dtpWaitForDateTime.Location = new System.Drawing.Point(904, 55);
             this.dtpWaitForDateTime.Name = "dtpWaitForDateTime";
             this.dtpWaitForDateTime.Size = new System.Drawing.Size(187, 20);
             this.dtpWaitForDateTime.TabIndex = 22;
-            this.dtpWaitForDateTime.Value = new System.DateTime(2011, 7, 12, 3, 49, 47, 0);
+            this.dtpWaitForDateTime.Value = new System.DateTime(2011, 7, 14, 0, 0, 0, 0);
             // 
             // dtpStartedDateTime
             // 
+            this.dtpStartedDateTime.CustomFormat = "yyyy/MM/dd hh:mm:ss";
             this.dtpStartedDateTime.Location = new System.Drawing.Point(288, 150);
             this.dtpStartedDateTime.Name = "dtpStartedDateTime";
             this.dtpStartedDateTime.Size = new System.Drawing.Size(179, 20);
@@ -267,13 +273,16 @@
             // 
             // dtpCompletedDateTime
             // 
-            this.dtpCompletedDateTime.Location = new System.Drawing.Point(490, 150);
+            this.dtpCompletedDateTime.CustomFormat = "yyyy/MM/dd hh:mm:ss";
+            this.dtpCompletedDateTime.Location = new System.Drawing.Point(490, 151);
             this.dtpCompletedDateTime.Name = "dtpCompletedDateTime";
-            this.dtpCompletedDateTime.Size = new System.Drawing.Size(183, 20);
+            this.dtpCompletedDateTime.Size = new System.Drawing.Size(202, 20);
             this.dtpCompletedDateTime.TabIndex = 24;
+            this.dtpCompletedDateTime.Value = new System.DateTime(2011, 7, 14, 10, 45, 0, 0);
             // 
             // dtpStatusDateTime
             // 
+            this.dtpStatusDateTime.CustomFormat = "yyyy/MM/dd hh:mm:ss";
             this.dtpStatusDateTime.Enabled = false;
             this.dtpStatusDateTime.Location = new System.Drawing.Point(721, 55);
             this.dtpStatusDateTime.Name = "dtpStatusDateTime";
@@ -461,7 +470,6 @@
             this.cbCompletedDtNull.AutoSize = true;
             this.cbCompletedDtNull.Checked = true;
             this.cbCompletedDtNull.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.cbCompletedDtNull.Enabled = false;
             this.cbCompletedDtNull.Location = new System.Drawing.Point(596, 116);
             this.cbCompletedDtNull.Name = "cbCompletedDtNull";
             this.cbCompletedDtNull.Size = new System.Drawing.Size(44, 17);
@@ -470,11 +478,44 @@
             this.cbCompletedDtNull.UseVisualStyleBackColor = true;
             this.cbCompletedDtNull.CheckedChanged += new System.EventHandler(this.cbCompletedDtNull_CheckedChanged);
             // 
+            // btnDelDepTask
+            // 
+            this.btnDelDepTask.Location = new System.Drawing.Point(448, 336);
+            this.btnDelDepTask.Name = "btnDelDepTask";
+            this.btnDelDepTask.Size = new System.Drawing.Size(142, 25);
+            this.btnDelDepTask.TabIndex = 206;
+            this.btnDelDepTask.Text = "Delete Dependent Task";
+            this.btnDelDepTask.UseVisualStyleBackColor = true;
+            this.btnDelDepTask.Click += new System.EventHandler(this.btnDelDepTask_Click);
+            // 
+            // btnChangeDepTask
+            // 
+            this.btnChangeDepTask.Location = new System.Drawing.Point(304, 336);
+            this.btnChangeDepTask.Name = "btnChangeDepTask";
+            this.btnChangeDepTask.Size = new System.Drawing.Size(140, 25);
+            this.btnChangeDepTask.TabIndex = 205;
+            this.btnChangeDepTask.Text = "Change Dependent Task";
+            this.btnChangeDepTask.UseVisualStyleBackColor = true;
+            this.btnChangeDepTask.Click += new System.EventHandler(this.btnChangeDepTask_Click);
+            // 
+            // btnAddDepTask
+            // 
+            this.btnAddDepTask.Location = new System.Drawing.Point(181, 336);
+            this.btnAddDepTask.Name = "btnAddDepTask";
+            this.btnAddDepTask.Size = new System.Drawing.Size(117, 25);
+            this.btnAddDepTask.TabIndex = 204;
+            this.btnAddDepTask.Text = "Add Dependant Task";
+            this.btnAddDepTask.UseVisualStyleBackColor = true;
+            this.btnAddDepTask.Click += new System.EventHandler(this.btnAddDepTask_Click);
+            // 
             // TaskProcessingQueueAdmin
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1106, 532);
+            this.Controls.Add(this.btnDelDepTask);
+            this.Controls.Add(this.btnChangeDepTask);
+            this.Controls.Add(this.btnAddDepTask);
             this.Controls.Add(this.cmbTaskId);
             this.Controls.Add(this.cbWaitedDtNull);
             this.Controls.Add(this.cbStartedDtNull);
@@ -507,7 +548,7 @@
             this.Controls.Add(this.dgvWaitForTasks);
             this.Controls.Add(this.cbWaitForTasks);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
+            this.Controls.Add(this.lblStatusDateTime);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -528,7 +569,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label lblStatusDateTime;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.CheckBox cbWaitForTasks;
         private System.Windows.Forms.DataGridView dgvWaitForTasks;
@@ -566,5 +607,8 @@
         private System.Windows.Forms.CheckBox cbWaitedDtNull;
         private System.Windows.Forms.ComboBox cmbTaskId;
         private System.Windows.Forms.CheckBox cbCompletedDtNull;
+        private System.Windows.Forms.Button btnDelDepTask;
+        private System.Windows.Forms.Button btnChangeDepTask;
+        private System.Windows.Forms.Button btnAddDepTask;
     }
 }

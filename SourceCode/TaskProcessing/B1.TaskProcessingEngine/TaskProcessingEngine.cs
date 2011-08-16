@@ -19,6 +19,7 @@ namespace B1.TaskProcessing
     internal struct TaskQueueStructure
     {
         public string TaskId;
+        public int TaskQueueCode;
         public string Parameters;
         public string AssemblyName;
         public string AssemblyPath;
@@ -93,6 +94,11 @@ namespace B1.TaskProcessing
             }
         }
 
+        int RecoverTasksInProcess()
+        {
+            return 0;
+        }
+
         /// <summary>
         /// Initiates the dequeing of tasks from the queue
         /// </summary>
@@ -126,9 +132,9 @@ namespace B1.TaskProcessing
                     }
                     foreach (DataRow queuedTask in queuedTasks.Rows)
                     {
-                        while (_tasksInProcess < _maxTaskProcesses)
+                        if (_tasksInProcess < _maxTaskProcesses)
                         {
-                            Int64? taskQueueCode = TaskReadyToProcess(queuedTask, new CacheMgr<Int64?>(), null);
+                            Int32? taskQueueCode = TaskReadyToProcess(queuedTask, new CacheMgr<Int32?>(), null);
                             TaskQueueStructure? newTask = taskQueueCode.HasValue ? DequeueTask(taskQueueCode.Value) 
                                     : null;
                             if (newTask.HasValue)
@@ -141,7 +147,7 @@ namespace B1.TaskProcessing
                                     _daMgr.loggingMgr.WriteToLog(e);
                                 }
                         }
-                        Thread.Sleep(500);
+                        else Thread.Sleep(500);
                     }
                     if (queuedTasks.Rows.Count < pageSize)
                         pageSize = 0;
@@ -156,6 +162,7 @@ namespace B1.TaskProcessing
                     if (waitResult == 1)
                         _resumeEvent.Reset();
                 }
+                else Thread.Sleep(1000);
             }
 
         }
@@ -169,6 +176,7 @@ namespace B1.TaskProcessing
                 , taskMetaData.TaskId
                 , _daMgr
                 , taskMetaData.TaskId
+                , taskMetaData.TaskQueueCode
                 , taskMetaData.Parameters
                 , new TaskProcess.TaskCompletedDelegate(TaskCompleted));
             return taskProcess;
@@ -179,13 +187,23 @@ namespace B1.TaskProcessing
             TaskProcess taskProcess = LoadTaskProcess(taskQueueData);
             lock (_taskCounterLock)
             {
-                _taskProcesses.Add(taskQueueData.ToString(), taskProcess);
+                _taskProcesses.Add(taskQueueData.TaskQueueCode.ToString(), taskProcess);
                 Thread taskProcessThread = new Thread(taskProcess.Start);
                 taskProcessThread.IsBackground = true;
-                _taskProcessThreads.Add(taskQueueData.TaskId, taskProcessThread);
+                _taskProcessThreads.Add(taskQueueData.TaskQueueCode.ToString(), taskProcessThread);
                 taskProcessThread.Start();
                 ++_tasksInProcess;
             }
+        }
+
+        public byte MaxTaskProcesses(sbyte delta)
+        {
+            if (delta != 0)
+            if (delta > 0 && (delta + _maxTaskProcesses) <= byte.MaxValue)
+                _maxTaskProcesses = Convert.ToByte(_maxTaskProcesses + delta);
+            if (delta < 0 && (delta + _maxTaskProcesses) > 0)
+                _maxTaskProcesses = Convert.ToByte(_maxTaskProcesses + delta);
+            return _maxTaskProcesses;
         }
 
         public void Stop()
@@ -219,13 +237,23 @@ namespace B1.TaskProcessing
                 , _engineStatus.ToString(), _maxTaskProcesses - _tasksInProcess, _tasksInProcess, Environment.NewLine);
         }
 
-        public void TaskCompleted(string taskId, TaskProcess.ProcessStatusEnum processStatus)
+        void TaskCompleted(int taskQueueCode, TaskProcess.ProcessStatusEnum processStatus)
         {
             lock (_taskCounterLock)
             {
-                _taskProcesses.Remove(taskId);
-                _taskProcessThreads.Remove(taskId);
-                --_tasksInProcess;
+                if (!_taskProcesses.Exists(taskQueueCode.ToString()))
+                    throw new ApplicationException("taskQueueCode not found");
+
+                _taskProcesses.Remove(taskQueueCode.ToString());
+
+                if (!_taskProcessThreads.Exists(taskQueueCode.ToString()))
+                    throw new ApplicationException("taskQueueCode not found");
+
+                _taskProcessThreads.Remove(taskQueueCode.ToString());
+                
+                if (_tasksInProcess > 0)
+                    --_tasksInProcess;
+                else throw new ApplicationException("tasksInProcess overflow");
             }
         }
 
@@ -251,13 +279,15 @@ namespace B1.TaskProcessing
         TaskQueueStructure? DequeueTask(Int64 taskQueueCode)
         {
 
-            _deQueueTask.Parameters[_daMgr.BuildParamName(DataAccess.Constants.PageSize)].Value = taskQueueCode;
+            _deQueueTask.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value = taskQueueCode;
+            _deQueueTask.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.ProcessEngineId)].Value = _engineId;
             DataTable dequeuedTask = _daMgr.ExecuteDataSet(_deQueueTask, null, null).Tables[0];
 
             if (dequeuedTask != null && dequeuedTask.Rows.Count > 0)
             {
                 TaskQueueStructure newTask = new TaskQueueStructure();
                 newTask.TaskId = dequeuedTask.Rows[0][TaskProcessing.Constants.TaskId].ToString();
+                newTask.TaskQueueCode = Convert.ToInt32(dequeuedTask.Rows[0][TaskProcessing.Constants.TaskQueueCode]);
                 newTask.Parameters = dequeuedTask.Rows[0][TaskProcessing.Constants.TaskParameters].ToString();
                 newTask.AssemblyName = dequeuedTask.Rows[0][TaskProcessing.Constants.AssemblyName].ToString();
                 newTask.AssemblyPath = _taskAssemblyPath;
@@ -266,38 +296,56 @@ namespace B1.TaskProcessing
             return null;
         }
 
-        Int64? TaskReadyToProcess(DataRow queuedTask,  CacheMgr<Int64?> taskDependencies, Int64? parentTask)
+        Int32? TaskReadyToProcess(DataRow queuedTask,  CacheMgr<Int32?> tasksVisited, Int32? parentTask)
         {
-            if (Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForNoUsers])
-            && !NoUsers)
+            if (!NoUsers
+                && Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForNoUsers]))
                 return null;
-            if (_engineId != queuedTask[TaskProcessing.Constants.WaitForEngineId].ToString())
+            if (queuedTask[TaskProcessing.Constants.WaitForEngineId] != DBNull.Value
+                && _engineId != queuedTask[TaskProcessing.Constants.WaitForEngineId].ToString())
                 return null;
-            if (_configId != queuedTask[TaskProcessing.Constants.WaitForConfigId].ToString())
+            if (queuedTask[TaskProcessing.Constants.WaitForConfigId] != DBNull.Value
+                && _configId != queuedTask[TaskProcessing.Constants.WaitForConfigId].ToString())
                 return null;
-            Int64 taskQueueCode = Convert.ToInt64(queuedTask[TaskProcessing.Constants.TaskQueueCode]);
-            
-            if (!taskDependencies.Exists(taskQueueCode.ToString()))
-                taskDependencies.Add(taskQueueCode.ToString(), parentTask);
-            else throw new ArgumentException("Circular Dependency found for task");
+            Int32 taskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.TaskQueueCode]);
+            bool waitForTasks = Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForTasks]);
 
-            if (Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForTasks]))
-                return TaskDependenciesCompleted(taskQueueCode, taskDependencies);
+            if (waitForTasks)
+            {
+                Int32 dependentTaskQueueCode = taskQueueCode;
+                if (queuedTask.Table.Columns.Contains(TaskProcessing.Constants.WaitTaskQueueCode))
+                    dependentTaskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.WaitTaskQueueCode]);
+
+                if (!tasksVisited.Exists(dependentTaskQueueCode.ToString()))
+                {
+                    tasksVisited.Add(dependentTaskQueueCode.ToString(), parentTask);
+                    if (!TaskDependenciesCompleted(dependentTaskQueueCode, tasksVisited))
+                        return null;
+                }
+                else
+                {
+                    string msg = string.Format("Circular Dependency found for task: {0}; Task Chain: {1}"
+                        , taskQueueCode, tasksVisited.Keys.ToString());
+                    throw new ArgumentException(msg);
+                }
+                
+            }
+
             return taskQueueCode;
         }
 
-        Int64? TaskDependenciesCompleted(Int64 taskQueueCode,  CacheMgr<Int64?> taskDependencies)
+        bool TaskDependenciesCompleted(Int32 taskQueueCode,  CacheMgr<Int32?> taskVisited)
         {
             _taskDependencies.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value 
                     = taskQueueCode;
             DataTable dependencyTasks = _daMgr.ExecuteDataSet(_taskDependencies, null, null).Tables[0];
             foreach (DataRow dependentTask in dependencyTasks.Rows)
             {
-                Int64? dependentTaskQueueCode = TaskReadyToProcess(dependentTask, taskDependencies, taskQueueCode);
+                Int32? dependentTaskQueueCode = TaskReadyToProcess(dependentTask, taskVisited, taskQueueCode);
                 if (!dependentTaskQueueCode.HasValue)
-                    return null;
+                    return false;
             }
-            return taskQueueCode;
+            return true;
         }
 
         void CacheDbCommands()
@@ -318,11 +366,10 @@ namespace B1.TaskProcessing
                     , TaskProcessing.Constants.StatusCode);
             dmlUpdate.AddColumn(TaskProcessing.Constants.StatusDateTime, Core.EnumDateTimeLocale.UTC);
             dmlUpdate.AddColumn(TaskProcessing.Constants.StartedDateTime, Core.EnumDateTimeLocale.UTC);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.ProcessEngineId);
             dmlUpdate.AddColumn(TaskProcessing.Constants.CompletedDateTime);
             dmlUpdate.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode)
-                    == w.Parameter(TaskProcessing.Constants.TaskQueueCode)
-                    && w.Column(TaskProcessing.Constants.ProcessEngineId) == w.Parameter(
-                        TaskProcessing.Constants.ProcessEngineId));
+                    == w.Parameter(TaskProcessing.Constants.TaskQueueCode));
             DbCommand cmdChange = _daMgr.BuildChangeDbCommand(dmlUpdate, TaskProcessing.Constants.StatusCode);
             cmdChange.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusCode, true)].Value
                     = Convert.ToByte(TaskProcessingQueue.StatusCodeEnum.InProcess);
@@ -332,6 +379,7 @@ namespace B1.TaskProcessing
                      , DataAccess.Constants.SCHEMA_CORE
                      , TaskProcessing.Constants.TaskProcessingQueue
                      , TaskProcessing.Constants.TaskId
+                     , TaskProcessing.Constants.TaskQueueCode
                      , TaskProcessing.Constants.TaskParameters
                      , TaskProcessing.Constants.ClearParametersAtEnd
                      , TaskProcessing.Constants.IntervalCount
@@ -363,7 +411,7 @@ namespace B1.TaskProcessing
             DbCommandMgr cmdMgr = new DbCommandMgr(_daMgr);
             DbTableDmlMgr dmlSelect = new DbTableDmlMgr(_daMgr
                      , DataAccess.Constants.SCHEMA_CORE
-                     , TaskProcessing.Constants.TaskDependencies
+                     , TaskProcessing.Constants.TaskProcessingQueue
                      , TaskProcessing.Constants.WaitForDateTime
                      , TaskProcessing.Constants.WaitForConfigId
                      , TaskProcessing.Constants.WaitForEngineId
@@ -372,12 +420,13 @@ namespace B1.TaskProcessing
                      , TaskProcessing.Constants.TaskQueueCode);
 
             dmlSelect.AddJoin(DataAccess.Constants.SCHEMA_CORE
-                    , TaskProcessing.Constants.TaskProcessingQueue
+                    , TaskProcessing.Constants.TaskDependencies
                     , DbTableJoinType.Inner
                     , j => j.Column(TaskProcessing.Constants.TaskProcessingQueue
                             , TaskProcessing.Constants.TaskQueueCode)
                         == j.Column(TaskProcessing.Constants.TaskDependencies
-                            , TaskProcessing.Constants.WaitTaskQueueCode)
+                            , TaskProcessing.Constants.TaskQueueCode)
+                    , TaskProcessing.Constants.WaitTaskQueueCode
                     , TaskProcessing.Constants.WaitTaskCompletionCode);
 
             dmlSelect.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode) 
@@ -391,10 +440,13 @@ namespace B1.TaskProcessing
         {
             DbTableDmlMgr dmlSelectMgr = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , TaskProcessing.Constants.TaskProcessingQueue
+                     , TaskProcessing.Constants.StatusCode
+                     , TaskProcessing.Constants.PriorityCode
                      , TaskProcessing.Constants.WaitForDateTime
                      , TaskProcessing.Constants.WaitForConfigId
                      , TaskProcessing.Constants.WaitForEngineId
                      , TaskProcessing.Constants.WaitForTasks
+                     , TaskProcessing.Constants.WaitForNoUsers
                      , TaskProcessing.Constants.TaskQueueCode);
             dmlSelectMgr.SetWhereCondition(w => w.Column(TaskProcessing.Constants.StatusCode)
                     == w.Value(Convert.ToByte(TaskProcessingQueue.StatusCodeEnum.Queued))

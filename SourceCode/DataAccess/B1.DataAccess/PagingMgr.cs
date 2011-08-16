@@ -20,32 +20,140 @@ namespace B1.DataAccess
     /// Paging Manager - This class encapsulates the functionality to retreive result set data
     /// from the database in tunable (pageSize) buffers (pages) with consistent, efficient
     /// access times for both forward and backward directions as well as first and last pages.
-    /// NOTE: This class does NOT perform a count of the result set because that would defeat
-    /// the purpose of scalability.  Therefore it is not possible to know how many
-    /// pages there are/will be in a result set.  In addition, the class does not provide
-    /// an interface for returning the 'nth page as this would not be efficient.
-    /// You can however choose to calculate a rowcount and perform some heuristic to simulate
-    /// the key of the n'th page.
-    /// 
+    /// <para>
     /// The functionality requires that queries use indexes, specifically unique indexes.
     /// The indexes are necessary for efficient data access therefore the class will 
     /// verify their existence and throw an exception if they are not defined properly.
-    /// 
+    /// </para>
+    /// <para>
     /// The queries written by the class (or passed in by the caller), must be written so
     /// that they have an execution plan that utilizes the index.  Once the page size has
     /// been fetched the query is stopped and the resources released.
-    /// 
+    /// </para>
+    /// <para>
     /// In addition, the result set of the queries must include the columns of the index
     /// used in the query, so that the class will have the pointers (values of the keys)
     /// to use in the subsequent query (>= for next;  etc).  The first and last page
     /// queries do not require key values so they can be different commands.  If there were
     /// 'magic values' (such as 0) then the same query can be used for next and first as well 
     /// as previous and last.
-    /// 
+    /// </para>
+    /// <para>
     /// The page size can be defined once at construction and remain consistent for all 
     /// subsequent queries; or it can be overwritten on each subsequent call for getting a page.
     /// To do this, the class adds a parameter to the dbCommands. (Constants.PageSize)
+    /// </para>
     /// </summary>
+    /// <remarks>
+    /// NOTE: This class does NOT perform a count of the result set because that would defeat
+    /// the purpose of scalability.  Therefore it is not possible to know how many
+    /// pages there are/will be in a result set.  In addition, the class does not provide
+    /// an interface for returning the 'nth page as this would also not be efficient.
+    /// You can however choose to calculate a rowcount and perform some heuristic to simulate
+    /// the key of the n'th page.
+    /// 
+    /// <para>Sample Paging SQL for SqlServer</para>
+    /// 
+    /// <para> Get First Page </para>
+    /// 
+    /// <para> SET ROWCOUNT @PAGESIZE</para>
+    /// <para> SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME</para>
+    /// <para> , T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC</para>
+    /// 
+    /// <para> Get Last Page </para>
+    /// 
+    /// <para> SET ROWCOUNT @PAGESIZE</para>
+    /// <para> SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME</para>
+    /// <para> , T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC</para>
+    /// 
+    /// <para> Get Previous Page </para>
+    /// 
+    /// <para> SET ROWCOUNT @PAGESIZE</para>
+    /// <para> SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME</para>
+    /// <para> , T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> WHERE T1.APPSEQUENCENAME &lt; @APPSEQUENCENAME OR (T1.APPSEQUENCENAME = @APPSEQUENCENAME AND T1.APPSEQUENCEID &lt; @APPSEQUENCEID)</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC</para>
+    /// 
+    /// <para> Get Next Page </para>
+    /// 
+    /// <para> SET ROWCOUNT @PAGESIZE</para>
+    /// <para> SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME</para>
+    /// <para> , T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> WHERE T1.APPSEQUENCENAME &lt; @APPSEQUENCENAME OR (T1.APPSEQUENCENAME = @APPSEQUENCENAME AND T1.APPSEQUENCEID &lt; @APPSEQUENCEID)</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC</para>
+    /// 
+    /// <para>Sample Paging SQL for Oracle</para>
+    /// 
+    /// <para> Get First Page </para>
+    /// 
+    /// <para> OPEN :REFCURSOR FOR SELECT * FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME</para>
+    /// <para> , T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM   B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC )</para>
+    /// <para> WHERE (:PAGESIZE = 0 OR (:PAGESIZE > 0 AND ROWNUM &lt;= :PAGESIZE)) ;</para>
+    /// 
+    /// <para> Get Last Page </para>
+    /// 
+    /// <para> OPEN :REFCURSOR FOR SELECT * FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME</para>
+    /// <para> , T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM   B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC )</para>
+    /// <para> WHERE (:PAGESIZE = 0 OR (:PAGESIZE > 0 AND ROWNUM &lt;= :PAGESIZE)) ;</para>
+    /// 
+    /// <para> Get Previous Page </para>
+    /// 
+    /// <para> OPEN :REFCURSOR FOR SELECT * FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME</para>
+    /// <para> , T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM   B1.TESTSEQUENCE T1</para>
+    /// <para> WHERE T1.APPSEQUENCENAME &lt; :APPSEQUENCENAME OR (T1.APPSEQUENCENAME = :APPSEQUENCENAME AND T1.APPSEQUENCEID &lt; :APPSEQUENCEID)</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC )</para>
+    /// <para> WHERE (:PAGESIZE = 0 OR (:PAGESIZE > 0 AND ROWNUM &lt;= :PAGESIZE)) ;</para>
+    /// 
+    /// <para> Get Next Page </para>
+    /// 
+    /// <para> OPEN :REFCURSOR FOR SELECT * FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID, T1.APPSYNCHTIME, T1.APPLOCALTIME</para>
+    /// <para> , T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM   B1.TESTSEQUENCE T1</para>
+    /// <para> WHERE T1.APPSEQUENCENAME &lt; :APPSEQUENCENAME OR (T1.APPSEQUENCENAME = :APPSEQUENCENAME AND T1.APPSEQUENCEID &lt; :APPSEQUENCEID)</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC )</para>
+    /// <para> WHERE (:PAGESIZE = 0 OR (:PAGESIZE > 0 AND ROWNUM &lt;= :PAGESIZE)) ;</para>
+    /// 
+    /// <para>Sample Paging SQL for DB2/UDB</para>
+    /// 
+    /// <para> Get First Page </para>
+    /// 
+    /// <para> SELECT APPSEQUENCEID, DBSEQUENCEID, APPSYNCHTIME, APPLOCALTIME, DBSERVERTIME, APPSEQUENCENAME, REMARKS</para>
+    /// <para> , EXTRADATA  FROM (SELECT X.*, ROW_NUMBER() OVER () AS ROW_NUM FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID</para>
+    /// <para> , T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME ASC ,T1.APPSEQUENCEID ASC ) X ) Y </para>
+    /// <para> WHERE (@PAGESIZE = 0 OR (@PAGESIZE > 0 AND Y.ROW_NUM &lt;= @PAGESIZE))</para>
+    /// 
+    /// <para> Get Last Page </para>
+    /// 
+    /// <para> SELECT APPSEQUENCEID, DBSEQUENCEID, APPSYNCHTIME, APPLOCALTIME, DBSERVERTIME, APPSEQUENCENAME, REMARKS</para>
+    /// <para> , EXTRADATA  FROM (SELECT X.*, ROW_NUMBER() OVER () AS ROW_NUM FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID</para>
+    /// <para> , T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC ) X ) Y </para>
+    /// <para> WHERE (@PAGESIZE = 0 OR (@PAGESIZE > 0 AND Y.ROW_NUM &lt;= @PAGESIZE))</para>
+    /// 
+    /// <para> Get Previous Page </para>
+    /// 
+    /// <para> SELECT APPSEQUENCEID, DBSEQUENCEID, APPSYNCHTIME, APPLOCALTIME, DBSERVERTIME, APPSEQUENCENAME, REMARKS</para>
+    /// <para> , EXTRADATA  FROM (SELECT X.*, ROW_NUMBER() OVER () AS ROW_NUM FROM (SELECT T1.APPSEQUENCEID, T1.DBSEQUENCEID</para>
+    /// <para> , T1.APPSYNCHTIME, T1.APPLOCALTIME, T1.DBSERVERTIME, T1.APPSEQUENCENAME, T1.REMARKS, T1.EXTRADATA</para>
+    /// <para> FROM B1.TESTSEQUENCE T1</para>
+    /// <para> WHERE T1.APPSEQUENCENAME &lt; @APPSEQUENCENAME OR (T1.APPSEQUENCENAME = @APPSEQUENCENAME AND T1.APPSEQUENCEID &lt; @APPSEQUENCEID)</para>
+    /// <para> ORDER BY T1.APPSEQUENCENAME DESC ,T1.APPSEQUENCEID DESC ) X ) Y </para>
+    /// <para> WHERE (@PAGESIZE = 0 OR (@PAGESIZE > 0 AND Y.ROW_NUM &lt;= @PAGESIZE))</para>
+    /// </remarks>
     public class PagingMgr
     {
         /// <summary>
@@ -61,7 +169,12 @@ namespace B1.DataAccess
         Int16 _pageSize = CONST_DefaultPageSize;
         string _pageSizeParam = null;
         int _paramOffset = 0;
+        /// <summary>
+        /// Paging Direction Enumeration
+        /// </summary>
+#pragma warning disable 1591 // disable the xmlComments warning
         public enum PagingDbCmdEnum { First, Last, Next, Previous };
+#pragma warning restore 1591 // restore the xmlComments warning
 
         DbCommand _dbCmdFirstPage = null;
         DbCommand _dbCmdLastPage = null;
@@ -126,8 +239,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Constructor that accepts a fully qualified table name and builds the paging commands
         /// for forward/backward paging using the PrimaryKey of the table.
+        /// <para>
         /// NOTE:
         /// If the table does not have a primary key, this contructor will raise an exception
+        /// </para>
         /// </summary>
         /// <param name="dataAccessManager">DataAccessMgr class pointer</param>
         /// <param name="dbTable">catalog metadata about the table; including which columns to select</param>
@@ -170,8 +285,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Constructor that accepts a fully qualified table name and builds the paging commands
         /// for forward/backward paging using the PrimaryKey of the table.
+        /// <para>
         /// NOTE:
         /// If the table does not have a primary key, this contructor will raise an exception
+        /// </para>
         /// </summary>
         /// <param name="dataAccessManager">DataAccessMgr class pointer</param>
         /// <param name="fullyQualifiedTableName">Fully qualified table name to perform paging on</param>
@@ -197,8 +314,10 @@ namespace B1.DataAccess
         /// <summary>
         /// Constructor that accepts catalog metadata structure for the table and builds the paging commands
         /// for forward/backward paging using the PrimaryKey of the table.
+        /// <para>
         /// NOTE:
         /// If the table does not have a primary key, this contructor will raise an exception
+        /// </para>
         /// </summary>
         /// <param name="dataAccessManager">DataAccessMgr class pointer</param>
         /// <param name="dbTable">catalog metadata about the table; including which columns to select</param>
@@ -219,12 +338,15 @@ namespace B1.DataAccess
                 , pagingState)
         {
         }
+
         /// <summary>
         /// Constructor that accepts a fully qualified table name and builds the paging commands
         /// for forward/backward paging using the given column list.
+        /// <para>
         /// NOTE:
         /// If the table does not have an index (including primary key), that covers the columns 
         /// given to this contructor, it will raise an exception.
+        /// </para>
         /// </summary>
         /// <param name="dataAccessManager">DataAccessMgr class pointer</param>
         /// <param name="fullyQualifiedTableName">Fully qualified table name to perform paging on</param>
@@ -409,6 +531,15 @@ namespace B1.DataAccess
             Initialize(dbCmdFirstPage, dbCmdLastPage, dbCmdNextPage, dbCmdPreviousPage);
         }
 
+        /// <summary>
+        /// Function will verify that the given list of index columns is covered by an existing unique index
+        /// of the table or the primary key.
+        /// </summary>
+        /// <param name="dbTable">DbTableStructure object</param>
+        /// <param name="indexColumns">optional list of column names</param>
+        /// <returns>A list of column names of an index to use for the query</returns>
+        /// <exception cref="ExceptionEvent">Exception with ExceptionEventCodes.DbTablePrimaryKeyUndefined code</exception>
+        /// <exception cref="ExceptionEvent">Exception with ExceptionEventCodes.DbTableIndexNotFound code</exception>
         List<string> VerifyIndexColumns(DbTableStructure dbTable
                 , List<string> indexColumns)
         {
@@ -445,6 +576,12 @@ namespace B1.DataAccess
             return indexColumns;
         }
 
+        /// <summary>
+        /// Determines if given column list is covered by an index of the given table
+        /// </summary>
+        /// <param name="dbTable">DbTableStructure object to check</param>
+        /// <param name="indexColumns">List of columns that require a covering index</param>
+        /// <returns>boolean indicating if given column list is covered by an index of the given table</returns>
         bool VerifyIndex(DbTableStructure dbTable
                 , List<string> indexColumns)
         {
@@ -474,15 +611,6 @@ namespace B1.DataAccess
             return false;
         }
 
-        DbCommand GetPageDbCmd( PagingDbCmdEnum pagingDbCmd
-                , DbTableStructure dbTable
-                , List<string> indexColumns )
-        {
-            return GetPageDbCmd(pagingDbCmd, 
-                    _daMgr.DbCatalogGetTableDmlMgr( dbTable.FullyQualifiedName, dbTable.Columns.Keys.ToArray() ),
-                    indexColumns);
-        }
-
         Expression GetPagingWhereClause(PagingDbCmdEnum pagingDbCmd,
             string tableName, List<string> indexColumns)
         {
@@ -491,8 +619,6 @@ namespace B1.DataAccess
             Expression expr;
             Expression exprAnd;
             Expression exprWhere = null;
-            //DbTableDmlMgr dbTableDml = new DbTableDmlMgr(dbTableDmlSelect);
-            //dbTableDml.OrderByColumns.Clear();
 
             columnIndex = -1;
             foreach (string column in indexColumns)
@@ -501,12 +627,6 @@ namespace B1.DataAccess
 
                 if (!_pageKeys.ContainsKey(column))
                     _pageKeys.Add(column, column);
-
-                //if (pagingDbCmd == PagingDbCmdEnum.First
-                //        || pagingDbCmd == PagingDbCmdEnum.Next)
-                //    dbTableDml.AddOrderByColumnAscending(column);
-                //else
-                //    dbTableDml.AddOrderByColumnDescending(column);
 
                 if (pagingDbCmd == PagingDbCmdEnum.Next || pagingDbCmd == PagingDbCmdEnum.Previous)
                 {
@@ -551,12 +671,15 @@ namespace B1.DataAccess
             }
 
             return exprWhere;
-            //if (exprWhere != null && dbTableDml._whereCondition == null)
-            //    dbTableDml.SetWhereCondition(exprWhere);
-            //else if (exprWhere != null)
-            //    dbTableDml.AddToWhereCondition(ExpressionType.AndAlso, exprWhere);
+        }
 
-            //return _daMgr.BuildSelectDbCommand(dbTableDml, _pageSizeParam);
+        DbCommand GetPageDbCmd(PagingDbCmdEnum pagingDbCmd
+                , DbTableStructure dbTable
+                , List<string> indexColumns)
+        {
+            return GetPageDbCmd(pagingDbCmd,
+                    _daMgr.DbCatalogGetTableDmlMgr(dbTable.FullyQualifiedName, dbTable.Columns.Keys.ToArray()),
+                    indexColumns);
         }
 
         DbCommand GetPageDbCmd( PagingDbCmdEnum pagingDbCmd
@@ -635,7 +758,6 @@ namespace B1.DataAccess
             return _daMgr.BuildSelectDbCommand( dbTableDml, _pageSizeParam );
         }
 
-
         void Initialize(DbCommand dbCmdFirstPage
                 , DbCommand dbCmdLastPage
                 , DbCommand dbCmdNextPage
@@ -647,9 +769,14 @@ namespace B1.DataAccess
             _dbCmdNextPage = dbCmdNextPage;
         }
 
-
+        /// <summary>
+        /// Stores the key item values from the given data buffer
+        /// </summary>
+        /// <param name="newPage">A DataTable object of new data</param>
+        /// <returns>The given data buffer</returns>
         DataTable ProcessNewPage(DataTable newPage)
         {
+            // only if there was data in the buffer
             if (newPage != null
                 && newPage.Rows.Count > 0)
             {
@@ -660,12 +787,24 @@ namespace B1.DataAccess
             return newPage;
         }
 
+        /// <summary>
+        /// Sets the key item values (column values) for the page based upon the given DataRow of data
+        /// </summary>
+        /// <param name="pageItem">The page's collection of key value pairs</param>
+        /// <param name="itemRow">The new DataRow of data</param>
         void SetKeyItemValues(Dictionary<string, object> pageItem, DataRow itemRow)
         {
             foreach (string pageKey in _pageKeys.Keys)
                 pageItem[pageKey] = itemRow[pageKey];
         }
 
+        /// <summary>
+        /// Sets the key item values (column values) for the page based upon the given entity object
+        /// and property information from reflection
+        /// </summary>
+        /// <param name="pageItem">The page's collection of key value pairs</param>
+        /// <param name="propertyDic">Dictionary of property name and reflection info</param>
+        /// <param name="rowObject">Entity Framework entity object</param>
         void SetKeyItemValues(Dictionary<string, object> pageItem, Dictionary<string, PropertyInfo> propertyDic,
                 object rowObject)
         {
@@ -673,6 +812,12 @@ namespace B1.DataAccess
                 pageItem[pageKey] = propertyDic[pageKey].GetValue(rowObject, null);
         }
 
+        /// <summary>
+        /// Sets the key item values (column values) for the page based upon the given 
+        /// dynamic object or entity object (from Entity Framework)
+        /// </summary>
+        /// <param name="pageItem">The page's collection of key value pairs</param>
+        /// <param name="rowObject">Dynamic object or Entity Framework entity object</param>
         void SetKeyItemValues(Dictionary<string, object> pageItem, object rowObject)
         {
             if (rowObject is IDynamicMetaObjectProvider)
@@ -691,7 +836,10 @@ namespace B1.DataAccess
         }
 
         /// <summary>
-        /// GetPage returns the buffer for the given paging direction.
+        /// Returns a new page of data based upon the given direction and page size
+        /// <param name="pagingDirection">Enumeration: first, last, previous, next</param>
+        /// <param name="pageSize">Optional page size; null indicates use default</param>
+        /// <returns>New page of data as DataTable</returns>
         /// </summary>
         public DataTable GetPage(PagingDbCmdEnum pagingDirection, Int16? pageSize = null)
         {

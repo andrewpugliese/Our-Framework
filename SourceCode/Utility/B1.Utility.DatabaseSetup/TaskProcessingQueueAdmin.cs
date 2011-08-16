@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Data.Common;
 
 using B1.DataAccess;
+using B1.ILoggingManagement;    
 
 namespace B1.Utility.DatabaseSetup
 {
@@ -18,98 +19,24 @@ namespace B1.Utility.DatabaseSetup
         DataRow _taskQueueItem = null;
         Dictionary<string, object> _editedColumns = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
         DataTable _taskIds = null;
+        Int32? _userCode = null;
         
-        public TaskProcessingQueueAdmin(DataAccessMgr daMgr, DataRow taskQueueItem)
+        public TaskProcessingQueueAdmin(DataAccessMgr daMgr, DataRow taskQueueItem, Int32? userCode)
         {
             InitializeComponent();
+            dtpStatusDateTime.Format  = dtpCompletedDateTime.Format = dtpStartedDateTime.Format = dtpWaitForDateTime.Format 
+                    = DateTimePickerFormat.Custom;
+            dtpStatusDateTime.CustomFormat = dtpCompletedDateTime.CustomFormat = dtpStartedDateTime.CustomFormat 
+                    = dtpWaitForDateTime.CustomFormat = "yyyy/MM/dd hh:mm:ss";
             _daMgr = daMgr;
             _taskQueueItem = taskQueueItem;
+            _userCode = userCode;
             PopulateForm();   
-        }
-
-        public static DbCommand GetDeleteQueueItemCmd(DataAccessMgr daMgr, DataRow taskQueueItem)
-        {
-            if (taskQueueItem == null
-                || !taskQueueItem.Table.Columns.Contains(TaskProcessing.Constants.TaskQueueCode))
-                throw new ArgumentException();
-            DbTableDmlMgr dmlMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
-                        , TaskProcessing.Constants.TaskProcessingQueue);
-            dmlMgr.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode) 
-                    == w.Parameter(TaskProcessing.Constants.TaskQueueCode));
-            DbCommand dbCmd = daMgr.BuildDeleteDbCommand(dmlMgr);
-            dbCmd.Parameters[daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value 
-                    = Convert.ToInt32(taskQueueItem[TaskProcessing.Constants.TaskQueueCode]);
-            return dbCmd;
         }
 
         public Dictionary<string, object> EditedColumns
         {
             get { return _editedColumns; }
-        }
-
-        public DbCommand GetDmlCmd(Int32? userCode = null)
-        {
-            DbCommand dbCmd = null;
-            DbTableDmlMgr dmlMgr = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
-                        , TaskProcessing.Constants.TaskProcessingQueue);
-
-            foreach(string column in _editedColumns.Keys)
-                dmlMgr.AddColumn(column);
-            if (_taskQueueItem == null) // add new item
-            {
-                dmlMgr.AddColumn(TaskProcessing.Constants.LastModifiedUserCode);
-                dmlMgr.AddColumn(TaskProcessing.Constants.LastModifiedDateTime);
-                dbCmd = _daMgr.BuildInsertDbCommand(dmlMgr);
-            }
-
-            else dbCmd = _daMgr.BuildChangeDbCommand(dmlMgr, TaskProcessing.Constants.LastModifiedUserCode
-                    , TaskProcessing.Constants.LastModifiedDateTime);
-
-            foreach (string column in _editedColumns.Keys)
-                dbCmd.Parameters[_daMgr.BuildParamName(column)].Value
-                        = _editedColumns[column];
-
-            if (_taskQueueItem == null) // add new
-            {
-                if (userCode.HasValue)
-                {
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedUserCode)].Value
-                        = userCode.Value;
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedDateTime)].Value
-                        = _daMgr.DbSynchTime;
-                }
-                else
-                {
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedUserCode)].Value
-                        = DBNull.Value;
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedDateTime)].Value
-                        = DBNull.Value;
-                }
-            }
-            else  // change; where condition params
-            {
-                dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedUserCode)].Value
-                    = _taskQueueItem[TaskProcessing.Constants.LastModifiedUserCode];
-                dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedDateTime)].Value
-                    = _taskQueueItem[TaskProcessing.Constants.LastModifiedDateTime];
-                // set portion of the update
-                if (userCode.HasValue)
-                {
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedUserCode, true)].Value
-                        = userCode.Value;
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedDateTime, true)].Value
-                        = _daMgr.DbSynchTime;
-                }
-                else
-                {
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedUserCode, true)].Value
-                        = DBNull.Value;
-                    dbCmd.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastModifiedDateTime, true)].Value
-                        = DBNull.Value;
-                }
-            }
-
-            return dbCmd;
         }
 
         void PopulateForm()
@@ -121,6 +48,10 @@ namespace B1.Utility.DatabaseSetup
                 btnSave.Text = "Add";
                 tbTaskQueueCode.Text 
                         = _daMgr.GetNextUniqueId(TaskProcessing.Constants.TaskQueueCode, 1, Int32.MaxValue, 1).ToString();
+                dtpCompletedDateTime.Enabled = dtpStartedDateTime.Enabled = dtpWaitForDateTime.Enabled = false;
+                cbCompletedDtNull.Checked = cbStartedDtNull.Checked = cbWaitedDtNull.Checked = true;
+                dtpStatusDateTime.Visible = lblStatusDateTime.Visible = false;
+                cbWaitForTasks.Enabled = btnDelDepTask.Enabled = btnAddDepTask.Enabled = btnChangeDepTask.Enabled = false;
             }
             else // change item
             {
@@ -147,17 +78,29 @@ namespace B1.Utility.DatabaseSetup
 
                 if (_taskQueueItem[TaskProcessing.Constants.CompletedDateTime] != DBNull.Value)
                     dtpCompletedDateTime.Value = Convert.ToDateTime(_taskQueueItem[TaskProcessing.Constants.CompletedDateTime]);
-                else cbCompletedDtNull.Checked = true;
+                else
+                {
+                    cbCompletedDtNull.Checked = true;
+                    dtpCompletedDateTime.Enabled = false;
+                }
 
                 dtpStatusDateTime.Value = Convert.ToDateTime(_taskQueueItem[TaskProcessing.Constants.StatusDateTime]);
 
                 if (_taskQueueItem[TaskProcessing.Constants.StartedDateTime] != DBNull.Value)
                     dtpStartedDateTime.Value = Convert.ToDateTime(_taskQueueItem[TaskProcessing.Constants.StartedDateTime]);
-                else cbStartedDtNull.Checked = true;
+                else
+                {
+                    cbStartedDtNull.Checked = true;
+                    dtpStartedDateTime.Enabled = false;
+                }
 
                 if (_taskQueueItem[TaskProcessing.Constants.WaitForDateTime] != DBNull.Value)
                     dtpWaitForDateTime.Value = Convert.ToDateTime(_taskQueueItem[TaskProcessing.Constants.WaitForDateTime]);
-                else cbWaitedDtNull.Checked = true;
+                else
+                {
+                    cbWaitedDtNull.Checked = true;
+                    dtpWaitForDateTime.Enabled = false;
+                }
 
                 tbTaskParams.Text = _taskQueueItem[TaskProcessing.Constants.TaskParameters].ToString();
                 tbTaskRemarks.Text = _taskQueueItem[TaskProcessing.Constants.TaskRemark].ToString();
@@ -168,6 +111,7 @@ namespace B1.Utility.DatabaseSetup
                     cbWaitNoUsers.Checked = Convert.ToBoolean(_taskQueueItem[TaskProcessing.Constants.WaitForNoUsers]);
 
                 cbWaitForTasks.Checked = Convert.ToBoolean(_taskQueueItem[TaskProcessing.Constants.WaitForTasks]);
+                btnAddDepTask.Enabled = btnChangeDepTask.Enabled = btnDelDepTask.Enabled = cbWaitForTasks.Checked;
 
                 tbIntervalCount.Text = _taskQueueItem[TaskProcessing.Constants.IntervalCount].ToString();
                 if (_taskQueueItem[TaskProcessing.Constants.IntervalSecondsRequeue] != DBNull.Value)
@@ -245,7 +189,7 @@ namespace B1.Utility.DatabaseSetup
                 if (!_taskQueueItem[TaskProcessing.Constants.TaskId].ToString().Equals(
                     cmbTaskId.SelectedItem.ToString()))
                     _editedColumns.Add(TaskProcessing.Constants.TaskId
-                            , _taskQueueItem[TaskProcessing.Constants.TaskId]);
+                            , cmbTaskId.SelectedItem);
 
                 if (!_taskQueueItem[TaskProcessing.Constants.PriorityCode].ToString().Equals(
                     Convert.ToByte(nudPriority.Value).ToString()))
@@ -288,6 +232,11 @@ namespace B1.Utility.DatabaseSetup
                         != cbWaitNoUsers.Checked)
                     _editedColumns.Add(TaskProcessing.Constants.WaitForNoUsers
                             , cbWaitNoUsers.Checked);
+
+                if (Convert.ToBoolean(_taskQueueItem[TaskProcessing.Constants.WaitForTasks])
+                        != cbWaitForTasks.Checked)
+                    _editedColumns.Add(TaskProcessing.Constants.WaitForTasks
+                            , cbWaitForTasks.Checked);
 
                 if (Convert.ToBoolean(_taskQueueItem[TaskProcessing.Constants.ClearParametersAtEnd])
                         != cbClearParam.Checked)
@@ -367,6 +316,88 @@ namespace B1.Utility.DatabaseSetup
                 foreach (DataRow taskId in _taskIds.Rows)
                     cmbTaskId.Items.Add(taskId[TaskProcessing.Constants.TaskId].ToString());
             }
+        }
+
+        private void cbWaitForTasks_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbWaitForTasks.Checked)
+            {
+                btnAddDepTask.Enabled = btnChangeDepTask.Enabled = btnDelDepTask.Enabled = dgvWaitForTasks.Enabled = true;
+                RefreshDependentTasks();
+            }
+            else btnAddDepTask.Enabled = btnChangeDepTask.Enabled = btnDelDepTask.Enabled = dgvWaitForTasks.Enabled = false;
+        }
+
+        void RefreshDependentTasks()
+        {
+            dgvWaitForTasks.DataSource = TaskProcessing.TaskProcessingQueue.TaskDependenciesList(_daMgr, Convert.ToInt32(tbTaskQueueCode.Text));
+            dgvWaitForTasks.Refresh();
+        }
+
+        private void btnAddDepTask_Click(object sender, EventArgs e)
+        {
+            DependentTaskAdmin taskAdmin = new DependentTaskAdmin(_daMgr, tbTaskQueueCode.Text, null);
+            DialogResult dr = taskAdmin.ShowDialog();
+            if (dr == System.Windows.Forms.DialogResult.OK)
+            {
+                Int32 rowsChanged = _daMgr.ExecuteNonQuery(TaskProcessing.TaskProcessingQueue.GetDependencyDmlCmd(
+                            _daMgr
+                            , null
+                            , taskAdmin.EditedColumns
+                            , _userCode)
+                        , null
+                        , null);
+                RefreshDependentTasks();
+            }
+        }
+
+        private void btnChangeDepTask_Click(object sender, EventArgs e)
+        {
+            if (dgvWaitForTasks.RowCount == 0)
+                MessageBox.Show("No rows found, nothing to change.");
+            else if (dgvWaitForTasks.SelectedRows.Count == 0)
+                MessageBox.Show("No rows select. Please select");
+            else
+            {
+                DependentTaskAdmin taskAdmin = new DependentTaskAdmin(_daMgr
+                        , tbTaskQueueCode.Text
+                        , (dgvWaitForTasks.CurrentRow.DataBoundItem as DataRowView).Row);
+                DialogResult dr = taskAdmin.ShowDialog();
+                if (dr == System.Windows.Forms.DialogResult.OK)
+                {
+                    Int32 rowsChanged = _daMgr.ExecuteNonQuery(TaskProcessing.TaskProcessingQueue.GetDependencyDmlCmd(
+                                _daMgr
+                                , (dgvWaitForTasks.CurrentRow.DataBoundItem as DataRowView).Row
+                                , taskAdmin.EditedColumns
+                                , _userCode)
+                            , null
+                            , null);
+                    RefreshDependentTasks();
+                }
+             }
+
+        }
+
+        private void btnDelDepTask_Click(object sender, EventArgs e)
+        {
+            if (dgvWaitForTasks.RowCount == 0)
+                MessageBox.Show("No rows found, nothing to delete.");
+            else if (dgvWaitForTasks.SelectedRows.Count == 0)
+                MessageBox.Show("No rows select. Please select");
+            else
+            {
+                DialogResult dlg = MessageBox.Show("Are you sure you want to delete this queue item?"
+                        , "Delete Queue Item"
+                        , MessageBoxButtons.YesNo);
+                if (dlg == System.Windows.Forms.DialogResult.Yes)
+                {
+                    DataRow dr = (dgvWaitForTasks.CurrentRow.DataBoundItem as DataRowView).Row;
+                    _daMgr.ExecuteNonQuery(TaskProcessing.TaskProcessingQueue.GetDeleteDependencyTaskCmd(_daMgr, dr)
+                            , null, null);
+                }
+                RefreshDependentTasks();
+            }
+
         }
     }
 }

@@ -40,7 +40,7 @@ namespace B1.DataAccess
 #pragma warning restore 1591 // disable the xmlComments warning
 
      /// <summary>
-    /// Contains the information for joining to a table.
+    /// Contains the information for joining to a table or inline view (sub select).
     /// </summary>
     public class DbTableJoin 
     {
@@ -90,6 +90,7 @@ namespace B1.DataAccess
         /// Instantiate a DbTableJoin class for defining a join to an inline view or query.
         /// </summary>
         /// <param name="inlineView">DbTableDmlMgr instance for a inline view or query</param>
+        /// <param name="alias">A user defined table alias</param>
         /// <param name="joinType">Type of join</param>
         /// <param name="joinPredicate">Join predicate, i.e, SQL ON conditions</param>
         /// <param name="selectColumns">Columns for select.</param>
@@ -162,7 +163,8 @@ namespace B1.DataAccess
                 JoinPredicate._newJoinTable = this;
 
             if (selectColumns != null & selectColumns.Count() > 0)
-                SelectColumns = selectColumns.ToDictionary(item => item.ToString(), item => item, StringComparer.CurrentCultureIgnoreCase);
+                SelectColumns = selectColumns.ToDictionary(item => item.ToString(), item => item
+                        , StringComparer.CurrentCultureIgnoreCase);
             else
                 SelectColumns = tableStruct.Row.ToDictionary(kvp => kvp.Value
                         , kvp => (object)kvp.Value, StringComparer.CurrentCultureIgnoreCase);
@@ -569,6 +571,7 @@ namespace B1.DataAccess
         /// <param name="inlineView">A reference to DbTableDmlMgr object with describes the inline view</param>
         /// <param name="type">Join type (inner, outer, cross)</param>
         /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">List of columns to select</param>
         /// <returns></returns>
         public string AddJoin(DbTableDmlMgr inlineView
                 , DbTableJoinType type
@@ -585,6 +588,7 @@ namespace B1.DataAccess
         /// <param name="alias">An optional alias for the join; if null one will be generated</param>
         /// <param name="type">Join Type (e.g. inner, outer, cross)</param>
         /// <param name="predicate">Join expression</param>
+        /// <param name="selectColumns">List of columns to select</param>
         /// <returns>Newly joined inLineView alias.</returns>
         public string AddJoin(DbTableDmlMgr inlineView
                 , string alias

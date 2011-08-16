@@ -63,19 +63,28 @@ Andrew Pugliese
 		- modify flag columns to boolean columns
 		- Remove old LModKey from new tables
 		- Remove new LModKey from old tables //??
+		- Write recursive query to check for cyclic task dependencies
 	- DbSetup - Test TaskProcessingFramework Tab
-		- View/Change/Delete QueueItems
 		- Test TaskProcessingEngine
-		- Refactor TaskProcessingFunctions namespace
+		- Startup query to reset items in process (recovery)
+		- Check for _taskInProcess < 0
+		- Check that taskCompleted contains taskQueueCode
+			- Add new exception events
+				invalid TaskQueueCode, taskQueueCode not found, ...
+		- Verify SingleSignon for TPE
+		
 	- Administrative Screens (Task Registrations)
 	- Create TaskProcessingEngine Application
+		- WPF/WCF
 	- Create TaskProcessingEngine Service
+		- WCF
 	- QueueManager base class
 		- construct with tableName and number threads
 		- push
 		- pop (with delegate)
 		- stop, start, pause, resume
 
-Not Assigned
+Not Assigned (Controls)
 	- DateTimePicker with Null value
 	- ComboBox (scrollable)
+	- GridControl (WPF)
