@@ -13,6 +13,10 @@ using B1.CacheManagement;
 
 namespace B1.DataAccess
 {
+    /// <summary>
+    /// This class caches the entity logical and physical storage information and mappings. Also caches the object
+    /// context for all the entity types encounter.
+    /// </summary>
     internal class EntityContextCache
     {
         // Context cache - key is the name of the .NET fully qualified class name for the ObjectContext
@@ -84,12 +88,32 @@ namespace B1.DataAccess
             return StorageMetaData.Get(GetMappingTypeName(dotNetEntityType, defaultContext));
         }
 
+        /// <summary>
+        /// This function checks if the entity meta data is already cached for the given context. If it is not
+        /// then it does it by looking into the assembly file.
+        /// </summary>
+        /// <param name="context">Object context</param>
         public static void EnsureStorageMetaData(ObjectContext context)
         {
             Assembly assembly = Assembly.GetAssembly(context.GetType());
             _assembliesLoaded.GetOrAdd(assembly.FullName, () => LoadMetaDataFromAssembly(assembly));
         }
 
+        /// <summary>
+        /// This function is loading up the meta data information from the assembly about the entities, its storage name
+        /// and its logical mapping information. This information is cached so that the subsequent queries do not need to
+        /// lookup these meta data. The entity framework adds the following xml meta data resource files into the assembly of
+        /// the context class:
+        /// 
+        ///     .csdl   : Conceptual schema definition language
+        ///     .ssdl   : Storage schema definition language
+        ///     .msl    : Mapping specification language
+        ///     
+        /// Respectively these files describes the conceptual model, storage model, and the mapping between these models
+        /// 
+        /// </summary>
+        /// <param name="contextAssembly">Assembly where the context code reside.</param>
+        /// <returns></returns>
         private static Assembly LoadMetaDataFromAssembly(Assembly contextAssembly)
         {
             foreach (string ssdlResourceName in contextAssembly.GetManifestResourceNames().Where(
@@ -116,7 +140,8 @@ namespace B1.DataAccess
                             .First().Elements(ns + "EntitySet"))
                 {
                     string name = set.Attribute("Name").Value;
-                    string schema = set.Attribute("Schema").Value;
+                    // Sometime in the same SSDL XML - We have both "Schema" or one adorned with namespace
+                    string schema = set.Attributes().First(attr => attr.Name.LocalName.ToLower() == "schema").Value;
 
                     string typeName = storageNameToMappingFragment[name].Attribute("TypeName").Value;
 
@@ -136,10 +161,18 @@ namespace B1.DataAccess
         }
     }
 
+    /// <summary>
+    /// This class visits the query expression to discover the ObjectContexts from the entities. This adds the support for
+    /// multi context query. It caches the Entities to ObjectContexts for future query expressions.
+    /// </summary>
     internal class ContextVisitor : ExpressionVisitor
     {
         ObjectContext _defaultContext = null;
 
+        /// <summary>
+        /// Constructor for ContextVisitor takes the query expression.
+        /// </summary>
+        /// <param name="queryable">Query expression</param>
         public ContextVisitor(IQueryable queryable)
         {
             if (queryable.GetType().IsGenericType && (queryable.GetType().GetGenericTypeDefinition() == typeof(ObjectQuery<>)
@@ -187,6 +220,9 @@ namespace B1.DataAccess
             return DiscoverContext(expression);
         }
 
+        /// <summary>
+        /// Find the ObjectContext from the given expression and cache it for future queries.
+        /// </summary>
         protected Expression DiscoverContext(Expression expression)
         {
             Type type = expression is MemberExpression ? ((MemberExpression)expression).Type :
@@ -223,27 +259,52 @@ namespace B1.DataAccess
             return expression;
         }
 
+        /// <summary>
+        /// Check if the entity already exists in the cache.
+        /// </summary>
+        /// <param name="dotNetEntityType">Entity type</param>
+        /// <returns>True if exists in the cache else false</returns>
         public bool EntityExists(Type dotNetEntityType)
         {
             return EntityContextCache.ExistsMappingTypeName(dotNetEntityType, _defaultContext);
         }
 
+        /// <summary>
+        /// Get the QualifiedEntity which has the entity name and the schema name.
+        /// </summary>
+        /// <param name="dotNetEntityType">Entity type</param>
+        /// <returns>QualifiedEntity for the given entity type.</returns>
         public QualifiedEntity GetQualifiedEntity(Type dotNetEntityType)
         {
             return EntityContextCache.StorageMetaData.Get(
                 EntityContextCache.GetMappingTypeName(dotNetEntityType, _defaultContext));
         }
 
+        /// <summary>
+        /// Get the schema name for the type.
+        /// </summary>
+        /// <param name="type">Entity type</param>
+        /// <returns>Returns the name of the schema</returns>
         public string GetSchemaName(Type type)
         {
             return GetQualifiedEntity(type).SchemaName;
         }
 
+        /// <summary>
+        /// Get the table name for the given type.
+        /// </summary>
+        /// <param name="type">Entity type</param>
+        /// <returns>Table name</returns>
         public string GetTableName(Type type)
         {
             return GetQualifiedEntity(type).EntityName;
         }
 
+        /// <summary>
+        /// Get the table name adorned with schema - qualified table name.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public string GetSchemaQualifiedTableName(Type type)
         {
             QualifiedEntity entity = GetQualifiedEntity(type);
@@ -251,20 +312,47 @@ namespace B1.DataAccess
         }
     }
 
+    /// <summary>
+    /// This class has the storage entity name and schema name.
+    /// </summary>
     internal class QualifiedEntity
     {
+        /// <summary>
+        /// Storage schema name
+        /// </summary>
         public string SchemaName { get; set; }
+        
+        /// <summary>
+        /// Name of the table
+        /// </summary>
         public string EntityName { get; set; }
 
+        /// <summary>
+        /// Property to column mapping
+        /// </summary>
         public Dictionary<string, string> _propertyToColumnMap = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Empty constructor
+        /// </summary>
         public QualifiedEntity() { }
+
+        /// <summary>
+        /// Constructor to initialize the entity name and schema name
+        /// </summary>
+        /// <param name="schemaName">Schema name</param>
+        /// <param name="entityName">Entity name</param>
         public QualifiedEntity(string schemaName, string entityName)
         {
             SchemaName = schemaName;
             EntityName = entityName;
         }
 
+        /// <summary>
+        /// Get the column name from the property name
+        /// </summary>
+        /// <param name="propertyName">Name of the property</param>
+        /// <returns>Column name for the given property</returns>
         public string GetColumnName(string propertyName)
         {
             return _propertyToColumnMap.ContainsKey(propertyName) ? _propertyToColumnMap[propertyName]

@@ -18,7 +18,7 @@ namespace B1.CacheManagement
 
     /// <summary>
     /// Main class for managing the in-memory caching in a thread-safe manner. A refreshable cache can be added which
-    /// automatically refreshes the cache value at the choosen interval. It supports multiple read and single write
+    /// automatically refreshes the cache value at the chosen interval. It supports multiple read and single write
     /// lock. This is a template class and any type of value can be stored using a string key.  
     /// </summary>
     public class CacheMgr<TValue>
@@ -44,6 +44,12 @@ namespace B1.CacheManagement
             _cache = new Dictionary<string, TValue>(stringComparer);
         }
 
+        /// <summary>
+        /// This object allows multiple thread for reading while grants exclusive access for writing. When a thread is in
+        /// write mode, no other thread can enter the lock in any mode. When a thread is in upgradable mode (only one thread
+        /// allowed to be in this mode at any time), other threads can be in read mode. Upgradeable mode is intended for cases
+        /// where a thread usually reads from the protected resource, but might need to write to it if some condition is met.
+        /// </summary>
         static ReaderWriterLockSlim _cacheReadWriteLock = new ReaderWriterLockSlim();
 
         /// <summary>
@@ -69,6 +75,12 @@ namespace B1.CacheManagement
             }
         }
 
+        /// <summary>
+        /// Lookup the cache value whose key passes the predicate test.
+        /// </summary>
+        /// <param name="predicate">Predicate function which tests the key</param>
+        /// <param name="defaultValue">Default value if no key satisfies the predicate.</param>
+        /// <returns></returns>
         public TValue FirstOrDefault(Func<TValue, bool> predicate, TValue defaultValue)
         {
             _cacheReadWriteLock.EnterReadLock();

@@ -1,0 +1,15 @@
+﻿<UserControl x:Class="B1.Utility.DatabaseSetupWpf.PagingMgrGridControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="345" d:DesignWidth="500">
+    <Grid>
+        <DataGrid AutoGenerateColumns="True" Height="282" HorizontalAlignment="Left" Margin="12,51,0,0" Name="PagingGrid" VerticalAlignment="Top" Width="476" />
+        <Button Content="First" Height="23" HorizontalAlignment="Left" Margin="12,12,0,0" Name="FirstButton" VerticalAlignment="Top" Width="75" Click="FirstButton_Click" />
+        <Button Content="Previous" Height="23" HorizontalAlignment="Left" Margin="102,12,0,0" Name="PreviousButton" VerticalAlignment="Top" Width="75" Click="PreviousButton_Click" />
+        <Button Content="Next" Height="23" HorizontalAlignment="Left" Margin="193,12,0,0" Name="NextButton" VerticalAlignment="Top" Width="75" Click="NextButton_Click" />
+        <Button Content="Last" Height="23" HorizontalAlignment="Right" Margin="0,12,140,0" Name="LastButton" VerticalAlignment="Top" Width="75" Click="LastButton_Click" />
+    </Grid>
+</UserControl>

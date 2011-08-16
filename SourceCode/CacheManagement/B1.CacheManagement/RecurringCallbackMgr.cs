@@ -45,6 +45,17 @@ namespace B1.CacheManagement
     /// are received by them. This allows multiple periodic function with one single timer. Cache manager can use this
     /// function to update its cache values. Configuration manager can refresh the configuration values from database
     /// at certain intervals. The timings are in the increment of 10 seconds and will not be exact.
+    /// 
+    ///     void func1(string identifier)
+    ///     {
+    ///     }
+    /// 
+    ///     // Invoke "func1" function every 100 seconds.
+    ///     RecurringCallbackMgr.Default.Add("MyTimer1", func1, 100);
+    /// 
+    ///     // Invoke "func2" function every 50 seconds.
+    ///     RecurringCallbackMgr.Default.Add("MyTimer2", func2, 50);
+    /// 
     /// </summary>
     public class RecurringCallbackMgr
     {
@@ -160,6 +171,9 @@ namespace B1.CacheManagement
             }
         }
 
+        /// <summary>
+        /// One server timer dispatches the time elapsed message to every registered callback items.
+        /// </summary>
         void _serverTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             // Send TimeElapsed to all the items
