@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading;
 
 using B1.DataAccess;
+using B1.ILoggingManagement;
+using B1.LoggingManagement;
 
 namespace B1.TaskProcessing
 {
@@ -21,60 +23,68 @@ namespace B1.TaskProcessing
         TaskCompletedDelegate _taskCompletedHandler = null;
         string _taskId = null;
         int _taskQueueCode = 0;
+        string _threadPoolLabel = null;
 
         public TaskProcess(DataAccessMgr daMgr
             , string taskId
             , int taskQueueCode
             , string parameters
-            , TaskCompletedDelegate taskCompletedHandler)
+            , TaskCompletedDelegate taskCompletedHandler
+            , string threadPoolLabel)
         {
             _daMgr = daMgr;
             _taskId = taskId;
             _taskQueueCode = taskQueueCode;
             _parameters = parameters;
             _taskCompletedHandler = taskCompletedHandler;
+            _threadPoolLabel = threadPoolLabel;
             _processStatus = ProcessStatusEnum.Ready;
         }
 
         public void Start()
         {
-            try
+            using (LoggingContext lc = new LoggingContext(string.Format("ThreadPool: {0}; TaskProcess QueueCode: {1}"
+                    , _threadPoolLabel, _taskQueueCode)))
             {
-                while (_processStatus == ProcessStatusEnum.Ready
-                      || _processStatus == ProcessStatusEnum.Working)
+                try
                 {
-                    if (_processStatus == ProcessStatusEnum.Paused)
+                    while (_processStatus == ProcessStatusEnum.Ready
+                          || _processStatus == ProcessStatusEnum.Working)
                     {
-                        WaitHandle[] waithandles = new WaitHandle[3];
-                        waithandles[0] = _stopEvent;
-                        waithandles[1] = _resumeEvent;
-                        int waitResult = WaitHandle.WaitAny(waithandles);
-                        if (waitResult == 0)
-                            _stopEvent.Reset();
-                        if (waitResult == 1)
-                            _resumeEvent.Reset();
-                    }
+                        if (_processStatus == ProcessStatusEnum.Paused)
+                        {
+                            WaitHandle[] waithandles = new WaitHandle[3];
+                            waithandles[0] = _stopEvent;
+                            waithandles[1] = _resumeEvent;
+                            int waitResult = WaitHandle.WaitAny(waithandles);
+                            if (waitResult == 0)
+                                _stopEvent.Reset();
+                            if (waitResult == 1)
+                                _resumeEvent.Reset();
+                        }
 
-                    TaskStatusEnum taskStatus = TaskFunctionBody(_parameters);
-                    if (taskStatus == TaskStatusEnum.Completed
-                        || taskStatus == TaskStatusEnum.Failed)
-                    {
-                        if (taskStatus == TaskStatusEnum.Completed)
-                            _processStatus = ProcessStatusEnum.Completed;
-                        if (taskStatus == TaskStatusEnum.Failed)
-                            _processStatus = ProcessStatusEnum.Failed;
-                        _taskCompletedHandler(_taskQueueCode, _processStatus);
-                    }
+                        TaskStatusEnum taskStatus = TaskFunctionBody(_parameters);
+                        if (taskStatus == TaskStatusEnum.Completed
+                            || taskStatus == TaskStatusEnum.Failed)
+                        {
+                            if (taskStatus == TaskStatusEnum.Completed)
+                                _processStatus = ProcessStatusEnum.Completed;
+                            if (taskStatus == TaskStatusEnum.Failed)
+                                _processStatus = ProcessStatusEnum.Failed;
+                        }
 
+                        _daMgr.loggingMgr.Trace("Working", enumTraceLevel.Level5);
+                    }
                 }
-            }
-            catch
-            {
-                _processStatus = ProcessStatusEnum.Failed;
-            }
-            finally
-            {
-                _taskCompletedHandler(_taskQueueCode, _processStatus);
+                catch
+                {
+                    _processStatus = ProcessStatusEnum.Failed;
+                }
+                finally
+                {
+                    _taskCompletedHandler(_taskQueueCode, _processStatus);
+                }
+                _daMgr.loggingMgr.Trace("Finished", enumTraceLevel.Level5);
             }
         }
 
@@ -84,19 +94,34 @@ namespace B1.TaskProcessing
 
         public void Stop()
         {
-            _processStatus = ProcessStatusEnum.Stopped;
-            _stopEvent.Set();   // signal to stop
+            using (LoggingContext lc = new LoggingContext(string.Format("ThreadPool: {0}; TaskProcess QueueCode: {1}"
+                    , _threadPoolLabel, _taskQueueCode)))
+            {
+                _daMgr.loggingMgr.Trace("Stopping", enumTraceLevel.Level5);
+                _processStatus = ProcessStatusEnum.Stopped;
+                _stopEvent.Set();   // signal to stop
+            }
         }
 
         public void Pause()
         {
-            _processStatus = ProcessStatusEnum.Paused;
+            using (LoggingContext lc = new LoggingContext(string.Format("ThreadPool: {0}; TaskProcess QueueCode: {1}"
+                    , _threadPoolLabel, _taskQueueCode)))
+            {
+                _daMgr.loggingMgr.Trace("Pausing", enumTraceLevel.Level5);
+                _processStatus = ProcessStatusEnum.Paused;
+            }
         }
 
         public void Resume()
         {
-            _processStatus = ProcessStatusEnum.Working;
-            _resumeEvent.Set();   // signal to resume
+            using (LoggingContext lc = new LoggingContext(string.Format("ThreadPool: {0}; TaskProcess QueueCode: {1}"
+                    , _threadPoolLabel, _taskQueueCode)))
+            {
+                _daMgr.loggingMgr.Trace("Resuming", enumTraceLevel.Level5);
+                _processStatus = ProcessStatusEnum.Working;
+                _resumeEvent.Set();   // signal to resume
+            }
         }
 
         public string Status()

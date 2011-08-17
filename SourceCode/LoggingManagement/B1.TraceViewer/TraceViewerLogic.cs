@@ -193,8 +193,7 @@ namespace B1.TraceViewer
         {
             TraceMessage traceMessage = TraceLog.GetTraceMessage(message);
 
-            string level = new string('-', traceMessage.Context == null ? 1 : 
-                    (traceMessage.Context.Count() + 1) * 4);
+            string level = new string('-', traceMessage.ContextLevel * 4);
 
             if(reverse)
                 rtbTrace.SelectionStart = 0;
@@ -203,17 +202,13 @@ namespace B1.TraceViewer
 
             StringBuilder context = new StringBuilder();
 
-            if(traceMessage.Context != null)
-                foreach(string c in traceMessage.Context)
-                    context.AppendFormat("{0}{1}", context.Length > 0 ? "." : "", c);
-
-            if(context.Length == 0)
-                context.Append("NO CONTEXT");
+            if(string.IsNullOrEmpty(traceMessage.Context))
+                traceMessage.Context = "NO CONTEXT";
 
             rtbTrace.AppendText(level); 
             
             rtbTrace.SelectionFont = _boldFont;
-            rtbTrace.AppendText(string.Format("{0}\r\n",context));
+            rtbTrace.AppendText(string.Format("{0}\r\n", traceMessage.Context));
             rtbTrace.SelectionFont = _originalFont;
 
             rtbTrace.AppendText(string.Format("{0}Time: {1}, MachineName: {2}\r\n", level, traceMessage.Time, 
@@ -303,8 +298,7 @@ namespace B1.TraceViewer
 
                             TraceMessage traceMessage = TraceLog.GetTraceMessage(nextMessage);
 
-                            if((string.IsNullOrEmpty(context) || traceMessage.Context.Count( 
-                                        c => c.ToLower().Contains(context.ToLower())) > 0)
+                            if((string.IsNullOrEmpty(context) || traceMessage.Context.ToLower().Contains(context.ToLower()))
                                     && (string.IsNullOrEmpty(message) 
                                         || traceMessage.Message.ToLower().Contains(message.ToLower()))
                                     && (string.IsNullOrEmpty(processName) 

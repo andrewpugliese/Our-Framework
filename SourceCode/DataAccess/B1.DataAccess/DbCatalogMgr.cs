@@ -193,6 +193,10 @@ namespace B1.DataAccess
     }
 
     
+    /// <summary>
+    /// Represents a fully qualified database object
+    /// </summary>
+    /// <typeparam name="T">Type of Database Object (e.g. Column, Table, etc)</typeparam>
     #pragma warning disable 1591 // disable the xmlComments warning
     public class DbQualifiedObject<T>
     {
@@ -488,6 +492,10 @@ namespace B1.DataAccess
             _daMgr.InternalDbCmdCache.Add(Constants.USP_CatalogGetForeignKeys, dbCmd);
         }
 
+        /// <summary>
+        /// Returns the DbCommand object to retrieve the database's catalog metadata about columns
+        /// </summary>
+        /// <returns>DbCommand object</returns>
         DbCommand GetCatalogColumnsCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
@@ -496,6 +504,7 @@ namespace B1.DataAccess
             DbParameter paramTableName = _daMgr.CreateParameter(Constants.TableName
                     , DbType.String, null, 0, ParameterDirection.Input, DBNull.Value);
 
+            // each databaase has a different catalog so the query is different
             switch (_daMgr.DatabaseType)
             {
                 case DataAccessMgr.EnumDbType.SqlServer:
@@ -879,6 +888,10 @@ namespace B1.DataAccess
             }
         }
 
+        /// <summary>
+        /// Returns the DbCommand object to retrieve the database's catalog metadata about indexes
+        /// </summary>
+        /// <returns>DbCommand object</returns>
         DbCommand GetCatalogIndexesCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
@@ -1103,6 +1116,10 @@ namespace B1.DataAccess
             }
         }
 
+        /// <summary>
+        /// Returns the DbCommand object to retrieve the database's catalog metadata about Foreign Keys
+        /// </summary>
+        /// <returns>DbCommand object</returns>
         DbCommand GetCatalogForeignKeysCmd()
         {
             DbParameter paramSchemaName = _daMgr.CreateParameter(Constants.SchemaName
@@ -1408,6 +1425,12 @@ namespace B1.DataAccess
         }
 
 
+        /// <summary>
+        /// Returns the Database Catalog MetaData for the given table and schema
+        /// </summary>
+        /// <param name="schemaName">Schema that table belongs to</param>
+        /// <param name="tableName">Table name to retrieve meta data</param>
+        /// <returns>Dataset of meta data (columns, indexes, primaryKey, foreignKey)</returns>
         DataSet GetCatalogData(string schemaName, string tableName)
         {
             string schemaNameUpper = !string.IsNullOrEmpty(schemaName) ? schemaName.ToUpper() : null;
@@ -1465,6 +1488,14 @@ namespace B1.DataAccess
             return dbCmdMgr.ExecuteDataSet(tableNames);
         }
 
+        /// <summary>
+        /// Returns the combined meta data of a table given the metadata of its different objects
+        /// </summary>
+        /// <param name="primaryKey">PrimaryKey meta data</param>
+        /// <param name="columns">Column meta data</param>
+        /// <param name="indexes">Index meta data</param>
+        /// <param name="foreignKeys">ForeignKey meta data</param>
+        /// <returns>Structure of table meta data</returns>
         DbTableStructure CreateTableMetaData(DataTable primaryKey, DataTable columns, DataTable indexes, DataTable foreignKeys)
         {
             DbTableStructure table = PopulateColumnCache(columns);
@@ -1475,6 +1506,14 @@ namespace B1.DataAccess
             return table;
         }
 
+        /// <summary>
+        /// Returns the index meta data for the given schema and table names and column and index data
+        /// </summary>
+        /// <param name="tableSchema">Schema index belongs to</param>
+        /// <param name="tableName">Table index belongs to</param>
+        /// <param name="tableColumns">the tables columns</param>
+        /// <param name="indexes">DataTable of indexes for the table</param>
+        /// <returns>Dictionary of index name and index meta data</returns>
         Dictionary<string, DbIndexStructure> GetIndexes(string tableSchema
                 , string tableName
                 , Dictionary<string, Int16> tableColumns
@@ -1532,7 +1571,16 @@ namespace B1.DataAccess
         }
 
 
-        Dictionary<string, DbForeignKeyStructure> GetForeignKeys(string tableSchema, string tableName, DataTable foreignKeys)
+        /// <summary>
+        /// Returns the foreign key meta data for the given schema and table names and foreign key data
+        /// </summary>
+        /// <param name="tableSchema">Schema index belongs to</param>
+        /// <param name="tableName">Table index belongs to</param>
+        /// <param name="foreignKeys">Datatable of foreign key meta data</param>
+        /// <returns>Dictionary of foreign key name and foreign key meta data</returns>
+        Dictionary<string, DbForeignKeyStructure> GetForeignKeys(string tableSchema
+                , string tableName
+                , DataTable foreignKeys)
         {
             DataRow[] tableForeignKeys = foreignKeys.Select(string.Format("{0} = '{1}' and {2} = '{3}'"
                                                         , Constants.SchemaName
@@ -1573,6 +1621,13 @@ namespace B1.DataAccess
             return tableFKeyCollection;
         }
 
+        /// <summary>
+        /// Returns the primary key columns for the given schema and table names and primary key data
+        /// </summary>
+        /// <param name="tableSchema">Schema index belongs to</param>
+        /// <param name="tableName">Table index belongs to</param>
+        /// <param name="primaryKey">DataTable of primary key for the table</param>
+        /// <returns>Dictionary of column name and index key number</returns>
         Dictionary<string, byte> GetPrimaryKeyColumns(string tableSchema, string tableName, DataTable primaryKey)
         {
             DataRow[] primaryKeyCols = primaryKey.Select(string.Format("{0} = '{1}' and {2} = '{3}'"
@@ -1588,6 +1643,13 @@ namespace B1.DataAccess
             return primaryKeyColumnNames;
         }
 
+        /// <summary>
+        /// Returns the ordered columns of the given primary key
+        /// </summary>
+        /// <param name="tableSchema">Schema index belongs to</param>
+        /// <param name="tableName">Table index belongs to</param>
+        /// <param name="primaryKey">DataTable of primary key for the table</param>
+        /// <returns>SortedDictionary of the primary key columns</returns>
         SortedDictionary<byte, string> GetPrimaryKey(string tableSchema, string tableName, DataTable primaryKey)
         {
             DataRow[] primaryKeyCols = primaryKey.Select(string.Format("{0} = '{1}' and {2} = '{3}'"
@@ -1601,6 +1663,13 @@ namespace B1.DataAccess
             return primaryKeyColumnNames;
         }
 
+            /// <summary>
+            /// Returns table meta data structure for the given DataTable of column meta data.
+            /// </summary>
+            /// <param name="columns">DataTable of column meta data</param>
+            /// <returns>Table metadata structure</returns>
+            /// <exception cref="ExceptionEvent">Any exception during the processing of the cache.  
+            /// Message will include Schema and Table Name</exception>
         DbTableStructure PopulateColumnCache(DataTable columns)
         {
             DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);

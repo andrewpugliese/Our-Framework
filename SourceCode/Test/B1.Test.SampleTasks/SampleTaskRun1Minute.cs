@@ -18,15 +18,16 @@ namespace B1.Test.SampleTasks
             , string taskId
             , int taskQueueCode
             , string parameters
-            , TaskCompletedDelegate taskCompletedHandler)
-            : base(daMgr, taskId, taskQueueCode, parameters, taskCompletedHandler)
+            , TaskCompletedDelegate taskCompletedHandler
+            , string engineId)
+            : base(daMgr, taskId, taskQueueCode, parameters, taskCompletedHandler, engineId)
         {
         }
 
         public override TaskStatusEnum TaskFunctionBody(string payload)
         {
             _taskStatusMsg = this.ToString() + "; Iteration: " + _count.ToString();
-
+            System.Threading.Thread.Sleep(100);
             TimeSpan ts = DateTime.Now - _started;
             if (ts.TotalSeconds < 60)   
                 return TaskStatusEnum.InProcess;

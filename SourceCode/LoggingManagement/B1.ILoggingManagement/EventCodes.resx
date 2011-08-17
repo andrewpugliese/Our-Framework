@@ -181,6 +181,14 @@
     <value>A parameter was passed with a null or empty value.</value>
     <comment>1</comment>
   </data>
+  <data name="TaskQueueCodeNotFoundAtCompletion" xml:space="preserve">
+    <value>The given TaskQueueCode was not by the taskCompletion delegate.  This is an internal error with the TaskProcessingEngine which indicates that a task that just completed was not recorded as being started.</value>
+    <comment>-8</comment>
+  </data>
+  <data name="TasksInProcessCounterUnderFlow" xml:space="preserve">
+    <value>The tasksInProcess counter cannot be less than 0.  This is an internal error in the TaskProcessingEngine.</value>
+    <comment>-9</comment>
+  </data>
   <data name="UnknownException" xml:space="preserve">
     <value>Unexpected error event occurred.</value>
     <comment>-1</comment>

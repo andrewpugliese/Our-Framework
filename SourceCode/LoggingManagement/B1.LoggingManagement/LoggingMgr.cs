@@ -88,10 +88,36 @@ namespace B1.LoggingManagement
         {
             get
             {
-                if(_Context == null)
+                if (_Context == null)
                     _Context = new Stack<string>();
 
                 return _Context;
+            }
+        }
+
+        public static string ToString
+        {
+            get
+            {
+                if (_Context == null)
+                    return string.Empty;
+
+                StringBuilder context = new StringBuilder();
+                foreach (string c in _Context)
+                    context.AppendFormat("{0}{1}", context.Length > 0 ? "." : "", c);
+
+                return context.ToString();
+            }
+        }
+
+        public static int Level
+        {
+            get
+            {
+                if (_Context == null)
+                    return 1;
+
+                return _Context.Count + 1;
             }
         }
 

@@ -17,54 +17,89 @@ namespace B1.DataAccess
     /// and dynamically defined SQL statements.  However these statements will
     /// use Named Parameters and the DbParameterCollection of the DbCommand will
     /// contain the definition and values of those parameters.  
-    /// 
+    /// <para>
     /// The class automatically checks for the existance of a parameter and will 
     /// automatically remain the new one if it has a different value.  It will then
     /// update the SQL to match the new parameter name.
-    /// 
+    /// </para>
+    /// <para>
     /// The advantages of using this class and compound sql is that you can send
     /// multiple statements to the database in a single round trip.  In addition
     /// to the communication efficiency, you can wrap your compound statements within
     /// nested transactions, so there is no need to perform round trips to the db
     /// while holding on to transactions and resources.
-    /// 
+    /// </para>
+    /// <para>
     /// All arguments in the compound SQL are fully typed parameter bind variables
     /// so performance is equal to that of stored procedures and the statements
     /// can be cached because the command text remains the same only the data in the
     /// parameters is transmitted with each call.
-    /// 
+    /// </para>
+    /// <para>
     /// One advantage that these DbCommands have over stored procedures is that they
     /// are database Independant.  The class will generate the appropriate code for 
     /// the specific back-end.  The interface to the programmer remains the same.
-    /// 
+    /// </para>
+    /// <para>
     /// This class has one constructor and should NOT be shared between threads.
     /// Consider this class like you would a stringBuilder.
-    /// 
+    /// </para>
+    /// <para>
     /// Example: Create a compound SQL that contains a delete and an insert statement.
-    /// 
+    /// </para>
+    /// <para>
     /// Build the DbCommands
+    /// </para>
+    /// <para>
     /// DbCommand dbCmdDelete = _daMgr.BuildDeleteDbCommand(dmlDeleteMgr);
+    /// </para>
+    /// <para>
     /// DbCommand dbCmdInsert = _daMgr.BuildInsertDbCommand(dmlInsertMgr);
-    /// 
+    /// </para>
+    /// <para>
     /// Build the CommandMgr
+    /// </para>
+    /// <para>
     /// DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);
-    /// 
+    /// </para>
+    /// <para>
     /// Set the parameter values
+    /// </para>
+    /// <para>
     /// dbCmdDelete.Parameters[_daMgr.BuildParamName(DataAccess.Constants.ApplicationInstance)].Value = tbAppCtrlAppKey.Text;
-    ///
+    /// </para>
+    /// <para>
     /// Add the command to the Compound SQL 
+    /// </para>
+    /// <para>
     /// dbCmdMgr.AddDbCommand(dbCmdDelete);
-    /// 
+    /// </para>
+    /// <para>
     /// Set the other commands parameters
+    /// </para>
+    /// <para>
     /// dbCmdInsert.Parameters[_daMgr.BuildParamName(DataAccess.Constants.ApplicationInstance)].Value = tbAppCtrlAppKey.Text;
+    /// </para>
+    /// <para>
     /// dbCmdInsert.Parameters[_daMgr.BuildParamName(DataAccess.Constants.HostAddress)].Value = Environment.MachineName;
+    /// </para>
+    /// <para>
     /// dbCmdInsert.Parameters[_daMgr.BuildParamName(DataAccess.Constants.StatusMessage)].Value = "Application Startup";
+    /// </para>
+    /// <para>
     /// 
     /// Add the insert command to the Compound SQL
+    /// </para>
+    /// <para>
     /// dbCmdMgr.AddDbCommand(dbCmdInsert);
+    /// </para>
+    /// <para>
     /// 
     /// Execute the Compound SQL Command
+    /// </para>
+    /// <para>
     /// dbCmdMgr.ExecuteNonQuery();
+    /// </para>
     /// 
     /// </summary>
     public class DbCommandMgr

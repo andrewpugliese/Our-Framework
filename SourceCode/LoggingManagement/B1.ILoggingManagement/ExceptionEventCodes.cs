@@ -20,6 +20,8 @@ namespace B1.ILoggingManagement
         , DbCommandBlockParameterReplacementFailed = -5
         , DbParameterExistsInCollection = -6
         , DataSetTableNamesMismatchWithResultSet = -7
+        , TaskQueueCodeNotFoundAtCompletion = -8
+        , TasksInProcessCounterUnderFlow = -9
 
         , NullOrEmptyParameter = 1
         , EventLogSourceCreateFailed = 2
