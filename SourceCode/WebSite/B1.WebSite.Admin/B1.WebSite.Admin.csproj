@@ -72,6 +72,7 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="Scripts\B1.js" />
+    <Content Include="Views\ViewUserControl1.ascx" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

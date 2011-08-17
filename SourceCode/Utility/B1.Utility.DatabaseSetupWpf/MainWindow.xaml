@@ -1,0 +1,30 @@
+﻿<Window x:Class="B1.Utility.DatabaseSetupWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="600" Width="940" xmlns:my="clr-namespace:B1.Utility.DatabaseSetupWpf" xmlns:my1="clr-namespace:B1.Windows.Controls;assembly=B1.Windows.Controls">
+    <Grid>
+        <Button Content="Test Sequences" Height="23" Name="TestSequenceButton" Margin="12,12,382,526" Click="TestSequenceButton_Click" />
+
+        <TabControl Height="512" HorizontalAlignment="Left" Margin="0,49,0,0" Name="tabControl1" VerticalAlignment="Top" Width="918">
+            <TabItem Header="Test Sequence" Name="tabItem1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*" />
+                        <ColumnDefinition Width="170*" />
+                    </Grid.ColumnDefinitions>
+                    <my:PagingMgrGridControl HorizontalAlignment="Left" Margin="7,6,0,0" x:Name="MainGridControl" VerticalAlignment="Top" Height="479" Width="906" Grid.ColumnSpan="2" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Tasks">
+                <!--<my:TaskControl Height="500" x:Name="taskControl1" Width="900" />-->
+                <my:TaskControl Height="500" x:Name="taskControl1" Width="900" />
+            </TabItem>
+        </TabControl>
+        <my1:ThoughtBubble HorizontalAlignment="Left" Margin="769,0,0,0" Name="thoughtBubble1" VerticalAlignment="Top" Height="116" Width="149">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Here's a button!" Margin="0,0,0,5" />
+                <Button Content="My Button" />
+            </StackPanel>
+        </my1:ThoughtBubble>
+    </Grid>
+</Window>
