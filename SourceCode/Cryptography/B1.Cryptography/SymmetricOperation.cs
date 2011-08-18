@@ -212,6 +212,10 @@ namespace B1.Cryptography
             }
         }
 
+        /// <summary>
+        /// Encrypt the data using the symmetric algorithm provided and key. Generates the Initialization Vector.
+        /// Returns the IV and the encrypted string
+        /// </summary>
         public static SymmetricCipherResults EncryptData(string plainText, 
                 SymmetricAlgorithmTypeEnum symmetricAlgorithm, 
                 string key)
@@ -228,6 +232,9 @@ namespace B1.Cryptography
             return new SymmetricCipherResults() { CipherText = cipherText, IV = iv };
         }
 
+        /// <summary>
+        /// Decrypt the data using the given key and passed IV
+        /// </summary>
         public static string DecryptData(SymmetricCipherResults cipherResults, 
                 SymmetricAlgorithmTypeEnum symmetricAlgorithm, 
                 string key)
@@ -243,9 +250,19 @@ namespace B1.Cryptography
         }                                                                                       
     }
 
+    /// <summary>
+    /// Results of the encryption. Returns IV and the Cipher Text
+    /// </summary>
     public class SymmetricCipherResults
     {
+        /// <summary>
+        /// Initialization Vector used in the cypher text
+        /// </summary>
         public string IV { get; set; }
+
+        /// <summary>
+        /// CypherText
+        /// </summary>
         public string CipherText { get; set; }
     }
 }

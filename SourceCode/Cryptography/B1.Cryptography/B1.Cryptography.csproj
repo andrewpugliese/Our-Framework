@@ -59,6 +59,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -72,10 +73,14 @@
     <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AsymmetricOperation.cs" />
+    <Compile Include="DigitalEnvelope.cs" />
+    <Compile Include="DigitalSignature.cs" />
     <Compile Include="EncryptedString.cs" />
     <Compile Include="HashOperation.cs" />
     <Compile Include="NamespaceDoc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SignedXmlOperation.cs" />
     <Compile Include="SymmetricOperation.cs" />
   </ItemGroup>
   <ItemGroup>
