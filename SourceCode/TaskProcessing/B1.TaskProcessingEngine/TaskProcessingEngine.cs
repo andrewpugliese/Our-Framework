@@ -10,21 +10,12 @@ using System.Data.Common;
 using B1.DataAccess;
 using B1.CacheManagement;
 using B1.ILoggingManagement;
+using B1.LoggingManagement;
 using B1.SessionManagement;
 using B1.TaskProcessing;
 
 namespace B1.TaskProcessing
 {
-
-    internal struct TaskQueueStructure
-    {
-        public string TaskId;
-        public int TaskQueueCode;
-        public string Parameters;
-        public string AssemblyName;
-        public string AssemblyPath;
-    }
-
     /// <summary>
     /// This class will retrieve and manage the processing of tasks from the TaskProcessingQueue database table.
     /// <para>Once the engine is started, it will continue to dequeue tasks until it is stopped.</para>
@@ -52,18 +43,15 @@ namespace B1.TaskProcessing
         DbCommand _deQueueTask = null;
         DbCommand _taskDependencies = null;
 
-        CacheMgr<Thread> _taskProcessThreads = 
-                new CacheMgr<Thread>(StringComparer.CurrentCultureIgnoreCase);
-        CacheMgr<TaskProcess> _taskProcesses =
-                new CacheMgr<TaskProcess>(StringComparer.CurrentCultureIgnoreCase);
-        CacheMgr<Assembly> _taskAssemblies =
-                new CacheMgr<Assembly>(StringComparer.CurrentCultureIgnoreCase);
- 
+        CacheMgr<TasksInProcess> _taskProcesses =
+                new CacheMgr<TasksInProcess>(StringComparer.CurrentCultureIgnoreCase);
 
         /// <summary>
         /// Constructs a new instance of the TaskProcessingEngine class
         /// </summary>
         /// <param name="daMgr">DataAccessMgr object instance</param>
+        /// <param name="engineId"></param>
+        /// <param name="configId"></param>
         /// <param name="maxTaskProcesses">Configures the engine for a maximum number of concurrent task handlers</param>
         public TaskProcessingEngine(DataAccessMgr daMgr
                 , string taskAssemblyPath
@@ -75,14 +63,19 @@ namespace B1.TaskProcessing
             if (daMgr.loggingMgr == null)
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
                     , "TaskProcessingEngine requires a DataAccessMgr with a LoggingMgr.");
-            _daMgr = daMgr;
-            _maxTaskProcesses = maxTaskProcesses;
-            _taskAssemblyPath = taskAssemblyPath;
-            _engineId = engineId;
-            _configId = configId;
-            _signonControl = signonControl;
-            CacheDbCommands();
-            _engineStatus = EngineStatusEnum.Started;
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + engineId))
+            {
+                _daMgr = daMgr;
+                _maxTaskProcesses = maxTaskProcesses;
+                _taskAssemblyPath = taskAssemblyPath;
+                _engineId = engineId;
+                _configId = configId;
+                _signonControl = signonControl;
+                CacheDbCommands();
+                RecoverTasksInProcess();
+                _engineStatus = EngineStatusEnum.Started;
+                _daMgr.loggingMgr.Trace("Constructed.", enumTraceLevel.Level2);
+            }
         }
 
         bool NoUsers
@@ -96,103 +89,133 @@ namespace B1.TaskProcessing
 
         int RecoverTasksInProcess()
         {
-            return 0;
-        }
+            _daMgr.loggingMgr.Trace("Recovering any tasks left in process status.", enumTraceLevel.Level2);
+            DbCommand selectItemsInProcess = BuildSelectItemsInProcessCmd();
+            selectItemsInProcess.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.ProcessEngineId)].Value
+                    = _engineId;
+            DataTable itemsInProcess = _daMgr.ExecuteDataSet(selectItemsInProcess, null, null).Tables[0];
+            int itemsReset = 0;
+            if (itemsInProcess.Rows.Count > 0)
+            {
+                DbCommand resetItemsInProcess = null;
+                foreach (DataRow itemInProcess in itemsInProcess.Rows)
+                {
+                    if (resetItemsInProcess == null)
+                        resetItemsInProcess = BuildResetItemsInProcessCmd();
+                    else resetItemsInProcess = _daMgr.CloneDbCommand(resetItemsInProcess);
 
-        /// <summary>
-        /// Initiates the dequeing of tasks from the queue
-        /// </summary>
-        public void Start()
-        {
-            _mainThread = new Thread(Run);
-            _mainThread.IsBackground = true;
-            _mainThread.Start();
+                    int taskQueueCode = Convert.ToInt32(itemInProcess[TaskProcessing.Constants.TaskQueueCode]);
+                    resetItemsInProcess.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value
+                            = taskQueueCode;
+                    resetItemsInProcess.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusMsg)].Value
+                            = "StatusCode Reset from InProcess during Engine Startup.";
+                    _daMgr.ExecuteNonQuery(resetItemsInProcess, null, null);
+                    ++itemsReset;
+                }
+                _daMgr.loggingMgr.Trace(string.Format("{0} tasks recovered.", itemsReset), enumTraceLevel.Level2);
+            }
+            return itemsReset;
         }
 
         void Run()
         {
-            _engineStatus = EngineStatusEnum.Running;
-            DataTable queuedTasks = new DataTable();
-            Int16 pageSize = 0;
-            while (_engineStatus != EngineStatusEnum.Stopped)
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
-                while (_engineStatus == EngineStatusEnum.Running)
+                _engineStatus = EngineStatusEnum.Running;
+                DataTable queuedTasks = new DataTable();
+                Int16 pageSize = 0;
+                while (_engineStatus != EngineStatusEnum.Stopped)
                 {
-                    if (NoUsers)
+                    while (_engineStatus == EngineStatusEnum.Running)
                     {
-                        queuedTasks = pageSize == 0 ? _queuedTasksNoUsersOnly.GetFirstPage() 
-                                : _queuedTasksNoUsersOnly.GetNextPage();
-                        pageSize = _queuedTasksNoUsersOnly.PageSize;
-                    }
-                    else
-                    {
-                        queuedTasks = pageSize == 0 ? _queuedTasks.GetFirstPage()
-                                : _queuedTasks.GetNextPage();
-                        pageSize = _queuedTasks.PageSize;
-                    }
-                    foreach (DataRow queuedTask in queuedTasks.Rows)
-                    {
-                        if (_tasksInProcess < _maxTaskProcesses)
+                        if (NoUsers)
                         {
-                            Int32? taskQueueCode = TaskReadyToProcess(queuedTask, new CacheMgr<Int32?>(), null);
-                            TaskQueueStructure? newTask = taskQueueCode.HasValue ? DequeueTask(taskQueueCode.Value) 
-                                    : null;
-                            if (newTask.HasValue)
-                                try
-                                {
-                                    ProcessTask(newTask.Value);
-                                }
-                                catch (Exception e)
-                                {
-                                    _daMgr.loggingMgr.WriteToLog(e);
-                                }
+                            queuedTasks = pageSize == 0 ? _queuedTasksNoUsersOnly.GetFirstPage()
+                                    : _queuedTasksNoUsersOnly.GetNextPage();
+                            pageSize = _queuedTasksNoUsersOnly.PageSize;
+                            _daMgr.loggingMgr.Trace(string.Format("Users Restricted.  {0} queued Tasks (page size: {1})."
+                                        , queuedTasks.Rows.Count
+                                        , pageSize)
+                                    , enumTraceLevel.Level4);
                         }
-                        else Thread.Sleep(500);
+                        else
+                        {
+                            queuedTasks = pageSize == 0 ? _queuedTasks.GetFirstPage()
+                                    : _queuedTasks.GetNextPage();
+                            pageSize = _queuedTasks.PageSize;
+                            _daMgr.loggingMgr.Trace(string.Format("{0} queued Tasks (page size: {1})."
+                                        , queuedTasks.Rows.Count
+                                        , pageSize)
+                                    , enumTraceLevel.Level4);
+                        }
+                        foreach (DataRow queuedTask in queuedTasks.Rows)
+                        {
+                            if (_tasksInProcess < _maxTaskProcesses)
+                            {
+                                Int32? taskQueueCode = TaskReadyToProcess(queuedTask, new CacheMgr<Int32?>(), null);
+                                if (taskQueueCode.HasValue)
+                                    try
+                                    {
+                                        ProcessTask(DequeueTask(taskQueueCode.Value));
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _daMgr.loggingMgr.WriteToLog(e);
+                                    }
+                            }
+                            else
+                            {
+                                _daMgr.loggingMgr.Trace(string.Format("MaxTasksInProcessReached: {0}"
+                                            , _maxTaskProcesses), enumTraceLevel.Level5);
+                                Thread.Sleep(500);
+                            }
+                        }
+                        if (queuedTasks.Rows.Count < pageSize)
+                            pageSize = 0;
+                        Thread.Sleep(1000);
                     }
-                    if (queuedTasks.Rows.Count < pageSize)
-                        pageSize = 0;
-                    Thread.Sleep(1000);
+                    if (_engineStatus == EngineStatusEnum.Paused)
+                    {
+                        WaitHandle[] waithandles = new WaitHandle[] { _stopEvent, _resumeEvent };
+                        int waitResult = WaitHandle.WaitAny(waithandles);
+                        if (waitResult == 0)
+                            _stopEvent.Reset();
+                        if (waitResult == 1)
+                            _resumeEvent.Reset();
+                    }
+                    else Thread.Sleep(1000);
                 }
-                if (_engineStatus == EngineStatusEnum.Paused)
-                {
-                    WaitHandle[] waithandles = new WaitHandle[] { _stopEvent, _resumeEvent };
-                    int waitResult = WaitHandle.WaitAny(waithandles);
-                    if (waitResult == 0)
-                        _stopEvent.Reset();
-                    if (waitResult == 1)
-                        _resumeEvent.Reset();
-                }
-                else Thread.Sleep(1000);
             }
-
         }
 
-        TaskProcess LoadTaskProcess(TaskQueueStructure taskMetaData)
+        TaskProcess LoadTaskProcess(DequeuedTask dequeuedTask)
         {
             TaskProcess taskProcess = Core.ObjectFactory.Create<TaskProcess>(
-                string.Format("{0}\\{1}", string.IsNullOrEmpty(taskMetaData.AssemblyPath) ? "." 
-                    : taskMetaData.AssemblyPath
-                        , taskMetaData.AssemblyName)
-                , taskMetaData.TaskId
+                string.Format("{0}\\{1}", string.IsNullOrEmpty(_taskAssemblyPath) ? "."
+                    : _taskAssemblyPath
+                        , dequeuedTask.AssemblyName)
+                , dequeuedTask.TaskId
                 , _daMgr
-                , taskMetaData.TaskId
-                , taskMetaData.TaskQueueCode
-                , taskMetaData.Parameters
-                , new TaskProcess.TaskCompletedDelegate(TaskCompleted));
+                , dequeuedTask.TaskId
+                , dequeuedTask.TaskQueueCode
+                , dequeuedTask.Parameters
+                , new TaskProcess.TaskCompletedDelegate(TaskCompleted)
+                , _engineId);
             return taskProcess;
         }
 
-        void ProcessTask(TaskQueueStructure taskQueueData)
+        void ProcessTask(DequeuedTask dequeuedTask)
         {
-            TaskProcess taskProcess = LoadTaskProcess(taskQueueData);
+            TaskProcess taskProcess = LoadTaskProcess(dequeuedTask);
             lock (_taskCounterLock)
             {
-                _taskProcesses.Add(taskQueueData.TaskQueueCode.ToString(), taskProcess);
                 Thread taskProcessThread = new Thread(taskProcess.Start);
                 taskProcessThread.IsBackground = true;
-                _taskProcessThreads.Add(taskQueueData.TaskQueueCode.ToString(), taskProcessThread);
-                taskProcessThread.Start();
+                TasksInProcess tasksInProcess = new TasksInProcess(taskProcess, taskProcessThread
+                        , dequeuedTask);
+                _taskProcesses.Add(dequeuedTask.TaskQueueCode.ToString(), tasksInProcess);
                 ++_tasksInProcess;
+                taskProcessThread.Start();
             }
         }
 
@@ -206,29 +229,51 @@ namespace B1.TaskProcessing
             return _maxTaskProcesses;
         }
 
+        /// <summary>
+        /// Initiates the dequeing of tasks from the queue
+        /// </summary>
+        public void Start()
+        {
+            _mainThread = new Thread(Run);
+            _mainThread.IsBackground = true;
+            _mainThread.Start();
+        }
+
         public void Stop()
         {
-            _engineStatus = EngineStatusEnum.Stopped;
-            _stopEvent.Set();   // signal to stop
-            lock (_taskCounterLock)
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
-                foreach (string taskProcessKey in _taskProcesses.Keys)
+                _daMgr.loggingMgr.Trace("Stopping.", enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Stopped;
+                _stopEvent.Set();   // signal to stop
+                lock (_taskCounterLock)
                 {
-                    TaskProcess taskProcess = _taskProcesses.Get(taskProcessKey);
-                    taskProcess.Stop();
+                    foreach (string taskProcessKey in _taskProcesses.Keys)
+                    {
+                        TaskProcess taskProcess = _taskProcesses.Get(taskProcessKey).Process;
+                        taskProcess.Stop();
+                    }
                 }
             }
         }
 
         public void Pause()
         {
-            _engineStatus = EngineStatusEnum.Paused;
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
+            {
+                _daMgr.loggingMgr.Trace("Pausing", enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Paused;
+            }
         }
 
         public void Resume()
         {
-            _engineStatus = EngineStatusEnum.Running;
-            _resumeEvent.Set();   // signal to resume
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
+            {
+                _daMgr.loggingMgr.Trace("Resuming", enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Running;
+                _resumeEvent.Set();   // signal to resume
+            }
         }
 
         public string Status()
@@ -239,99 +284,164 @@ namespace B1.TaskProcessing
 
         void TaskCompleted(int taskQueueCode, TaskProcess.ProcessStatusEnum processStatus)
         {
-            lock (_taskCounterLock)
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
-                if (!_taskProcesses.Exists(taskQueueCode.ToString()))
-                    throw new ApplicationException("taskQueueCode not found");
+                lock (_taskCounterLock)
+                {
+                    _daMgr.loggingMgr.Trace(string.Format("TaskCompleted Event for TaskQueueCode: {0}"
+                            , taskQueueCode), enumTraceLevel.Level4);
+                    if (!_taskProcesses.Exists(taskQueueCode.ToString()))
+                        throw new ExceptionEvent(enumExceptionEventCodes.TaskQueueCodeNotFoundAtCompletion
+                                , string.Format("TaskQueueCode: {0}", taskQueueCode));
 
-                _taskProcesses.Remove(taskQueueCode.ToString());
+                    DequeuedTask dequeuedTask = _taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData;
+                    DbCommand cmdComplete = BuildCompleteTaskCmd();
+                    cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value
+                            = dequeuedTask.TaskQueueCode;
+                    if (processStatus == TaskProcess.ProcessStatusEnum.Completed)
+                    {
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusCode)].Value
+                                = Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Succeeded);
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusMsg)].Value
+                                = DBNull.Value;
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastCompletedMsg)].Value
+                                = DBNull.Value;
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastCompletedCode)].Value
+                                = Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Succeeded);
+                    }
+                    else
+                    {
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastCompletedCode)].Value
+                                = Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Failed);
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusCode)].Value
+                                = Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Failed);
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.StatusMsg)].Value
+                                = _taskProcesses.Get(taskQueueCode.ToString()).Process.TaskStatus();
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.LastCompletedMsg)].Value
+                                = _taskProcesses.Get(taskQueueCode.ToString()).Process.TaskStatus();
+                    }
 
-                if (!_taskProcessThreads.Exists(taskQueueCode.ToString()))
-                    throw new ApplicationException("taskQueueCode not found");
+                    if (_taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData.IntervalSecondsRequeue > 0)
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.IntervalCount)].Value
+                                = _taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData.IntervalCount + 1;
+                    else cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.IntervalCount)].Value
+                            = _taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData.IntervalCount;
 
-                _taskProcessThreads.Remove(taskQueueCode.ToString());
-                
-                if (_tasksInProcess > 0)
-                    --_tasksInProcess;
-                else throw new ApplicationException("tasksInProcess overflow");
+                    if (_taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData.ClearParametersAtEnd)
+                        cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskParameters)].Value
+                                 = DBNull.Value;
+                    else cmdComplete.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskParameters)].Value
+                                 = _taskProcesses.Get(taskQueueCode.ToString()).DequeuedTaskData.TaskParameters;
+
+                    _daMgr.ExecuteNonQuery(cmdComplete, null, null);
+
+                    _taskProcesses.Remove(taskQueueCode.ToString());
+
+                    if (_tasksInProcess > 0)
+                        --_tasksInProcess;
+                    else throw new ExceptionEvent(enumExceptionEventCodes.TasksInProcessCounterUnderFlow
+                            , string.Format("TaskQueueCode: {0}", taskQueueCode));
+                    _daMgr.loggingMgr.Trace(string.Format("TaskCompleted Cleanup Success for TaskQueueCode: {0}"
+                            , taskQueueCode), enumTraceLevel.Level4);
+                }
             }
         }
 
         public void Dispose()
         {
-            lock (_taskCounterLock)
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
-                foreach (string taskProcessKey in _taskProcessThreads.Keys)
+                _daMgr.loggingMgr.Trace("Disposing", enumTraceLevel.Level2);
+                while (_tasksInProcess > 0 || _taskProcesses.Keys.Count > 0)
                 {
-                    Thread taskThread = _taskProcessThreads.Get(taskProcessKey);
-                    if (taskThread.IsAlive)
-                        if (!taskThread.Join(1000))
-                            taskThread.Abort();
+                    lock (_taskCounterLock)
+                    {
+                        foreach (string taskProcessKey in _taskProcesses.Keys)
+                        {
+                            Thread taskThread = _taskProcesses.Get(taskProcessKey).ProcessThread;
+                            if (taskThread.IsAlive)
+                                if (!taskThread.Join(5000))
+                                    _daMgr.loggingMgr.Trace(string.Format("Waiting for processThread: {0}"
+                                            , taskThread.ManagedThreadId)
+                                            , enumTraceLevel.Level2);
+                        }
+                    }
+                    if (_tasksInProcess > 0)
+                        _daMgr.loggingMgr.Trace(string.Format("Tasks In Process: {0}", _tasksInProcess)
+                            , enumTraceLevel.Level2);
                 }
-                _taskProcesses.Clear();
-                _taskProcessThreads.Clear();
+                if (_mainThread.IsAlive)
+                    while (!_mainThread.Join(5000))
+                        _daMgr.loggingMgr.Trace(string.Format("Waiting for mainThread: {0}"
+                                , _mainThread.ManagedThreadId)
+                                , enumTraceLevel.Level2);
+                _daMgr.loggingMgr.Trace("Disposed", enumTraceLevel.Level2);
             }
-            if (_mainThread.IsAlive)
-                if (!_mainThread.Join(1000))
-                    _mainThread.Abort();
         }
 
-        TaskQueueStructure? DequeueTask(Int64 taskQueueCode)
+        DequeuedTask DequeueTask(Int64 taskQueueCode)
         {
-
+            _daMgr.loggingMgr.Trace(string.Format("Dequeuing TaskCode: {0}", taskQueueCode), enumTraceLevel.Level5);
             _deQueueTask.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value = taskQueueCode;
             _deQueueTask.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.ProcessEngineId)].Value = _engineId;
-            DataTable dequeuedTask = _daMgr.ExecuteDataSet(_deQueueTask, null, null).Tables[0];
-
-            if (dequeuedTask != null && dequeuedTask.Rows.Count > 0)
-            {
-                TaskQueueStructure newTask = new TaskQueueStructure();
-                newTask.TaskId = dequeuedTask.Rows[0][TaskProcessing.Constants.TaskId].ToString();
-                newTask.TaskQueueCode = Convert.ToInt32(dequeuedTask.Rows[0][TaskProcessing.Constants.TaskQueueCode]);
-                newTask.Parameters = dequeuedTask.Rows[0][TaskProcessing.Constants.TaskParameters].ToString();
-                newTask.AssemblyName = dequeuedTask.Rows[0][TaskProcessing.Constants.AssemblyName].ToString();
-                newTask.AssemblyPath = _taskAssemblyPath;
-                return newTask;
-            }
-            return null;
+            DataTable dequeuedTaskData = _daMgr.ExecuteDataSet(_deQueueTask, null, null).Tables[0];
+            if (dequeuedTaskData != null && dequeuedTaskData.Rows.Count > 0)
+                return new DequeuedTask(dequeuedTaskData.Rows[0]);
+            else return null;
         }
 
         Int32? TaskReadyToProcess(DataRow queuedTask,  CacheMgr<Int32?> tasksVisited, Int32? parentTask)
         {
-            if (!NoUsers
-                && Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForNoUsers]))
-                return null;
-            if (queuedTask[TaskProcessing.Constants.WaitForEngineId] != DBNull.Value
-                && _engineId != queuedTask[TaskProcessing.Constants.WaitForEngineId].ToString())
-                return null;
-            if (queuedTask[TaskProcessing.Constants.WaitForConfigId] != DBNull.Value
-                && _configId != queuedTask[TaskProcessing.Constants.WaitForConfigId].ToString())
-                return null;
             Int32 taskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.TaskQueueCode]);
-            bool waitForTasks = Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForTasks]);
-
-            if (waitForTasks)
+            using (LoggingContext lc = new LoggingContext(string.Format("TaskQueueCode: {0}", taskQueueCode)))
             {
-                Int32 dependentTaskQueueCode = taskQueueCode;
-                if (queuedTask.Table.Columns.Contains(TaskProcessing.Constants.WaitTaskQueueCode))
-                    dependentTaskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.WaitTaskQueueCode]);
+                if (!NoUsers
+                    && Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForNoUsers]))
+                {
+                    _daMgr.loggingMgr.Trace(string.Format("WaitForNoUsers Required", enumTraceLevel.Level5));
+                    return null;
+                }
+                if (queuedTask[TaskProcessing.Constants.WaitForEngineId] != DBNull.Value
+                    && _engineId != queuedTask[TaskProcessing.Constants.WaitForEngineId].ToString())
+                {
+                    _daMgr.loggingMgr.Trace(string.Format("WaitForEngineId: {0} Required"
+                            , queuedTask[TaskProcessing.Constants.WaitForEngineId].ToString()), enumTraceLevel.Level5);
+                    return null;
+                }
+                if (queuedTask[TaskProcessing.Constants.WaitForConfigId] != DBNull.Value
+                    && _configId != queuedTask[TaskProcessing.Constants.WaitForConfigId].ToString())
+                {
+                    _daMgr.loggingMgr.Trace(string.Format("WaitForConfigId: {0} Required"
+                            , queuedTask[TaskProcessing.Constants.WaitForConfigId].ToString()), enumTraceLevel.Level5);
+                    return null;
+                }
+                bool waitForTasks = Convert.ToBoolean(queuedTask[TaskProcessing.Constants.WaitForTasks]);
 
-                if (!tasksVisited.Exists(dependentTaskQueueCode.ToString()))
+                if (waitForTasks)
                 {
-                    tasksVisited.Add(dependentTaskQueueCode.ToString(), parentTask);
-                    if (!TaskDependenciesCompleted(dependentTaskQueueCode, tasksVisited))
-                        return null;
+                    Int32 dependentTaskQueueCode = taskQueueCode;
+                    if (queuedTask.Table.Columns.Contains(TaskProcessing.Constants.WaitTaskQueueCode))
+                        dependentTaskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.WaitTaskQueueCode]);
+
+                    if (!tasksVisited.Exists(dependentTaskQueueCode.ToString()))
+                    {
+                        using (LoggingContext lc2 = new LoggingContext(string.Format("DependsOnTask: {0}", dependentTaskQueueCode)))
+                        {
+                            tasksVisited.Add(dependentTaskQueueCode.ToString(), parentTask);
+                            if (!TaskDependenciesCompleted(dependentTaskQueueCode, tasksVisited))
+                                return null;
+                        }
+                    }
+                    else
+                    {
+                        string msg = string.Format("Circular Dependency found for task: {0}; Task Chain: {1}"
+                            , taskQueueCode, tasksVisited.Keys.ToString());
+                        throw new ArgumentException(msg);
+                    }
+
                 }
-                else
-                {
-                    string msg = string.Format("Circular Dependency found for task: {0}; Task Chain: {1}"
-                        , taskQueueCode, tasksVisited.Keys.ToString());
-                    throw new ArgumentException(msg);
-                }
-                
+                return taskQueueCode;
             }
-
-            return taskQueueCode;
         }
 
         bool TaskDependenciesCompleted(Int32 taskQueueCode,  CacheMgr<Int32?> taskVisited)
@@ -354,7 +464,8 @@ namespace B1.TaskProcessing
             _queuedTasksNoUsersOnly = BuildCmdGetQueuedTasksList(true);
             _deQueueTask = BuildDeQueueCmd();
             _taskDependencies = BuildGetDependenciesCmd();
-
+            BuildResetItemsInProcessCmd();
+            BuildSelectItemsInProcessCmd();
         }
 
         DbCommand BuildDeQueueCmd()
@@ -367,6 +478,7 @@ namespace B1.TaskProcessing
             dmlUpdate.AddColumn(TaskProcessing.Constants.StatusDateTime, Core.EnumDateTimeLocale.UTC);
             dmlUpdate.AddColumn(TaskProcessing.Constants.StartedDateTime, Core.EnumDateTimeLocale.UTC);
             dmlUpdate.AddColumn(TaskProcessing.Constants.ProcessEngineId);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusMsg);
             dmlUpdate.AddColumn(TaskProcessing.Constants.CompletedDateTime);
             dmlUpdate.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode)
                     == w.Parameter(TaskProcessing.Constants.TaskQueueCode));
@@ -404,6 +516,54 @@ namespace B1.TaskProcessing
             cmdMgr.AddDbCommand(cmdChange);
             cmdMgr.AddDbCommand(cmdSelect);
             return cmdMgr.DbCommandBlock;
+        }
+
+
+        DbCommand BuildSelectItemsInProcessCmd()
+        {
+            DbTableDmlMgr dmlSelect = new DbTableDmlMgr(_daMgr
+                     , DataAccess.Constants.SCHEMA_CORE
+                     , TaskProcessing.Constants.TaskProcessingQueue
+                     , TaskProcessing.Constants.TaskQueueCode);
+
+            dmlSelect.SetWhereCondition(w => w.Column(TaskProcessing.Constants.StatusCode) == w.Value(
+                        Convert.ToByte(TaskProcessingQueue.StatusCodeEnum.InProcess))
+                    && w.Column(TaskProcessing.Constants.ProcessEngineId) == w.Parameter(
+                        TaskProcessing.Constants.ProcessEngineId));
+
+            return _daMgr.BuildSelectDbCommand(dmlSelect, null);
+        }
+
+        DbCommand BuildResetItemsInProcessCmd()
+        {
+            DbTableDmlMgr dmlUpdate = new DbTableDmlMgr(_daMgr
+                    , DataAccess.Constants.SCHEMA_CORE
+                    , TaskProcessing.Constants.TaskProcessingQueue);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusDateTime, Core.EnumDateTimeLocale.UTC);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusCode
+                    , new DbConstValue(Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Queued)));
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusMsg);
+            dmlUpdate.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode)
+                    == w.Parameter(TaskProcessing.Constants.TaskQueueCode));
+            return _daMgr.BuildUpdateDbCommand(dmlUpdate);
+        }
+
+        DbCommand BuildCompleteTaskCmd()
+        {
+            DbTableDmlMgr dmlUpdate = new DbTableDmlMgr(_daMgr
+                    , DataAccess.Constants.SCHEMA_CORE
+                    , TaskProcessing.Constants.TaskProcessingQueue);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusDateTime, Core.EnumDateTimeLocale.UTC);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.CompletedDateTime, Core.EnumDateTimeLocale.UTC);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.TaskParameters);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusCode);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.LastCompletedCode);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.LastCompletedMsg);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.StatusMsg);
+            dmlUpdate.AddColumn(TaskProcessing.Constants.IntervalCount);
+            dmlUpdate.SetWhereCondition(w => w.Column(TaskProcessing.Constants.TaskQueueCode)
+                    == w.Parameter(TaskProcessing.Constants.TaskQueueCode));
+            return _daMgr.BuildUpdateDbCommand(dmlUpdate);
         }
 
         DbCommand BuildGetDependenciesCmd()

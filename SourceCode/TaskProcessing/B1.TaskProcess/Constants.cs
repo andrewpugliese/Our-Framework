@@ -16,6 +16,8 @@ namespace B1.TaskProcessing
         public const string DeQueueTask = "DeQueueTask";
         public const string IntervalCount = "IntervalCount";
         public const string IntervalSecondsRequeue = "IntervalSecondsRequeue";
+        public const string LastCompletedCode = "LastCompletedCode";
+        public const string LastCompletedMsg = "LastCompletedMsg";
         public const string LastModifiedDateTime = "LastModifiedDateTime";
         public const string LastModifiedUserCode = "LastModifiedUserCode";
         public const string LastRegisteredDate = "LastRegisteredDate";
@@ -25,6 +27,7 @@ namespace B1.TaskProcessing
         public const string StatusCode = "StatusCode";
         public const string StartedDateTime = "StartedDateTime";
         public const string StatusDateTime = "StatusDateTime";
+        public const string StatusMsg = "StatusMsg";
         public const string StatusName = "StatusName";
         public const string TaskId = "TaskId";
         public const string TaskDependencies = "TaskDependencies";

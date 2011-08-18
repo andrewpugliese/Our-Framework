@@ -62,6 +62,10 @@
       <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
       <Name>B1.ILoggingManagement</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\LoggingManagement\B1.LoggingManagement\B1.LoggingManagement.csproj">
+      <Project>{7DB1E797-E40A-4815-9007-453152561250}</Project>
+      <Name>B1.LoggingManagement</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -25,7 +25,9 @@ namespace B1.LoggingManagement
         [DataMember]
         public string Time;
         [DataMember]
-        public Stack<string> Context;
+        public string Context;
+        [DataMember]
+        public int ContextLevel;
         [DataMember]
         public string MachineName;
         [DataMember]
@@ -87,13 +89,14 @@ namespace B1.LoggingManagement
             if (!MemoryMappedLog.TraceWriter.BeingRead)
                 return;
 
-            if (_traceWriterThread.Value.Status != TaskStatus.Running)
-                return;
+            while (_traceWriterThread.Value.Status != TaskStatus.Running)
+                Thread.Sleep(200);
 
             _traceQueue.Value.Enqueue(new TraceMessage()
                     {
                         Time = DateTime.Now.ToString("HH:mm:ss.fffffff"),
-                        Context = LoggingContext.Context,
+                        Context = LoggingContext.ToString,
+                        ContextLevel = LoggingContext.Level,
                         MachineName = Environment.MachineName,
                         ProcessId = Process.GetCurrentProcess().Id,
                         ProcessName = Process.GetCurrentProcess().ProcessName,

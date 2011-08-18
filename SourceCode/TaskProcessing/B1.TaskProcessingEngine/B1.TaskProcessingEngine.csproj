@@ -43,8 +43,10 @@
     <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="DequeuedTask.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaskProcessingEngine.cs" />
+    <Compile Include="TasksInProcess.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CacheManagement\B1.CacheManagement\B1.CacheManagement.csproj">
@@ -62,6 +64,10 @@
     <ProjectReference Include="..\..\LoggingManagement\B1.ILoggingManagement\B1.ILoggingManagement.csproj">
       <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
       <Name>B1.ILoggingManagement</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LoggingManagement\B1.LoggingManagement\B1.LoggingManagement.csproj">
+      <Project>{7DB1E797-E40A-4815-9007-453152561250}</Project>
+      <Name>B1.LoggingManagement</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\SessionManagement\B1.SessionManagement\B1.SessionManagement.csproj">
       <Project>{59DB291F-59BD-4090-94B6-D502A6972874}</Project>
