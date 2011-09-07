@@ -9,15 +9,15 @@
 CREATE TABLE B1.AccessControlGroups
 (
 	AccessControlGroupCode  INT NOT NULL,	-- unique numeric identifier
-	AccessControlGroupName  VARCHAR(64) NOT NULL, -- unique string identifier
+	AccessControlGroupName  NVARCHAR(64) NOT NULL, -- unique string identifier
 	DefaultAccessDenied		BIT DEFAULT (0), -- indicates whether the default access is denied or allowed
-	Remarks					VARCHAR(512),
-	CONSTRAINT PK_AccessControlGroups PRIMARY KEY (AccessControlGroupCode) 
+	Remarks					NVARCHAR(512),
+	CONSTRAINT AccessControlGroups_PK PRIMARY KEY (AccessControlGroupCode) 
 ) ON B1Core
 
 GO
 
-CREATE UNIQUE INDEX UX_AccessControlGroups_GroupName
+CREATE UNIQUE INDEX AccessControlGroups_UX_GroupName
 ON B1.AccessControlGroups(AccessControlGroupName) 
 ON B1CoreIdx
 

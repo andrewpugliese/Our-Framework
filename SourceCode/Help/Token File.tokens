@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<content xml:space="preserve" xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <item id="DB2 add-ins"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>DB2 add-ins</ddue:linkText>
+    <ddue:linkUri>https://www14.software.ibm.com/webapp/iwm/web/reg/download.do?source=swg-db2expressc&amp;S_TACT=109HF15W&amp;lang=en_US&amp;S_PKG=dlwin64&amp;cp=UTF-8&amp;dlmethod=http</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="DB2 v9.7.4 client"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>DB2 v9.7.4 client</ddue:linkText>
+    <ddue:linkUri>http://www-01.ibm.com/software/data/db2/linux-unix-windows/download.html</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="DB2 v9.7.4 server"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>DB2 v9.7.4 server</ddue:linkText>
+    <ddue:linkUri>http://www.ibm.com/developerworks/downloads/im/udb/</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Enterprise Library CodePlex"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Enterprise Library CodePlex</ddue:linkText>
+    <ddue:linkUri>http://entlib.codeplex.com/</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Example">Token content</item>
+  <item id="Fix Pack 4"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Fix Pack 4</ddue:linkText>
+    <ddue:linkUri>https://www-304.ibm.com/support/docview.wss?uid=swg24029745</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="H3 Viewer"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>H3 Viewer</ddue:linkText>
+    <ddue:linkUri>http://mshcmigrate.helpmvp.com/viewer</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="HTML Help Workshop"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>HTML Help Workshop</ddue:linkText>
+    <ddue:linkUri>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=00535334-c8a6-452f-9aa0-d597d16580cc&amp;displaylang=en</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="IBM DB2 Express-C"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>IBM DB2 Express-C</ddue:linkText>
+    <ddue:linkUri>http://www.ibm.com/developerworks/downloads/im/udbexp/</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="IBM iSeries"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>IBM iSeries</ddue:linkText>
+    <ddue:linkUri>http://www-03.ibm.com/systems/i/software/access/windows/casp.html</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Microsoft Download Center"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Microsoft Download Center</ddue:linkText>
+    <ddue:linkUri>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=d2928bc1-f48c-4e95-a064-2a455a22c8f6&amp;displaylang=en</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Microsoft's Sandcastle core technology"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Microsoft's Sandcastle core technology</ddue:linkText>
+    <ddue:linkUri>http://sandcastle.codeplex.com/releases/view/47665#DownloadId=128770</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="ODP.NET"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>ODP.NET</ddue:linkText>
+    <ddue:linkUri>http://www.oracle.com/technetwork/database/windows/index-085163.html</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Oracle Developer Tools"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Oracle Developer Tools</ddue:linkText>
+    <ddue:linkUri>http://www.oracle.com/technetwork/database/windows/downloads/index-101290.html</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Sandcastle Help File Builder"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Sandcastle Help File Builder</ddue:linkText>
+    <ddue:linkUri>http://shfb.codeplex.com/</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="service pack"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>service pack</ddue:linkText>
+    <ddue:linkUri>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=75568aa6-8107-475d-948a-ef22627e57a5</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="SHFB"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Sandcastle Help File Builder</ddue:linkText>
+    <ddue:linkUri>http://SHFB.CodePlex.com</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="The Official Microsoft ASP.NET Site"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>The Official Microsoft ASP.NET Site</ddue:linkText>
+    <ddue:linkUri>http://www.asp.net/mvc/mvc3</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="update"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>update</ddue:linkText>
+    <ddue:linkUri>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=82cbd599-d29a-43e3-b78b-0f863d22811a&amp;displaylang=en</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Visual Studio 2010 SDK"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Visual Studio 2010 SDK</ddue:linkText>
+    <ddue:linkUri>http://www.microsoft.com/downloads/en/details.aspx?FamilyID=47305cf4-2bea-43c0-91cd-1b853602dcc5&amp;displaylang=en</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="Wikipedia"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>Wikipedia</ddue:linkText>
+    <ddue:linkUri>http://en.wikipedia.org/wiki/Guid</ddue:linkUri>
+    </ddue:externalLink></item>
+  <item id="11.1.0.7 patch set"><ddue:externalLink xmlns:ddue="http://ddue.schemas.microsoft.com/authoring/2003/5">
+    <ddue:linkText>11.1.0.7 patch set</ddue:linkText>
+    <ddue:linkUri>http://www.anysql.net/doc/bug11107.html</ddue:linkUri>
+    </ddue:externalLink></item>
+</content>

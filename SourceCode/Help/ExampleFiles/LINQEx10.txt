@@ -1,0 +1,28 @@
+var resultsSubSelect1 =
+	from a in entities.ConfigSettings
+	join b in
+		(from c in entities.ConfigParameters
+			where c.ParameterName != paramName
+			select c) on a.ConfigSetName equals b.ParameterName
+	where new[] { inValue, "B", "C", "D", inValue }.Contains(a.Description)
+	&& (a.ConfigSetName != null || a.ConfigSetName == "test")
+	select b;
+
+var resultsSubSelect2 =
+	from a in entities.ConfigSettings
+	join b in
+		(from c in entities.ConfigParameters
+			join d in entities.ConfigSettings on c.ParameterName equals d.ConfigSetName
+			where c.ParameterName != null
+			select new { c.ParameterName, d.ConfigSetName }) on a.Description equals b.ConfigSetName
+	join c in
+		(from a in entities.TestSequences
+			join b in
+				(from a in entities.ConfigSettings
+				where a.ConfigSetName != "asdf"
+				select new { a.ConfigSetName, a.Description }) on a.AppSequenceName equals b.ConfigSetName
+			where a.Remarks != null
+			select new { a.AppSequenceName, a.AppSequenceId }) on b.ConfigSetName equals c.AppSequenceName
+	where new[] { inValue, "B", "C", "D", inValue }.Contains(a.Description)
+	&& (a.Description != null || a.ConfigSetName == "test")
+	select a;

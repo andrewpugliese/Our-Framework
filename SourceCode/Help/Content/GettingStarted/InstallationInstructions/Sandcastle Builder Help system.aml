@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="ae1f7ebb-557e-4f5b-8aed-599a7101a296" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The installation of the sandcastle help system is optional and only required if you plan on building the DCF help system project locally on your machine.
+      </para>
+    </introduction>
+
+    <section address="Instructions">
+      <title>Installation Instructions for SandCastle Help System</title>
+      <content>
+        <!-- Uncomment this to create a sub-section outline
+        <autoOutline /> -->
+        <para>There are several steps required for installing all of the tools necessary that the SandCastle technology relies on.
+        </para>To complete the installation, you will need the following (installed in the following order):
+        <list class="bullet">
+          <listItem><para>Install the latest version of <token>Microsoft's Sandcastle core technology</token> (currently the June 2010 release as of March 6, 2011).
+          </para></listItem>
+          <listItem><para>Install the <token>Visual Studio 2010 SDK</token> from the Microsoft Download Center.
+          </para></listItem>
+          <listItem><para>Install the <token>HTML Help Workshop</token> is for building HTML Help 1 (.chm) help files.  When arriving at the download page, select the htmlhelp.exe file for download.
+          </para></listItem>
+          <listItem><para>To view MS Help Viewer files with a full table of content and index support rather than in the default browser, you can install the <token>H3 Viewer</token> (free for personal use).
+          </para></listItem>
+          <listItem><para>Install the latest version of the <token>Sandcastle Help File Builder</token> found at the Sandcastle Help File Builder CodePlex project site. As you proceed through the installation wizard, respond as follows:</para>
+             <list class="bullet">
+      		   <listItem><para>On the SandCastle Patch page, select button to apply the patch.  After patch is applied, click next button.
+               </para></listItem>
+      		   <listItem><para>On the Sandcastle MAML Guide page, review the destination folder and select the Extract MAML Guide button.  
+	       When finished, click the next button.
+               </para></listItem>
+      		   <listItem><para> On the Web Project Custom Code Providers page, review the destination folder and select the Extract 
+	       Providers button. When finished, click the next button.
+               </para></listItem>
+      		   <listItem><para>On the HTML to MAML Converter page, review the destination folder and select the Extract Converter button. 
+	       When finished, click the next button.
+               </para></listItem>
+      		   <listItem><para> On the MAML Schema IntelliSense for Visual Studio, click the install schemas button.  When finished, click 
+	       the next button.
+               </para></listItem>
+      		   <listItem><para>On the Sandcastle Help File Builder page, click the Install SHFB button.
+               </para></listItem>
+      		   <listItem><para>Click next and then finish to exit the wizard.
+               </para></listItem>
+             </list>
+          </listItem>
+        </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="7ffd257d-3298-45f8-a7c2-ed62870a92cd" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The following sections provide instructions on how to set up a new database using the Database Setup Utility application that is part of the Dealer Common Framework</para>
+      <para>This step is optional and is a convienent and simple way to create databases locally or remotely.</para>
+      <para>The only prerequisite is that you have followed all instructions in the Getting Start section of this document thus far to set up your software, environment, and script files.</para>
+      <list class="bullet">
+        <listItem><para><link xlink:href="244156e1-c868-4500-9f9a-9454e0e08f1c" /></para></listItem>
+        <listItem><para><link xlink:href="04421cc0-3cb7-426d-817c-ff5035416577" /></para></listItem>
+      </list>
+      </introduction>
+
+    <relatedTopics>
+      <link xlink:href="00ca0d43-40ea-4c0d-9f52-f54410838da6" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

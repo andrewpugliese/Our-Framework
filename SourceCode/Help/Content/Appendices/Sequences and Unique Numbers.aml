@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="7c01d22e-f086-4593-93bc-5f3f566717a4" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <autoOutline />
+      <para>DealerTrack's DbAccess Component for supporting Unique and Sequence Numbers</para>
+    </introduction>
+    <autoOutline />
+
+    <section address="Numbers">
+      <title>Unique and Sequence Numbers</title>
+      <content>
+        <autoOutline />
+        <para>Sequence numbers can be used as unique numbers, but unique number cannot be used as sequence numbers.</para>
+        <para>For example here is a set of sequence numbers: <computerOutputInline>(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)</computerOutputInline></para>
+        <para>Here is an example of a set of unique numbers: <computerOutputInline>(10, 11, 15, 18, 12, 19, 13, 20, 17, 18, 16, 14)</computerOutputInline></para>
+        <para>The one attribute they share in common is that in neither set are there any duplicates within the set.</para>
+        <para>Often in applications, there is a need for a sequence or unique number.  And there is a the requirement to avoid duplicates even after a restart of the application.</para>
+        <para>Operating systems provide a means of generating random numbers but those will be repeating.</para>
+        <para>Database system provide mechanisms for generating sequence numbers.  While they vary in implementation, the functionality is similar.</para>
+        <para>Oracle has sequences. Db2 and Sqlserver have identities.</para>
+        <para>To obtain a new sequence using the objects listed above, one must make a call to the database for each number unless you set the increment</para>
+        <para>to be more than 1.  Then you can have another component dispatch this block of sequence numbers.</para>
+        <para>To setup a new sequence or identity object requires a DDL statement on the database.  There may also be permissions required and each back-end has a slightly different syntax.</para>
+        <para>The DbAccess component provides a common interface to this functionality.  In fact, new sequences or unique numbers can be created at any time programmatically without DDL statements.</para>
+      </content>
+      <content>
+        <para>To obtain a new unique number, simply call the following method of  the DbAccess component:</para>
+        <list class="bullet">
+        	<listItem><para><code language="C#">public Int64 GetNextUniqueId(string uniqueIdKey, UInt32 blockSize)</code></para></listItem>
+        	<listItem><para>The uniqueIdKey corresponds to the string key that will be associated with the uniqueId number.</para></listItem>
+        	<listItem><para>The blockSize corresponds to the quantity of numbers to retrieve in the call.</para></listItem>
+        </list>	
+      </content>
+      <content>
+        <para>The following is an example call:</para>
+        <list class="bullet">
+        	<listItem><para><code language="C#">Int64 uniqueId = _daMgr.GetNextUniqueId('myUniqueId', 1);</code></para></listItem>
+        	<listItem><para>Assuming this was the first time the function was called for the key 'myUniqueId', then uniqueId value will be 1.</para></listItem>
+        	<listItem><para>If we call it again, then the value will be 2; Even if another application or another thread calls another instance of the dbAccess component (against the same database) using the same key, then the next value would be 3, 4, 5, etc.</para></listItem>
+        	<listItem><para>Now if the blockSize was changed to 10 and we were currently up to 5, the next uniqueId returned would be 15.  This single call provides the caller with the block of numbers ending with 15 (i.e. 15, 14, 13, …, 6).</para></listItem>
+        </list>	
+      </content>
+      <content>
+        <para>While these numbers look like sequences, they are referred to as unique numbers because of the ability to obtain blocks of numbers by two different instances.  Now when those instances dispatched the numbers as they were needed, the instance that made the second call would always provide unique numbers that were greater than the first instances (even if they were dispatched first).</para>
+        <para>For example:</para>
+        <para>Instance1 has a block of numbers from 6 through 15</para>
+        <para>Instance2 has a block of numbers from 16 through 25</para>
+        <para></para>
+        <para>Now if they were to be inserting records into some table 'Orders' and the unique numbers were stored as OrderId</para>
+		<table>
+		  <title>Orders</title>
+		  <tableHeader>
+		      <row>
+		        <entry><para>OrderId</para></entry>
+		        <entry><para>InstanceId</para></entry>
+		      </row>
+		  </tableHeader>
+		  <row>
+		        <entry><para>16</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>17</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>18</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>6</para></entry>
+		        <entry><para>1</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>7</para></entry>
+		        <entry><para>1</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>19</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		</table>
+      </content>
+      <content>
+        <para>If the instances did not use a block size of 10 and instead just used 1, then it would sequence better, but it would put a greater load on the database.</para>
+   		<para>To maintain the optimization of caching numbers at the application and off the database and still maintain a sequencing capability, the DbAccess provides the following method:</para>
+   		<list class="bullet">
+        	<listItem><para><code language="C#">public Int64 GetNextSequenceNumber(string sequenceKey)</code></para></listItem>
+        	<listItem><para>The sequenceKey serves the same purpose as the uniqueidKey;  It allows the application to refer to a particular value and also maintain several different sequences</para></listItem>
+        </list>	        
+      </content>      
+      <content>
+        <para>One difference between the value returned as a sequence and the value returned as a unique number, is the magnitude of the number.  The sequence number will always return a 19 digit number (Int64 in .Net; Bigint in SqlServer and Db2; Number(19) in Oracle).  The other difference is that there is no block size parameter.  Only one is returned at a time; but requesting a sequence number does not require a database call every time</para>
+        <para>The magnitude comes from the components of the number:</para>
+      </content>
+      <content>
+        <para>The returned number will have the following format: YYdddHHmmssfffnnnnn where</para>
+        <list class="none">
+          <listItem><para>YY -> year (e.g. 11)</para></listItem>
+          <listItem><para>ddd -> julian day of year (e.g. 1 New Years Day, 365 New Years Eve)</para></listItem>
+          <listItem><para>HH -> Military Format Time Hour (e.g. 01, 14, 23) (Universal Time Constant: UTC)</para></listItem>
+          <listItem><para>mm -> minute (e.g. 01, 10, 59) (UTC)</para></listItem>
+          <listItem><para>ss -> second (e.g. 01, 10, 59) (UTC)</para></listItem>
+          <listItem><para>fff -> millisecond (e.g. 001, 053, 255)</para></listItem>
+          <listItem><para>nnnnn -> a 5 digit numeric value PROVIDED BY CALLER to be the tie-breaker in the event that two threads generate a sequence at exactly the same millisecond</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>So if we take the example above the Orders table could look something like:</para>
+		<table>
+		  <title>Orders</title>
+		  <tableHeader>
+		      <row>
+		        <entry><para>OrderId</para></entry>
+		        <entry><para>InstanceId</para></entry>
+		      </row>
+		  </tableHeader>
+		  <row>
+		        <entry><para>1111714372358100016</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>1111714372358100017</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>1111714372359100018</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>1111714372360100006</para></entry>
+		        <entry><para>1</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>1111714372360200007</para></entry>
+		        <entry><para>1</para></entry>
+		  </row>
+		  <row>
+		        <entry><para>1111714372361200019</para></entry>
+		        <entry><para>2</para></entry>
+		  </row>
+		</table>
+      </content>
+      <content>
+        <para>There are several attributes to the sequence number that warrant discussion:</para>
+        <list class="bullet">
+          <listItem><para>The time format is military time so that we do not get erroneous sequencing during after 12 noon.  (instead of being 1 oclock, it will be 13 which sort properly after 12)</para></listItem>
+          <listItem><para>Another is that the fields are 0 padded so 1 second is 01 and 5 minutes is 05 again so that the number sorts properly</para></listItem>
+          <listItem><para>To avoid time zone and daylight savings time changes, Universal Time is chosen</para></listItem>
+          <listItem><para>The time retrieved from the application server is adjusted to be in synch with the common database server that was used to provide the date and time</para></listItem>
+          <listItem><para>Only during the construction of the DbAccess component is the time retrieved from the database server.  Most data centers synchronize their servers with an external time system, so this is an extra step to keep a coordinated time</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>How does the DbAccess compoonent guarantee a unique tie-breaker number in the event that two threads request a number at exactly the same millisecond?  It used GetNextUniqueId internally.  By using a CacheBlockSize > 1, it does not need to go to the database for every number and no two instances will have the same unique number.</para>
+   		<para>The SequenceNumber function actually uses another common function in the DealerTrack Common Objects library to do this formatting:</para>
+   		<list class="bullet">
+   			<listItem><para>In namespace: DealerTrack.CORE.Common</para></listItem>
+        	<listItem><para><code language="C#">public static Int64 GetSequenceNumber(DateTime synchronizedTime, Int64 uniqueTieBreakerNumber)</code></para></listItem>
+        	<listItem><para>This provides DealerTrack with the flexibility to provide an alternative method for obtaining a synchronizedTime and a uniqueTieBreakerNumber if it has a more optimized implementation</para></listItem>
+        </list>	        
+      </content>
+      <content>
+        <para>This method above does not require any database calls.</para>
+   		<para>The DbAccess component depends on a database table to maintain all the uniqueIds and Keys:  Core.UniqueIds</para>
+   		<para>The table has 5 columns (the first is a string, the other columns are Int64 equivalent):</para>
+   		<list class="bullet">
+   			<listItem><para>UniqueIdKey</para></listItem>
+   			<listItem><para>UniqueIdValue</para></listItem>
+   			<listItem><para>CacheBlockSize</para></listItem>
+   			<listItem><para>MaxIdValue</para></listItem>
+   			<listItem><para>RolloverIdValue</para></listItem>
+        </list>
+        <para>The Key and Value are obvious; the CacheBlockSize indicates the default block size to obtain if none is provided.  The larger the block size the more caching can be done on the application side.  This can be different for every Key.</para>
+		<para>The MaxIdValue and RolloverIdValue are used to control the number returned.  For sequencing, these are set to 99999 and 1.  Therefore each time the number is greater than 99999, then it is reset to 1.  This is useful for the tie-breaker number and it allows us to keep the number to 5 digits.</para>
+		<para>The tie breaker does not have to be 5 digits long; but that was just a default decision.  It does mean that every millisecond, you can have 99999 unique sequences.</para>
+		<para>The retrieval of the numbers from this table and the transaction synchronization is performed by stored procedure (which has a version for the 3 back-end db's supported):  <codeInline>Core.usp_UniqueIdsGetNextBlock</codeInline></para>
+		<para>Large cache block sizes can be used for optimization; however, they can result in lost numbers.  Once a block is assigned, if another block is requested, that first block of numbers can no longer be used (even if the numbers are never dispatched).  Technically the values could be used but there is just no automated functionality as part of the DbAccess component.</para>
+		<para>The DbAccess component has a method that can be called at the end of the components use (e.g. when the application terminates).  <codeInline>public void ClearUniqueIdsCache()</codeInline></para>
+		<para>Once this method is called, it will attempt to return any unused UniqueIds back to the database table.  It does this by updating the UniqueIds table for the row containing the UniqueIdKey AND where the current value is equal to the value it was last given.  If the value exists, then no other component had requested a block of numbers.  So it is safe to reset the counter for that key.</para>
+      </content>
+    </section>
+
+    <section address="GUID">
+      <title>Globally unique identifier (GUID)</title>
+      <content>
+        <para>While a GUID can certainly be used to generated the uniqueIds and eliminate database bottlenecks, they can be awkward for people to use.  They also require larger space in the database and sequencing is not standard (if desired) across the different platforms.</para>
+        <para>For more information about GUID's, please reference the information found in <token>Wikipedia</token>.</para>
+      </content>
+    </section>
+  
+    <section address="CommonEntityIdent">
+      <title>Common Entity Identifiers</title>
+      <content>
+        <para>Depending on the architecture that DealerTrack will be implementing for its common entities, the generation of a unique identifier can be decided for optimization.</para>
+        <para>This discussion will assume that DT has chosen not to use a guid for its unique entity identifiers.</para>
+      </content>
+      <content>
+        <para>Assuming that DT only requires a unique identifier, the following conditions would apply:</para>
+        <list class="bullet">
+          <listItem><para>Identifiers are only dispatched from a single application database.  This guarantees that there cannot be any duplicates because the unique identifier blocks of numbers will come from the same source</para></listItem>
+          <listItem><para>There can be many application servers and instances of the dbAccess component. Every component would be using the same connection string to obtain the block of identifiers, then they can dispatch them locally</para></listItem>
+          <listItem><para>Identifiers are dispatched from multiple databases; however, they have been configured so that each database maintains a different range of numbers.  Again the dbAccess component would dispatch the identifiers locally</para></listItem>
+		</list>
+      </content>      
+      <content>
+        <para>If DT would like to use the Sequence Numbers, the following conditions would apply:</para>
+        <list class="bullet">
+          <listItem><para>Sequences are only dispatched from a single application database.  This guarantees that there cannot be any duplicates because the unique identifier blocks of numbers used for the tie-breaker will come from the same source</para></listItem>
+          <listItem><para>•	There can be many application servers and instances of the dbAccess component. Every component would be using the same connection string to obtain the block of identifiers, then they can dispatch them locally</para></listItem>
+          <listItem><para>•	Sequences are dispatched from multiple databases; however, they have been configured so that each database maintains a different range of numbers for the tie-breaker.  Again the dbAccess component would dispatch the sequences locally.  In addition, since time is a major part of this number, it is important that the machine times are synchronized</para></listItem>
+		</list>
+        <para>Some additional options would be to modify the sequence number format</para>
+      </content>  
+      <content>
+        <para>The returned number will have the following format: YYdddHHmmssfffnnnnX where:</para>
+        <list class="none">
+          <listItem><para>YY -> year (e.g. 11)</para></listItem>
+          <listItem><para>ddd -> julian day of year (e.g. 1 New Years Day, 365 New Years Eve)</para></listItem>
+          <listItem><para>HH -> Military Format Time Hour (e.g. 01, 14, 23) (Universal Time Constant: UTC)</para></listItem>
+          <listItem><para>mm -> minute (e.g. 01, 10, 59) (UTC)</para></listItem>
+          <listItem><para>ss -> second (e.g. 01, 10, 59) (UTC)</para></listItem>
+          <listItem><para>fff -> millisecond (e.g. 001, 053, 255)</para></listItem>
+          <listItem><para>nnnn -> a 4 digit numeric value PROVIDED BY CALLER to be the tie-breaker in the event that two threads generate a sequence at exactly the same millisecond.</para></listItem>
+          <listItem><para>X → represents (any fixed digit for a location)</para></listItem>
+		</list>
+      </content> 
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="da02511b-cd66-4d3d-b9b9-082b9922f19f" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

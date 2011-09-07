@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="244156e1-c868-4500-9f9a-9454e0e08f1c" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Steps to create a database on a Microsoft SQL server, Oracle, or DB2 server.  These steps work for a local or remote database.</para>
+    </introduction>
+    
+    <section address="UtilityApp">
+      <title>Follow the steps below to create a database</title>
+      <content>
+      <list class="bullet">
+	      <listItem><para>Launch the DealerTrack.CORE.Common.Utils.DatabaseSetup application</para></listItem>
+	      <listItem><para>From the DbSetup tab of the application, click start.  It will begin to rebuild the db and put
+				the results into the file in the config file.  From the ui, you can click to view the results</para></listItem>
+	      <listItem><para>The objects include the data dictionary tables which will contain the database catalog data and the 
+				stored procedures used to maintain them.  In addition, there is a UniqueIds table and supporting stored procedure.
+				Configuration tables for application configuration.  TestSequence table for demo purposes.</para></listItem>
+	      <listItem><para>Just check for errors.  If you click on the button next to the results file, it will open up the file in the editor
+				listed in the config file</para></listItem>
+	      <listItem><alert><para>If you are looking to verify that there are NO errors listed. (you can use text Find for 'error')</para></alert></listItem>
+	      <listItem><para>Besides creating database (sqlserver), filegroup or tablespace, it will create user, tables and procdures as
+			found in the \DatabaseType\Scripts\Setup\DatabaseName.cmd file.  The table ddl is found in \DatabaseType\Tables directory.  
+			The procedure ddl is found in the \DatabaseType\Procedures directory.
+		  </para></listItem>
+      </list>
+      </content>
+    </section>
+	
+    <relatedTopics>
+      <link xlink:href="7ffd257d-3298-45f8-a7c2-ed62870a92cd" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

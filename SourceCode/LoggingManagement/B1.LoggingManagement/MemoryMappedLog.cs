@@ -607,7 +607,7 @@ namespace B1.LoggingManagement
         }
 
         /// <summary>
-        /// 
+        /// Disposes of the object and removes file if empty.
         /// </summary>
         public override void Dispose()
         {

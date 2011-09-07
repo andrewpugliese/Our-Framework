@@ -34,7 +34,7 @@ namespace B1.Core
         /// <summary>
         /// Framework's Minor Version
         /// </summary>
-        public const int B1FrameworkrMinorVersion = 13;
+        public const int B1FrameworkrMinorVersion = 15;
         /// <summary>
         /// Frameworks Major . Minor Version
         /// </summary>

@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="e6a2ec31-2890-4f06-9d98-e81f0bc04103" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The topics in this section describe the various changes made to the
+			DealerTrack Common Framework over the life of the project</para>
+    </introduction>
+
+    <section>
+      <title>Version History</title>
+      <content>
+        <para>Select a version below to see a description of its changes</para>
+		<list class="bullet">
+		  <listItem><para><link xlink:href="25e64cc4-da22-4594-8fa7-0ddb3ce8f6c0" /></para></listItem>
+		  <listItem><para><link xlink:href="84522ed8-30fc-498c-9fee-2b23f000e4d8" /></para></listItem>
+		  <listItem><para><link xlink:href="dc86ab67-e571-467a-8f22-597b657796e0" /></para></listItem>
+		  <listItem><para><link xlink:href="65ddd418-7ce1-4e63-8669-3e8f40f1192f" /></para></listItem>
+		  <listItem><para><link xlink:href="42fbddf7-3fad-42fd-9d7a-5b9b403e5d93" /></para></listItem>
+		  <listItem><para><link xlink:href="7032a550-439b-4e67-bbb5-3a87b814977c" /></para></listItem>
+		  <listItem><para><link xlink:href="e16bddb6-b09d-4060-b235-9acee18aec06" /></para></listItem>
+		  <listItem><para><link xlink:href="9e5f4a6c-38ec-4bbb-b415-2485fdac58b0" /></para></listItem>
+		  <listItem><para><link xlink:href="70d10e68-6d41-4b2b-8313-4a1cc8c5cc3a" /></para></listItem>
+		  <listItem><para><link xlink:href="7e875d82-cb4b-4a84-b996-bb1f07b665c3" /></para></listItem>
+		  <listItem><para><link xlink:href="2fd01909-bed5-499f-be5a-11ca269cafa9" /></para></listItem>
+		  <listItem><para><link xlink:href="40993683-61a6-4466-9eb0-f4c4674fca09" /></para></listItem>
+		  <listItem><para><link xlink:href="220dfd66-d8c0-48c3-8535-530b8a32b4ab" /></para></listItem>
+		  <listItem><para><link xlink:href="73366132-9ad1-4b74-bc69-de1db6f090d9" /></para></listItem>
+		  <listItem><para><link xlink:href="9c84cb96-a28c-4cb8-8e08-84aa91445c61" /></para></listItem>
+		  <listItem><para><link xlink:href="0e940087-a454-445e-8882-f020c23fd208" /></para></listItem>
+		  <listItem><para><link xlink:href="d0e51958-a61e-48d5-a90b-9b8f01862fb1" /></para></listItem>
+		  <listItem><para><link xlink:href="2003e6fc-1db3-447b-b48c-1bc8f52f7d9e" /></para></listItem>
+		  <listItem><para><link xlink:href="302d7e39-1907-4526-a589-45e2a66c3af1" /></para></listItem>
+		  <listItem><para><link xlink:href="39a75dcc-9615-4a8b-b9ba-2f36fb72b9ff" /></para></listItem>
+		  <listItem><para><link xlink:href="5ccebd93-1d19-422e-a00e-1e25f6a78d7c" /></para></listItem>
+		  <listItem><para><link xlink:href="0e3b40fe-ac2c-4fdb-a969-344c4fbec20c" /></para></listItem>
+		  <listItem><para><link xlink:href="4b2e698f-f981-4961-bb3d-3b973286b90b" /></para></listItem>
+		  <listItem><para><link xlink:href="558ae5ef-541d-4ef4-b997-3a1e864cb9fa" /></para></listItem>
+		  <listItem><para><link xlink:href="aedaa487-fca5-4c33-b5f0-05f4eb56104a" /></para></listItem>
+		  <listItem><para><link xlink:href="dd30d460-59f7-4de4-a853-232d97b4a277" /></para></listItem>
+		  <listItem><para><link xlink:href="5b808c4f-c46a-45cd-8c7b-854ddfcb51ec" /></para></listItem>
+		</list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="7d75cefa-8c2e-411e-86a8-80f5b514d755" />
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+      <link xlink:href="da02511b-cd66-4d3d-b9b9-082b9922f19f" />
+      <link xlink:href="1b88be0d-fd29-4067-9041-c613def825c0" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

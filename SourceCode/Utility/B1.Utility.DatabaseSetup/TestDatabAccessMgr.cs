@@ -1048,7 +1048,6 @@ namespace B1.Utility.DatabaseSetup
             dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceId);
             return new PagingMgr(daMgr
                     , dmlJoin
-                ///        , new List<string> { Constants.AppSequenceName, Constants.AppSequenceId }
                     , DataAccess.Constants.PageSize
                     , pageSize
                     , pagingState);

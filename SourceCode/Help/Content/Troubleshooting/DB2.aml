@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="f05a754f-3f1c-4022-ad7f-808d0fc03204" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>This topic conatains all know issues using the DCF with DB2</para>
+    </introduction>
+
+    <section address="DB2">
+      <title>Non-unique value for “invariant”</title>
+      <content>
+        <para>When you make a call to the DB2 database for the first time within the DCF, you may encounter an exception whose error text has some of the following text: "non-unique value for invariant attribute".</para>
+        <para>This error message is due to an installation issue with DB2 client.  To fix this, perform the following steps:</para>
+        <list class="ordered">          
+          <listItem><para>Open the 32 or 64 bit version of the machine.config file for the framework you are working on.</para></listItem>
+          <listItem><para>Search for the DbProviderFactories section in the file.</para></listItem>
+          <listItem><para>There are two entries in this section that have the same value for the “invariant” attribute.</para></listItem>
+          <listItem><para>Delete the one that is no longer needed.</para></listItem>
+	    </list>
+	    <para>This problem happens on some machines and not on others</para>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="1b88be0d-fd29-4067-9041-c613def825c0" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

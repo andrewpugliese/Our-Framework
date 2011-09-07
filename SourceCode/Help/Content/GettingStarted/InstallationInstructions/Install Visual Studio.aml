@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="5b88735b-8c9a-47cd-b616-8d724d82a967" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The DealerTrack Common Framework is developed in C# using Visual Studio 2010.  In order to compile the code, you must have Visual Studio 2010 installed on your workstation.
+      </para>
+      <para>You will need Visual Studio Premium or Ultimate edition to compile and run the sample code, including executing unit tests that are part of the DealerTrack Common Framework.
+      </para>
+      <para>Visual Studio 2010 Service Pack 1 has been recently released. At this time, we are recommending this <token>service pack</token> to be installed.
+      </para>
+    </introduction>
+
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="9a80f655-ad0f-416c-8f3f-13d43e5f5ced" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The DCF provides scripts to facilitate the creation of database (local or remote) from within the Database Setup Utility Application.</para>
+      <alert><para>This section only is only necessary if you plan on using the database utility application to create a local or remote database for you
+      </para></alert>
+    </introduction>
+
+    <section address="SQL">
+      <title>SQLServer</title>
+      <content>
+        <para>Currently, it will rebuild (or create) a database call DTSample</para>
+        <para>Add one or more sections with content</para>
+        <para>Verify the DT.SampleDb.cmd file in the DTFramework\SourceCode\Database\SQLServer\Scripts\Setup directory</para>
+        <para>The databases that we created are expected to have two filegroups (SqlServer) or tablespaces (Oracle)</para>
+            <para>DTCore		- holds tables, views, etc</para>
+            <para>DTCoreIdx	- holds indexes</para>
+        <para>While these are samples, they provide an understanding that the objects should be architected in a way
+        that allows for maintenance, growth, and performance.
+        You are not forced to use these and only these settings; but they are a sample and the objects that will
+        be created to expect however.  So unless those files are modified then please use these for the demo.
+		</para>
+        <para>Please look at file DT.SampleDb.sql file.</para>
+		<code language="SQL">
+            , filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\DTSample.mdf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\DTSample_DTCore.ndf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\DTSample_DTCoreIdx.ndf' 
+, filename = N'C:\Program Files\Microsoft SQL Server\MSSQL10_50.SQLSERVER2008\MSSQL\DATA\DTSample_log.ldf' 
+        </code>
+        <para>It will create a new schema called Core and create the objects under this schema</para>
+      </content>
+    </section>
+
+    <section address="Oracle">
+      <title>Oracle</title>
+      <content>
+        <para>It will drop/recreate a tablespace but NOT a database</para>
+        <para>Verify the DT.SampleDb.cmd file in the DTFramework\SourceCode\Database\Oracle\Scripts\Setup directory</para>
+        <para>NOTE: You may have to change the path of these files for the tablespaces and filegroups.</para>  
+        <para>Please look at file DT.SampleDb.sql file.</para>
+		<code language="SQL">
+            create tablespace DTCore datafile 'C:\oraclexe\oradata\XE\DTCore.DBF'
+						SIZE 20M AUTOEXTEND ON
+					/
+					create tablespace DTCoreIdx
+						datafile 'C:\oraclexe\oradata\XE\DTCoreIdx.DBF'
+		</code>
+		<alert><para>For Oracle .sql files MUST ALL be ended with a / character otherwise sqlplus will hang waiting for input.
+		</para></alert>
+      </content>
+    </section>
+
+    <section address="DB2">
+      <title>DB2</title>
+      <content>
+        <para>it will drop/recreate a database or drop/recreate a schema (depends on which .sql file you reference)
+		in your app.config file (ResetDb) key</para>
+		<para>To drop/create a database: DT.SampleDb.DropCreateDb.developersname.sql</para>
+		<para>To drop/create a schema: DT.SampleDb.DropCreateSchema.sql</para>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

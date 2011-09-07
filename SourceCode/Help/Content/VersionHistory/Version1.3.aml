@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="aedaa487-fca5-4c33-b5f0-05f4eb56104a" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.3 release</para>
+    </introduction>
+
+    <section address="New">
+      <title>What's new 1.3</title>
+      <content>
+        <para>Config</para>
+        <list class="bullet">
+          <listItem><para>Models edmx files for the config tables</para></listItem>
+          <listItem><para>Entities for ConfigSetting and ConfigParameter</para></listItem>          
+        </list>
+      </content>
+      <content>
+        <para>Unit Tests</para>
+        <list class="bullet">
+          <listItem><para>Unit tests for ConfigData and ConfigSet class</para></listItem>         
+        </list>
+      </content>
+      <content>
+        <para>Data Access</para>
+        <list class="bullet">
+          <listItem><para>DataAccessMgr.ExecuteCollection - converting DataReader directly to collection of POCO classes</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Logging</para>
+        <list class="bullet">
+          <listItem><para>LoggingMgr and loggingTargets have new interface which takes a collection</para></listItem>
+          <listItem><para>File logging target uses CSV legacy format</para></listItem>
+          <listItem><para>MSMQ logging target uses XML legacy format</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Misc</para>
+        <list class="bullet">
+          <listItem><para>Name changes, Code moving to Utilities namespace, Cleanup code, bug fixes in ConfigData</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <section address="InProcess">
+      <title>What's in process for the upcoming releases</title>
+      <content>
+        <para>DataAccess</para>
+        <list class="bullet">
+          <listItem><para>Db2 Setup Utility (In Testing Phase)</para></listItem>
+          <listItem><para>Db2Provider to DataAccessMgr - most of the functionality is done and being tested; there  is still some work on</para>
+            <list class="bullet">
+            <listItem><para>Compound SQL syntax with nested transactions</para></listItem>
+            <listItem><para>Dynamic row count</para></listItem>
+            <listItem><para>Back-end specific parameters</para></listItem>
+            </list>
+            <alert class="note">
+            <para>We left it out of this release because we wanted to make sure we did not want to cause any issues with having another DLL requirement (similar to ODP.NET)
+					without proper documentation and testing
+            </para>
+            </alert>            
+          </listItem>
+          <listItem><para>PagingMgr - Compound Indexes</para></listItem>
+          <listItem><para>JoinMgr for In, Between, and Functional Case Columns for Select (release 2)
+							Merge with single table interface for a single, implementation</para></listItem>
+          <listItem><para>The PagingMgr, JoinMgr, and all backend processing will take advantage of the new join predicate logic and we will remediate all unnecessary code</para></listItem>
+          <listItem><para>Rename DT.DataAccess to DT.Data ( we did not put this in this release just because of file merge issues; it will be in next weeks)</para></listItem>
+          <listItem><para>Rename DataAccessMgr to DatabaseMgr</para></listItem>
+         </list>
+      </content>
+      <content>
+        <para>Unit Tests</para>
+        <list class="bullet">
+          <listItem><para>Additional Unit Tests/Documentation</para></listItem>
+        </list>
+        <alert class="note">
+     	 <para>Most of the in-process items will be in the next release (next week) including Db2 UDB Support.
+      		So far, from our observations for Db2 UDB, the IBM provider does not have any issue (including with multiple threads);  We will eventually see what it is like for the iSeries
+        </para>
+        </alert>
+      </content>
+    </section>
+    
+    <section address="InQueue">
+      <title>What's in the queue to be addressed</title>
+      <content>
+        <para>DataAccess</para>
+        <list class="bullet">
+          <listItem><para>DB2 for iSeries (soon as the UDB work is done; we will test it against iSeries)
+          </para></listItem>
+          <listItem><para>DataAccess Layer which uses joinMgr for dynamic queries to back-end catalog
+							so that StoredProcedures will not be needed either
+			</para></listItem>
+          <listItem><para>Make DataAccessLayer configurable for either custom catalog for database catalog</para></listItem>
+          <listItem><para>Upsert (Insert/Update or Update/Insert)</para></listItem>
+          <listItem><para>PagingMgr - Enhancement for returning custom classes instead of datatable (compatibility with EntityFramework across all back-ends)</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Testing</para>
+        <list class="bullet">
+          <listItem><para>Additional UnitTests</para></listItem>
+          <listItem><para>Delete Testing in the Setup UI</para></listItem>
+         </list>
+      </content>
+    </section>
+    
+    <relatedTopics>
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

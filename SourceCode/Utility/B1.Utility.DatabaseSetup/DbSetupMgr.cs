@@ -95,6 +95,8 @@ namespace B1.Utility.DatabaseSetup
         bool _dbSetup = false;
         TaskProcessingEngine _tpe = null;
 
+        AppSession _appSessionTPE = null;
+
         /// <summary>
         /// PagingMgr used by GridConrol
         /// </summary>
@@ -655,6 +657,11 @@ namespace B1.Utility.DatabaseSetup
             return lbSignedonUsers.Items.Count.ToString() + " Users signed on.";
         }
 
+        string TPEStatus()
+        {
+            return "";
+        }
+
         void LoadSessionControlRecord()
         {
             tbRestrictSignonMsg.Enabled = true;
@@ -710,7 +717,6 @@ namespace B1.Utility.DatabaseSetup
             dmlJoin.AddOrderByColumnAscending(Constants.AppSequenceId);
             return new PagingMgr(_daMgr
                     , dmlJoin
-            ///        , new List<string> { Constants.AppSequenceName, Constants.AppSequenceId }
                     , DataAccess.Constants.PageSize
                     , Convert.ToInt16(numPageSize.Value)
                     , _lastPagingMgrJoinState);
@@ -1789,7 +1795,18 @@ namespace B1.Utility.DatabaseSetup
             if (_appSession == null)
                 StartAppSession();
             _tpe = new TaskProcessingEngine(_daMgr, assemblyPath, engineId, configId, _appSession.SignonControl);
+            
             _tpe.Start();
+
+            if(_appSessionTPE == null)
+                _appSessionTPE = new AppSession(_daMgr, engineId, _tpe.GetType().Assembly.GetName().Version.ToString(), 
+                        "DBSetup Task Processing Engine", TPEStatus);
+
+            StringBuilder configSettings = new StringBuilder();
+                configSettings.AppendFormat("TraceLevel: {0}{1}", _configuredTraceLevel.ToString(), Environment.NewLine);
+
+            _appSessionTPE.Start(configSettings.ToString(), "DBSetup TPE Starting", true);
+
         }
 
         private void btnStopTPE_Click(object sender, EventArgs e)
@@ -1797,6 +1814,7 @@ namespace B1.Utility.DatabaseSetup
             btnStopTPE.Enabled = btnPauseTPE.Enabled = btnResumeTPE.Enabled = false;
             btnStartTPE.Enabled = true;
             _tpe.Stop();
+            _appSessionTPE.End();
         }
 
         private void btnPauseTPE_Click(object sender, EventArgs e)

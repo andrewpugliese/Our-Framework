@@ -509,6 +509,7 @@ INSERT INTO B1.AppMaster
 AppCode
 , AppId
 , AllowMultipleSessions
+, IsTaskProcessingHost
 , Remarks
 )
 VALUES
@@ -516,6 +517,7 @@ VALUES
 @AppCode
 , 'TPE1'
 , 0
+, 1
 , 'Task Processing Engine 1'
 )
 
@@ -530,6 +532,7 @@ INSERT INTO B1.AppMaster
 AppCode
 , AppId
 , AllowMultipleSessions
+, IsTaskProcessingHost
 , Remarks
 )
 VALUES
@@ -537,6 +540,7 @@ VALUES
 @AppCode
 , 'TPE2'
 , 0
+, 1
 , 'Task Processing Engine 2'
 )
 

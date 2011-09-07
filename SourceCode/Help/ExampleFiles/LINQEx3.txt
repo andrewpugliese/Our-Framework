@@ -1,0 +1,6 @@
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+				   join d in dealerEntities.Dealers.Where
+							(dd => dd.DealerCode == b.DealerCode).DefaultIfEmpty()
+				   where a.City == "New York"
+				   select new { a.UserName, d.DealerName };

@@ -14,37 +14,38 @@
 CREATE TABLE B1.AppSessions
 (
 	AppCode					INT NOT NULL, -- Unique App Numeric Code
-	AppId					VARCHAR(32) NOT NULL, -- Unique App String Id
-	AppProduct				VARCHAR(64) NOT NULL, -- Found in Assembly.cs
-	AppVersion				VARCHAR(24) NOT NULL, -- Found in Assembly.cs
+	AppId					NVARCHAR(32) NOT NULL, -- Unique App String Id
+	AppProduct				NVARCHAR(64) NOT NULL, -- Found in Assembly.cs
+	AppVersion				NVARCHAR(24) NOT NULL, -- Found in Assembly.cs
 	MultipleSessionCode		BIGINT NOT NULL DEFAULT(0), -- A unique code when application can have multiple instances
-	MachineName				VARCHAR(64) NOT NULL, -- Name of server app resides
+	MachineName				NVARCHAR(64) NOT NULL, -- Name of server app resides
 	ProcessId				BIGINT NOT NULL, -- OS Process Id
 	StartDateTime			DATETIME NOT NULL DEFAULT (GETUTCDATE()), -- Time app started
 	StatusDateTime			DATETIME NOT NULL DEFAULT (GETUTCDATE()), -- Time of last status update
-	EnvironmentSettings		VARCHAR(512) NOT NULL, -- Various environment settings (ie. OS version, etc)
-	ConfigSettings			VARCHAR(512) NOT NULL, -- Various configuration settings of the app.
+	EnvironmentSettings		NVARCHAR(512) NOT NULL, -- Various environment settings (ie. OS version, etc)
+	ConfigSettings			NVARCHAR(512) NOT NULL, -- Various configuration settings of the app.
 	StatusMessage			VARCHAR(512) NOT NULL, 
-	CONSTRAINT PK_AppSessions PRIMARY KEY (AppCode, MultipleSessionCode) 
+	TaskProcessingHostAddress NVARCHAR(128) NULL, 
+	CONSTRAINT AppSessions_PK PRIMARY KEY (AppCode, MultipleSessionCode) 
 ) ON B1Core
 
 GO
 
-CREATE UNIQUE INDEX UX_AppSessions_AppId
+CREATE UNIQUE INDEX AppSessions_UX_AppId
 ON B1.AppSessions(AppId, MultipleSessionCode)
 ON B1CoreIdx
 
 GO
 
 ALTER TABLE B1.AppSessions
-ADD CONSTRAINT FK_AppSessions_AppMaster_Code
+ADD CONSTRAINT AppSessions_FK_AppMaster_Code
 FOREIGN KEY (AppCode)
 REFERENCES B1.AppMaster(AppCode)
 
 GO
 
 ALTER TABLE B1.AppSessions
-ADD CONSTRAINT FK_AppSessions_AppMaster_Id
+ADD CONSTRAINT AppSessions_FK_AppMaster_Id
 FOREIGN KEY (AppId)
 REFERENCES B1.AppMaster(AppId)
 

@@ -1,0 +1,5 @@
+var resultQuery = userEntities.Users.Join(userEntities.Users,
+			a => a.UserCode, b => b.UserCode, (c, d) => new { d.UserName, c.Address })
+		 .Join(userEntities.Users,
+			a => a.UserCode, b => b.UserCode, (g, h) => new { h.DefaultDealer })
+		.Select(e => e. DefaultDealer);

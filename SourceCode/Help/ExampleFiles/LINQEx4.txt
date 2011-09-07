@@ -1,0 +1,4 @@
+var resultQuery = from a in userEntities.Users
+				   from b in dealerEntities.DealerUsers
+				   where a.UserCode == b.UserCode && a.DealerCode == 101
+				   select new { a.UserName, a.City, b.DealerCode };

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="dd30d460-59f7-4de4-a853-232d97b4a277" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.2 release</para>
+    </introduction>
+
+    <section address="New">
+      <title>What's new 1.2</title>
+      <content>
+        <para>Data Access</para>
+        <list class="bullet">
+          <listItem><para>JoinMgr for Automated Command Building (release 1)</para></listItem>
+          <listItem><para>DataAccess Layer which does not depend on Custom database tables</para></listItem>
+        </list>
+      </content>
+
+    </section>
+
+    <section address="InProcess">
+      <title>What's in process for the upcoming releases</title>
+       <content>
+        <para>Data Access</para>
+        <list class="bullet">
+          <listItem><para>Db2 Setup Utility</para></listItem>
+          <listItem><para>Db2Provider to DataAccessMgr</para></listItem>
+          <listItem><para>PagingMgr - Compound Indexes</para></listItem>
+          <listItem><para>JoinMgr for In, Between, and Functional Case Columns for Select (release 2)
+					Merge with single table interface for a single, implementation</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <section address="InQueue">
+      <title>What's in the queue to be addressed</title>
+      <content>
+        <para>Data Access</para>
+        <list class="bullet">
+          <listItem><para>Rename DT.DataAccess to DT.Data</para></listItem>
+          <listItem><para>Rename DataAccessMgr to DatabaseMgr</para></listItem>
+          <listItem><para>DataAccess Layer which uses joinMgr for dynamic queries to back-end catalog
+							so that StoredProcedures will not be needed either
+			</para></listItem>
+          <listItem><para>Make DataAccessLayer configurable for either custom catalog for database catalog</para></listItem>
+          <listItem><para>Upsert (Insert/Update or Update/Insert)</para></listItem>
+          <listItem><para>PagingMgr - Enhancement for returning custom classes instead of datatable (compatibility with EntityFramework across all back-ends)</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Testing</para>
+        <list class="bullet">
+          <listItem><para>Additional UnitTests</para></listItem>
+         </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

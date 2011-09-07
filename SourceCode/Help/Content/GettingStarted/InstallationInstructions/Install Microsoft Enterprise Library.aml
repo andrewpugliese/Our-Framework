@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="4ac3db86-f497-419b-89a2-551498091af3" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The DealerTrack Common Framework uses components from the Enterprise Library (Specifically the Database and Logging Application Blocks).
+      </para>
+      <para>You have two options when it comes to installing the Enterprise Library.  The preferred option is to install Enterprise Library 5.0 in its entirety.  The second option is to copy over required DLL's into the bin directory of any application you are running.
+      </para>
+	  <para>The latest version of Enterprise Library 5.0 can always be found at the <token>Enterprise Library CodePlex</token> project site.
+	  </para> 
+	  <para>
+	  </para>
+	  <para>If you choose to only copy over the DLL's into your Bin directory, here is the list of Enterprise Library DLL's you will need.
+	  </para>
+	  <list class="ordered">
+	  	 <listItem><para>Microsoft.Practices.EnterpriseLibrary.Common.dll</para></listItem>
+	  	 <listItem><para>Microsoft.Practices.EnterpriseLibrary.Data.dll</para></listItem>
+	  	 <listItem><para>Microsoft.Practices.Unity.dll</para></listItem>
+	  	 <listItem><para>Microsoft.Practices.Unity.Interception.dll</para></listItem>
+	  	 <listItem><para>Microsoft.Practices.ServiceLocation.dll</para></listItem>
+	  	 <listItem><para>Microsoft.Practices.EnterpriseLibrary.Logging.dll</para></listItem>
+	  </list>
+    </introduction>
+	
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

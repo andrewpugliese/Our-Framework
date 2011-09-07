@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="c297708e-1179-4b75-809b-057ddc7bffb8" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The topics in this section describe the various configuration changes that need to be made on the workstation to work with the DealerTrack Common Framework.
+      </para>
+      <para>Proceed onto each topic and follow the instructions provided.
+      </para>
+      <list class="bullet">
+        <listItem><para><link xlink:href="03fb4e5f-8795-4723-8dbd-b337f60a62ea" /></para></listItem>
+        <listItem><para><link xlink:href="5b668966-46b2-4025-ac51-fedb35e2bb0a" /></para></listItem>
+        <listItem><para><link xlink:href="3366bc19-b983-4213-bd9c-2db463de67dc" /></para></listItem>
+      </list>
+    </introduction>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+ </developerConceptualDocument>
+</topic>

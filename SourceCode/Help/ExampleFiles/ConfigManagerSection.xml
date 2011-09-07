@@ -1,0 +1,30 @@
+﻿  <ConfigManager>
+    <ConfigSet ConfigSetName="Global" Version="1.0"
+         PublishedByUserCode="10" PublishedDateTime="1/1/2009" EffectiveDateTime="1/1/2009">
+      <LoggingSettings TraceLevel="None">
+        <LoggingTarget Name="WindowsEventLogger" Type="WindowsEventLog" Priorities="All">
+            <Config Key="WindowsLogName" Value="Application" />
+            <Config Key="EventLogSource" Value="DbSetup1" />
+        </LoggingTarget>
+        <LoggingTarget Name="FileBackupLogger" Type="MemoryFile" Priorities="All" IsBackupTarget="true">
+            <Config Key="LogFileDirectory" Value="C:\Temp"/>
+            <Config Key="LogFileNamePrefix" Value="AppLog"/>
+            <Config Key="LogFileSize" Value="1000000"/>
+        </LoggingTarget>
+        <LoggingTarget Name="MSMQLogger" Type="MSMQ" Priorities="All">
+            <Config Key="MSMQInstanceName" Value="MSMQLog" />
+            <Config Key="MSMQPath" Value=".\Private$\NOC"/>
+        </LoggingTarget>
+      </LoggingSettings>
+      
+      <Settings>
+        <Config Key="SomeGlobalKey" Value="SomeValue" />
+      </Settings>
+    </ConfigSet>
+    
+    <ConfigSet ConfigSetName="DT.Utility.DatabaseSetup" Version="1.0">
+      <Settings>
+        <Config Key="SomeKey" Value="SomeValue" />
+      </Settings>
+    </ConfigSet>
+  </ConfigManager>

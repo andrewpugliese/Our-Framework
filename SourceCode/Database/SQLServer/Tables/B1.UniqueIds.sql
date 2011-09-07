@@ -13,18 +13,15 @@
 --		requested a unique id before the ids were returned.
 --
 CREATE TABLE B1.UniqueIds(
-  UniqueIdKey Varchar(64) NOT NULL, -- unique key which will be associated with unique value
-  UniqueIdValue Bigint DEFAULT(0), -- unique value pointer
-  CacheBlockSize smallint default(100) not null, -- configurable size of a block for the key
-  MaxIdValue bigint null, -- maximum value the key can obtain
-  RolloverIdValue bigint null -- rollover value and maximum is reached
- CONSTRAINT PK_UniqueIds_UniqueIdKey PRIMARY KEY(UniqueIdKey)
+  UniqueIdKey NVARCHAR(64) NOT NULL, -- unique key which will be associated with unique value
+  UniqueIdValue BIGINT DEFAULT(0), -- unique value pointer
+  CacheBlockSize SMALLINT DEFAULT(100) NOT NULL, -- configurable size of a block for the key
+  MaxIdValue BIGINT NULL, -- maximum value the key can obtain
+  RolloverIdValue BIGINT NULL -- rollover value and maximum is reached
+ CONSTRAINT UniqueIds_PK_UniqueIdKey PRIMARY KEY(UniqueIdKey)
 ) ON B1Core
-go
-create unique index UX_UniqueIds_UniqueIdKey on
+GO
+
+CREATE UNIQUE INDEX UniqueIds_UX_UniqueIdKey on
 B1.UniqueIds( UniqueIdKey ) ON B1CoreIdx
-go
-grant references on B1.UniqueIds to public
-go
-grant select on B1.UniqueIds to public
-go
+GO

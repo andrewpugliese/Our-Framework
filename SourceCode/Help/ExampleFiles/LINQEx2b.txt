@@ -1,0 +1,18 @@
+// This is an anonymous class. It could be a propertly defined class object
+var searchObject = new { DealerName = "Honda Dealer" };
+
+// LINQ queries to get all the users for the dealer referened by the dealerName
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+				   join d in dealerEntities.Dealers on d.DealerCode equals b.DealerCode
+				   where d.DealerName == searchObject.DealerName
+				   select new { a.UserName, d.DealerName };
+
+// You can now change the value in the object to do the query
+searchObject.DealerName = "Toyota Dealer";
+
+// Another sample using the parameterized query
+var resultQuery2 = from a in dealerEntities. Dealers
+			  where (a.DealerGroupCode != null && a.DealerName != searchObject.DealerName) 
+					|| a.ConfigSetName.Contins("Auto")
+			  select a;

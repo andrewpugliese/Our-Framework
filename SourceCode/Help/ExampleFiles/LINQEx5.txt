@@ -1,0 +1,9 @@
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+								into bLeft
+				   join d in dealerEntities.Dealers on d.DealerCode equals b.DealerCode
+								into dRight
+				   join c in bLeft.DefaultIfEmpty()
+				   join e in dRight.DefaultIfEmpty()
+				   where a.DealerCode == 101
+				   select new { a.UserName, a.City, b.DealerCode };

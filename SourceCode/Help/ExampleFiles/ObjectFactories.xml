@@ -1,0 +1,17 @@
+﻿<!-- Identifies the default database when CreateDatabase does not have a connection key -->
+<ObjectFactories>
+	<!-- Used to load any object dynamically;  The samples below are for the database helper class -->
+	<!-- ObjectKey: pointed to by key in AppSettings section (for DataAccessMgr its Connectionkey)-->
+	<!-- ObjectClass: fully qualfied name of the class -->
+	<!-- AssemblyName: fully qualified name of assembly -->
+	<!-- AssemblyPath: fully qualified directory path where assembly that hold class can be found -->
+	<ObjectFactory ObjectKey="SQLSERVER2008LOCAL" ObjectClass="B1.DataAccess.SqlServer.SqlServerHelper"
+					 AssemblyPath="C:\B1\Root\B1Framework\SourceCode\DataAccess\B1.DataAccess\B1.DataAccess.SqlServer\bin\Debug"
+					 AssemblyName="B1.DataAccess.SqlServer" />
+	<ObjectFactory ObjectKey="ORACLELOCAL" ObjectClass="B1.DataAccess.OracleDb.OracleHelper"
+					 AssemblyPath="C:\B1\Root\B1Framework\SourceCode\DataAccess\B1.DataAccess\B1.DataAccess.Oracle\bin\Debug"
+					 AssemblyName="B1.DataAccess.Oracle" />
+	<ObjectFactory ObjectKey="DB2LOCAL" ObjectClass="B1.DataAccess.DB2.DB2Helper"
+					 AssemblyPath="C:\B1\Root\B1Framework\SourceCode\DataAccess\B1.DataAccess\B1.DataAccess.DB2\bin\Debug"
+					 AssemblyName="B1.DataAccess.DB2" />
+</ObjectFactories>

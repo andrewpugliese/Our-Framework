@@ -51,30 +51,30 @@ namespace B1.Web
                 // Set the pagingState before getting the intended page
                 pagingMgr.RestorePagingState(pagingState);
 
-                string initHtml = @"
-
-function showPage(action, data) {{
-    $.ajax({{
-        url: action,
-        type: ""get"",
-        format: ""html"",
-        cache: false,
-        data: data,
-        success: function (result) {{
-            // alert(result);
-            $(""#gridContainer"").html(result);
-        }},
-        error: function (xhr, status, error) {{
-
-            //?? CALL the client side error handling function which may be provided by the client
-
-            alert(xhr.responseText);
-            //?? showModalDialog(xhr.statusText, xhr.responseText);
-        }}
-    }});
-}}
-
-";
+//                string initHtml = @"
+//
+//function showPage(action, data) {{
+//    $.ajax({{
+//        url: action,
+//        type: ""get"",
+//        format: ""html"",
+//        cache: false,
+//        data: data,
+//        success: function (result) {{
+//            // alert(result);
+//            $(""#gridContainer"").html(result);
+//        }},
+//        error: function (xhr, status, error) {{
+//
+//            //?? CALL the client side error handling function which may be provided by the client
+//
+//            alert(xhr.responseText);
+//            //?? showModalDialog(xhr.statusText, xhr.responseText);
+//        }}
+//    }});
+//}}
+//
+//";
             }
 
             // Set the paging option and get the next page

@@ -28,7 +28,7 @@
     /// <para>
     /// The DbAccessManager provides a database independant interface to build and execute parameterized database commands.
     /// </para>
-    /// <see cref="DealerTrack.DAL.Common.Data.DbAccessManager"/>
+    /// <see cref="B1.DataAccess"/>
     /// <para>It is the starting point and the main class for your application to use for all its database operations.</para>
     /// </summary>
     #pragma warning restore 1574

@@ -7,15 +7,21 @@
 CREATE TABLE B1.TaskStatusCodes
 (
 	StatusCode					TINYINT NOT NULL,		-- unique numeric identifier
-	StatusName					VARCHAR(48) NOT NULL,	-- unique string identifier
+	StatusName					NVARCHAR(48) NOT NULL,	-- unique string identifier
 	LastModifiedUserCode		INT NULL,
 	LastModifiedDateTime		DATETIME NULL,
-	CONSTRAINT PK_TaskStatusCodes_StatusCode PRIMARY KEY (StatusCode)
+	CONSTRAINT TaskStatusCodes_PK_StatusCode PRIMARY KEY (StatusCode)
 ) ON B1Core
 
 GO
 
-CREATE UNIQUE INDEX UI_TaskStatusCodes_StatusName
+CREATE UNIQUE INDEX TaskStatusCodes_UX_StatusName
 ON B1.TaskStatusCodes(StatusName) ON B1CoreIdx
 
 GO
+
+
+ALTER TABLE B1.TaskStatusCodes
+ADD CONSTRAINT TaslStatisCpdes_FK_UserMaster
+FOREIGN KEY (LastModifiedUserCode)
+REFERENCES B1.UserMaster(UserCode)

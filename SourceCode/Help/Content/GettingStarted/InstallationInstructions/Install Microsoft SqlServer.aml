@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="aab75b14-7cdc-4ddc-8c26-a6951a3aecce" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Instructions for installing Microsoft SQl Server 2008 R2 database</para>
+    </introduction>
+    <section address="ServerInstall">
+      <title>Install MS SQL Server database server</title>
+      <content>
+        <para>Download the developers version of MS SQL Server 2008 R2 and select all of the core and client components for installation.</para>
+      </content>
+    </section>
+
+    <section address="ClientInstall">
+      <title>Install MS SQL Server Client Only</title>
+      <content>
+        <para>Download the developers version of MS SQL Server 2008 R2 and select the client tools option for installation.</para>
+      </content>
+    </section>
+    
+    <section address="Validation">
+      <title>Some steps to validate your SQL Server Installation</title>
+      <content>
+        <para>Make sure sqlcmd is available in path and can communicate to server</para>
+        <list class="ordered">
+        <listItem><para>From dos command prompt: sqlcmd -S yourSqlServerName</para>
+          <list class="bullet">
+            <listItem><para>If your sqlcmd is not found; you must ensure that it exists on your machine and that directory is in your PATH
+            </para></listItem>
+            <listItem><para>If sqlcmd can be found, but you receive an error:
+			</para>
+			<para>Error: Microsoft SQL Server Native Client 10.0 : A network-related or 
+						instance-specific error has occurred while establishing a connection to SQL Server.
+						Server is not found or not accessible. Check if instance name is correct and if
+						SQL Server is configured to allow remote connections. For more information see
+						SQL Server Books Online.</para>
+			<para>Then you must do the following:</para>
+						<para>a. Verify your serverName is correct.</para>
+						<para>b. Ensure that TCP/IP is enabled for SqlServer using Configuration Manager of SqlServer Tools</para>	
+			</listItem>
+          </list>
+        </listItem>
+        <listItem><para>If you receive a numeric prompt from Sqlcmd, then you have succeeded; just type EXIT.
+        </para></listItem>
+        </list>
+      </content>
+    </section>
+   
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

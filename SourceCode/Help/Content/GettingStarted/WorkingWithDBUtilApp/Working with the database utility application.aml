@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="00ca0d43-40ea-4c0d-9f52-f54410838da6" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The DCF comes with a utility application that allows the user to test much of the database functionality provided by the DCF components.  The code in the application can also serve as a guide for those developing applications on top of the DCF.  Everything from database access, logging, configuration, and more is demonstrated by this sample application.
+      </para>
+      <para>An additional benefit is the functionality to create or recreate a database on a local or remote server.
+      </para>
+      <para></para>
+      <para>Select one of the topics below to learn more about the utility application.
+      </para>
+      <list class="bullet">
+        <listItem><para><link xlink:href="7ffd257d-3298-45f8-a7c2-ed62870a92cd" /></para></listItem>
+        <listItem><para><link xlink:href="8022deb8-db67-4eed-bc2b-60c046c5ac1f" /></para></listItem>
+      </list>
+    </introduction>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

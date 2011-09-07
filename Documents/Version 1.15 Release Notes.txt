@@ -1,0 +1,27 @@
+What's new 1.15
+ 
+Configuration (B1.Configuration)
+
+		
+DataAccess
+
+Solution Enhancements
+
+Session (B1.Session) (SQLServer Only)
+- Added 3 classes
+	- AppSession (Controls unique application Id startup/checkin/cleanup to provide centralized status and access to Grid Task Processing)
+	- UserSession (TBD)
+	- SignonControl (contains settings to control status checkin Signon prevention, and ForcedSignoff)
+	
+- Underlying DDL for SQLServer Only (tables for User and Application Data; documentation in files)
+Tables\B1.UserAccessGroups.sql
+Tables\B1.UserMaster.sql
+Tables\B1.UIControls.sql
+Tables\B1.UserAccessGroupPermissions.sql
+Tables\B1.AppMaster.sql
+Tables\B1.SignonControl.sql
+Tables\B1.UserSessions.sql
+Tables\B1.AppSessions.sql
+
+Documentation
+- Getting Started Help System

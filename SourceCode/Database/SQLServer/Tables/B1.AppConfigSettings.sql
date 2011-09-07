@@ -1,12 +1,8 @@
 CREATE TABLE B1.AppConfigSettings(
-  ConfigSetName varchar(48) not null,
-  ConfigKey varchar(48) not null,
-  ConfigValue varchar(256) not null,
-  ConfigDescription varchar(256) null,
- CONSTRAINT PK_AppConfigSettings PRIMARY KEY(ConfigSetName, ConfigKey, ConfigValue)
+  ConfigSetName NVARCHAR(48) not null,
+  ConfigKey NVARCHAR(48) not null,
+  ConfigValue NVARCHAR(256) not null,
+  ConfigDescription NVARCHAR(256) null,
+ CONSTRAINT AppConfigSettings_PK PRIMARY KEY(ConfigSetName, ConfigKey, ConfigValue)
 ) ON B1Core
-go
-grant references on B1.AppConfigSettings to public
-go
-grant insert, select, update, delete on B1.AppConfigSettings to public
-go
+GO

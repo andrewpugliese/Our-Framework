@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="1b88be0d-fd29-4067-9041-c613def825c0" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>This section of the help system contains information that may be useful to help you troubleshoot certains problems you may encounter with the DCF</para>
+    </introduction>
+
+    <section address="Troubleshoot">
+      <title>Troubleshooting</title>
+      <content>
+        <para>Select a section below for more information</para>
+		<list class="bullet">
+		  <listItem><para><link xlink:href="f05a754f-3f1c-4022-ad7f-808d0fc03204" /></para></listItem>
+		  <listItem><para><link xlink:href="f857be8e-81d8-482c-93aa-c80d7b5dbd54" /></para></listItem>
+		</list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="7d75cefa-8c2e-411e-86a8-80f5b514d755" />
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+      <link xlink:href="da02511b-cd66-4d3d-b9b9-082b9922f19f" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

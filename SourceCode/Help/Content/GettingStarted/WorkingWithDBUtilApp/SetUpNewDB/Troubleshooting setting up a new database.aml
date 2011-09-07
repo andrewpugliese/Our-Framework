@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="04421cc0-3cb7-426d-817c-ff5035416577" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>This section contains information to help you troubleshoot any problems you may encounter when setting up a new database</para>
+    </introduction>
+    <section address="Section1">
+      <title>Troubleshooting setting up a new database
+	  </title>
+      <content>
+        <list class="ordered">
+          <listItem><para>For Oracle, you MUST create the database seperately using Oracle's Administration tools.  In addition, you must setup
+	a local named service for that new database using Oracle's Net Configuration tools</para></listItem>
+          <listItem><para>You can do the same for SqlServer and DB2, but there is a sample script provided for creating databases directly with 
+	the utility.</para></listItem>
+          <listItem><para>The DbSetup utility uses the back-end specific command line tools for executing ddl statements:</para>
+            <list class="bullet">
+				<listItem><para>SqlServer: uses sqlcmd (inside cmd.exe)</para></listItem>
+				<listItem><para>Oracle: uses sqlplus (inside cmd.exe)</para></listItem>
+				<listItem><para>Db2: uses db2 (under db2cmd environment; which runs inside cmd.exe)</para></listItem>
+            </list>
+          </listItem>
+          <listItem>
+          		<para>The utility uses configuration files for input and output to/from the command line tool</para>
+          		<list class="nobullet">
+          			<listItem><para>The configuration keys specify the input and output files:</para></listItem>
+	          		<listItem><para>
+	          		<code language="XML">
+	          		<![CDATA[
+						<add key="InputFilename" value="scripts\setup\DT.SampleDb.cmd"/>	
+						<add key="OutputFilename" value="DT.SampleDb.BuildResults.txt"/>]]>
+					</code>
+					</para></listItem>
+	          		<listItem><para>Just make sure the path and input filename exists.
+							The output filename will be created and appended with the results of the operations</para></listItem>
+	          		<listItem><para>To view the contents of these files, one can click on the button next to the text box on the utility dialog.
+							You can change the text editor to one of your choice using the following key:</para></listItem>
+	          		<listItem><para>
+	          		<code language="XML">
+	          		<![CDATA[
+						// use any text editor; notepad is also good if you do not have notepad++
+						<add key="TextEditor" value="notepad++"/>	]]>
+					</code>
+					</para></listItem>			    
+	          		<listItem><para>The actual commands that will be sent to the database command line tool are also stored in files.
+						They NEED to follow the back-end specifications for proper syntax.  
+						(While they can be named anything; it is recommended that they end with the .SQL suffix.)</para></listItem>
+	          		<listItem><para>The utility will open the InputFile and proceed to search for filenames to feed into the command line tool.
+						To distinguish the command file from the back-end specific ddl files, the command file will have a .cmd suffix.</para></listItem>
+	          		<listItem><para>For simplicity all the ddl and cmd files will share a common directory as the root.  This configured with the
+							following key:
+					</para></listItem>
+	          		<listItem><para>
+	          		<code language="XML">
+	          		<![CDATA[
+						/<add key="DDLSourceDirectory" value="C:\B1\GitHub\B1Framework\SourceCode\Database\Oracle"/>]]>
+					</code>
+					</para></listItem>
+					<listItem><para>For organization, there are subdirectories under this directory for Tables, procedures, Scripts, etc.
+							This hierarchy is NOT required, but whatever you chose, you just need to be consistent with your paths</para></listItem>
+	          	</list>
+          </listItem>
+          <listItem><para>The command files (.cmd) used by the utility have some flexible features:</para>
+            <list class="bullet">
+              <listItem><para>Command file for Building the Base One Sample Database</para></listItem>
+              <listItem><para>Files NEED to be listed in dependancy order</para></listItem>
+              <listItem><para>Objects which are dependant on other objects need to be
+								listed after the object they are dependant on</para></listItem>
+              <listItem><para>Files NEED to be listed in relative path from where
+								the setup application has defined in the config key: DDLSourceDirectory</para></listItem>
+              <listItem><para>The following are command keywords:</para>
+          		<list class="nobullet">
+                  <listItem><para>BreakWithMsg "Your Message Here" - The setup utility with display your message and wait for a response
+									to either quit or continue</para></listItem>
+                  <listItem><para>RunCmdFile Scripts\anotherFile.cmd - The setup utility will open up and process the contents of the 
+									listed command file before continuing with the current command file</para></listItem>
+                  <listItem><para>ServerOnly  SqlDDLFile.sql - The setup utility will NOT connect to a database but only login
+									to the server to process the file. This is used for commands
+									that do not require connecting to a particular database such as
+									when creating a new database</para></listItem>
+	              <listItem><para>Field substitutions enclosed with {} - By enclosing a string in the curly braces, the setup utility will replace
+						the string with the value found in the app.config file.
+						This allows for each developer to specify different files for their environment
+						while keeping the main cmd file the same (and only having 1 copy to maintain).
+				  </para></listItem>
+	              <listItem><para>This is helpful when building databases that contain file locations that are
+								specific to each environment.</para></listItem>
+			  </list>
+          	  </listItem>
+			</list>
+          </listItem>
+          
+          <listItem>
+          	<para>Since each command line tool has a different syntax for specifying inputs and outputs, the utility generates
+					a dos batch file (DDL.BAT).
+			</para>
+		    <list class="nobullet">			
+				<listItem><para>This batch file is executed inside a windows command shell via windows process class:</para>
+					<list class="nobullet">
+		          		<listItem><para>psi.FileName = "cmd.exe";</para></listItem>
+		         		<listItem><para>psi.Arguments = "/C ddl.bat";</para></listItem>
+		            </list>
+	            </listItem>
+				<listItem><para>For DB2 it is slightly different:</para>
+					<list class="nobullet">
+		          		<listItem><para>psi.FileName = "db2cmd.exe";</para></listItem>
+		         		<listItem><para>psi.Arguments = "-c -w -i ddl.bat";</para></listItem>
+		            </list>
+	            </listItem>
+				<listItem><para>The batch file is responsible for 2 things:</para>
+					<list class="bullet">
+		          		<listItem><para>Calling the command line tool and with arguments for the input file and an output file.</para></listItem>
+		         		<listItem><para>Appending the output file to the main results file specificed in the configuration settings.</para></listItem>
+		            </list>
+	            </listItem>
+	            <listItem><para>SqlServer Example:</para></listItem>
+	            <listItem><para>
+	          		<code language="SQL">
+	          		if exist cmdOutput.txt del cmdOutput.txt
+					sqlcmd -S ServerName -Uusername -Ppassword -d databasename  -i "fullyqualifiedinputfilenameandpath" -o cmdOutput.txt
+					type cmdOutput.txt >> fullyqualifiedoutputfilenameandpath
+					</code>
+				</para></listItem>
+			</list>
+          </listItem>
+          
+          <listItem><para>Sometimes if the utility hangs while executing a script, this is usually because the command line tool has stopped and it will be necessary to debug this.
+          </para>
+		    <list class="nobullet">
+	      		<listItem><para>For example, with Oracle, sqlplus will put up a prompt window waiting for user input (even though we started this from the command line).
+					The utility and the user will have no way of knowing this.  As a result, it is recommended to execute the DDL.BAT directly from exporer or 
+					dos window.  If there is a prompt or error message, you will see this and can take appropriate action.  Once you have corrected the problem
+					you can try again from the utility.</para></listItem>
+				<listItem><alert><para>Often when using sqlplus in Oracle, you will need to kill any hanging processes using TaskManager when you see that the utility is
+						hung waithing for the command line tool.</para></alert></listItem>
+	     		<listItem>
+	     			<para>Another special case for Oracle is the syntax for output, to do this we must use a spool command.  This is done
+						by wrapping these commands inside of another .sql file that is given to sqlplus as input:
+					</para>
+		            <para>
+		          		<code language="SQL">
+		          		sqlplus myusername/mypassword@Host/servicename @SQLWrapper.sql
+						</code>
+					</para>
+				</listItem>
+	            <listItem><para>Here is an example of the SQLWrapper.sql file:</para>
+	            <para>
+	          		<code language="SQL">
+	          		spool cmdOutput.txt
+					whenever sqlerror exit sql.sqlcode
+					start fullyqualifiedinputfilename
+					exit
+					</code>
+				</para>
+				</listItem>
+		    </list>
+		  </listItem>
+		  
+        </list>
+      </content>
+    </section>
+    <relatedTopics>
+       <link xlink:href="7ffd257d-3298-45f8-a7c2-ed62870a92cd" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

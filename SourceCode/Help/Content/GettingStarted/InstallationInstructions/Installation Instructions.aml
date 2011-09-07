@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="46d9f510-4df3-43d1-a988-67a1af303054" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>This topic describes the tools that are required to be installed on the developer workstation to use the DealerTrack Common Framework
+      </para>
+    </introduction>
+    <section address="Requirements">
+      <title>Requirements</title>
+      <content>
+        <para>To use and work with the DealerTrack Common Framework, your developer workstation needs to have certain tools installed.
+        </para>
+        <para>It is recommended that the tools be installed in the order that follows.
+        </para>
+        <list class="bullet">
+          <listItem><para><link xlink:href="5b88735b-8c9a-47cd-b616-8d724d82a967" /></para></listItem>
+          <listItem><para><link xlink:href="4ac3db86-f497-419b-89a2-551498091af3" /></para></listItem>
+          <listItem><para><link xlink:href="0498a435-0925-4e70-b639-e7e04199fe34" /></para></listItem>
+        </list>        
+      </content>
+      <sections>
+          <section address="Databases">
+              <title>Databases</title>
+              <content>
+                  <para>Even if you are primarily working against one database, it is recommended that you install the database client access tools to access each database that is use by the DealerTrack family of products.
+                  </para>
+                  <para>What follows are instructions to either install the database locally on your workstation or install the client access database software allowing you to access remote database.
+                  </para>
+                  <list class="bullet">
+          			<listItem><para><link xlink:href="aab75b14-7cdc-4ddc-8c26-a6951a3aecce" /></para></listItem>
+          			<listItem><para><link xlink:href="3247f384-ab77-4234-a80c-ed32372e368f" /></para></listItem>
+          			<listItem><para><link xlink:href="03c0f998-59f4-4129-803e-f526143224d0" /></para></listItem>
+          			<listItem><para><link xlink:href="06a81279-db45-46b8-9ed0-738764f4443e" /></para></listItem>
+                  </list> 
+              </content>
+          </section>
+      </sections>
+    </section>
+    <section address="Requirements">
+      <title>Optional Items</title>
+      <content>
+        <para>The following items are not required to use the DealerTrack Common Framework, but you may find them useful.
+        </para>
+        <list class="bullet">
+          <listItem><para>Only needed if you plan on building the help system from your local developer worksation <link xlink:href="ae1f7ebb-557e-4f5b-8aed-599a7101a296" />
+          </para></listItem>
+        </list>                
+      </content>
+    </section>  
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

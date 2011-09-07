@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="03c0f998-59f4-4129-803e-f526143224d0" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Instructions for installing Db2 v9.7.4 database</para>
+    </introduction>
+    <section address="ServerInstall">
+      <title>Install DB2 v9.7.4 database server</title>
+      <content>
+        <para>Download the software for <token>DB2 v9.7.4 server</token> from IBM web site and select all of the core and client components for installation.</para>
+      </content>
+    </section>    
+
+    <section address="ClientInstall">
+      <title>Install DB2 v9.7.4 client only</title>
+      <content>
+        <para>Download the software for <token>DB2 v9.7.4 client</token> from IBM web site and select the client tools option for installation.</para>
+      </content>
+    </section>
+
+    <section address="DevInstall">
+      <title>Install DB2 v9.7.4 for developers</title>
+      <content>
+        <para>If you want a version of DB2 to download to a development machine where you have all the functionality of DB2, you will want to download <token>IBM DB2 Express-C</token> v 9.7.4 from IBM web site.</para>
+        <para>If you have a previous version of DB, select the "work with existing DB2" option to upgrade the current version on your machine.</para>
+      </content>
+    </section>
+   
+    <section address="Upgrade">
+      <title>Upgrade to DB2 v9.7.4 from earlier version of DB2 v9.7.x</title>
+      <content>
+        <para>Developers simply follow the instructions above for installing the latest version.</para>
+        <para>For server and client version, download and install <token>Fix Pack 4</token> for your operating system and product from the IBM web site.</para>
+      </content>
+    </section>
+    
+    <section address="AddIns">
+      <title>Install IBM DB2 9.7.4 add-ins for Visual Studio 2010 (Optional)</title>
+      <content>
+		<para>Use the following instructions to install IBM DB2 9.7.4 add-ins for Visual Studio 2010</para>
+		<list class="ordered">
+		  <listItem><para><para>Download the software for <token>DB2 add-ins</token></para></para></listItem>
+		  <listItem><para>Unzip the file to a temporary directory</para></listItem>
+  		  <listItem><para>Run setup.exe and install the product</para></listItem>
+		</list>
+      </content>
+    </section>
+   
+    <section address="Validation">
+      <title>Some steps to validate your IBM DB2 Installation</title>
+      <content>
+        <para>Make sure db2cmd is available in path and can launched from a dos window. (When this works it will launch another dos window
+			but it will have all DB2 environment setup.</para>
+        <list class="bullet">
+          <listItem><para>If you db2cmd is not found; you must ensure that it exists on your machine
+					and that directory is in your PATH
+          </para></listItem>
+          <listItem><para>If you received the dos prompt, then you have succeeded; just type EXIT or CTRL - C.
+	      </para></listItem>
+        </list>
+      </content>
+    </section>
+    
+    <relatedTopics>
+    <externalLink>
+          <linkText>For details about the new features in the fixpack</linkText>
+          <linkUri>http://publib.boulder.ibm.com/infocenter/db2luw/v9r7/index.jsp?topic=/com.ibm.db2.luw.wn.doc/doc/r0051514.html</linkUri>
+      </externalLink>
+      <externalLink>
+          <linkText>Validation of DB2 environment</linkText>
+          <linkUri>http://publib.boulder.ibm.com/infocenter/db2luw/v9r7/index.jsp?topic=/com.ibm.swg.im.dbclient.install.doc/doc/r0058814.html</linkUri>
+      </externalLink>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

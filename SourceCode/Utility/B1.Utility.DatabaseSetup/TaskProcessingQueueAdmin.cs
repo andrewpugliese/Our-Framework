@@ -21,6 +21,12 @@ namespace B1.Utility.DatabaseSetup
         DataTable _taskIds = null;
         Int32? _userCode = null;
         
+        /// <summary>
+        /// Constructor for the TaskProcessingQueue's dialog form
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">DataRow containing the task queue record data</param>
+        /// <param name="userCode">The current user's unique code</param>
         public TaskProcessingQueueAdmin(DataAccessMgr daMgr, DataRow taskQueueItem, Int32? userCode)
         {
             InitializeComponent();
@@ -34,6 +40,9 @@ namespace B1.Utility.DatabaseSetup
             PopulateForm();   
         }
 
+        /// <summary>
+        /// Returns dictionary of all the changed columns and their new values
+        /// </summary>
         public Dictionary<string, object> EditedColumns
         {
             get { return _editedColumns; }
@@ -146,6 +155,9 @@ namespace B1.Utility.DatabaseSetup
                 if (rbTPQNotQueued.Checked)
                     _editedColumns.Add(TaskProcessing.Constants.StatusCode
                             , Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.NotQueued));
+                else
+                    _editedColumns.Add(TaskProcessing.Constants.StatusCode
+                            , Convert.ToByte(TaskProcessing.TaskProcessingQueue.StatusCodeEnum.Queued));
 
                 _editedColumns.Add(TaskProcessing.Constants.IntervalCount
                         , 0); 

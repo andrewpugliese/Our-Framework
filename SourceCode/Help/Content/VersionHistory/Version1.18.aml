@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="7e875d82-cb4b-4a84-b996-bb1f07b665c3" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.18 release</para>
+    </introduction>
+
+    <section address="New">
+      <title>What's new 1.18</title>
+      <content>
+        <para>DataAccesss</para>
+        <list class="bullet">  
+          <listItem><para>EF compatibility: BuildUpdateDbCommand (available for review; not completed yet)</para></listItem>
+          <listItem><para>EF Compatability: Enhanced meta data support for conceptual model vs sorage model</para></listItem>
+          <listItem><para>EF Compatability: Meta data loading thread safety enhancements</para></listItem>
+          <listItem><para>EF Compatability: Support for difference in column names of conceptual model and storage model</para></listItem>
+          <listItem><para>EF Compatability: ObjectParser enhancements for supporting insert and future update/delete</para></listItem>
+          <listItem><para>EF Compatability: Insert into database complete</para></listItem>
+          <listItem><para>Support for DB2 v 9.7.4</para></listItem>
+          <listItem><para>SequenceNumber enhancements for guaranteeing MaxId and RolloverId values and new requirements for 
+					source identifier to be part  of the sequence number. (available for review)</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Logging</para>
+      </content>      
+      <content>
+        <para>Tracing</para>
+      </content>
+      <content>
+        <para>Configuration</para>
+      </content>
+      <content>
+        <para>Unit tests and documentation</para>
+      </content>
+      <content>
+        <para>Help System</para>     
+      </content>
+   </section>
+
+    <section address="InProcess">
+      <title>What's in process for the upcoming releases</title>
+      <content>
+        <para>DbAccess</para>
+        <list class="bullet">
+          <listItem><para>Entity Framework (EF) compatibility (LINQ TO ENTITIES)</para></listItem>
+          <listItem><para>EF compatibility: Full DB change support (insert/update/merge)</para></listItem>
+          <listItem><para>EF compatibility: Complete select support (inner/outer joins, cross joins, sub selects)</para></listItem>
+          <listItem><para>EF compatibility: unit tests</para></listItem>
+          <listItem><para>EF compatibility: documentation</para></listItem>
+          <listItem><para>Unit tests for current database functionality</para></listItem>	
+          </list>
+      </content>
+      <content>
+        <para>Configuration Web Testing / Debugging</para>
+        <list class="bullet">
+          <listItem><para>Add/change/delete of config xml data</para></listItem>
+		</list>
+      </content>
+    </section>
+
+    <section address="OnHold">
+      <title>What is On Hold</title>
+      <content>
+        <para>DbAccess</para>
+        <list class="bullet">
+          <listItem><para>EF optimization: Paging functionality interface of LINQ to Entities queries</para></listItem>
+          <listItem><para>EF optimization: CompoundCommand implementation to have multiple LINQ statements sent to db in 1 trip</para></listItem>
+          <listItem><para>EF compatibility: Full DB change support (Merge)</para></listItem>
+          <listItem><para>EF compatibility: Complete select support (subselect)</para></listItem>
+          <listItem><para>EF compatibility: Complete select support (in clause)</para></listItem>
+          <listItem><para>EF compatibility: Complete select support (cannonical function support in LINQ expressions)</para></listItem>
+          <listItem><para>EF compatibility: Entity generation engine (replaces need for EF driver to create classes)</para></listItem>
+          <listItem><para>EF compatibility: LINQ to AppFabric support (provides interface to allow programmer to simply request data;
+							it will be retrieved from either the cache or database after populating cache)</para></listItem>
+		</list>		
+      </content>
+      <content>
+        <para>Tracing</para>
+        <list class="bullet">
+          <listItem><para>Tracing Traceviewer search completion</para></listItem>
+          <listItem><para>Trace File Serialization</para></listItem>
+          <listItem><para>Tracing Unit tests</para></listItem>
+          <listItem><para>Tracing Documentation</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>Security</para>
+        <list class="bullet">
+          <listItem><para>Certificate caching and stores</para></listItem>
+          <listItem><para>Generic data packager with custom XML meta data</para></listItem>
+          <listItem><para>Key and hash validation with the XREF_ARCHIVE_KEYS table</para></listItem>
+          <listItem><para>Security usage convention</para></listItem>
+          <listItem><para>Security standard component with DT defined algorithms</para></listItem>
+          <listItem><para>Unit tests</para></listItem>
+          <listItem><para>Documentation</para></listItem>
+	    </list>
+      </content>
+      <content>
+        <para>Common Entity Reference Application</para>
+        <list class="bullet">
+          <listItem><para>MVC Samples of using Common Objects for Business Layer Objects</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

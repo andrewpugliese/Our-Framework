@@ -13,20 +13,20 @@ CREATE TABLE B1.AccessControlGroupRules
 	AccessDenied			BIT NOT NULL DEFAULT 0, -- Indicates whether access is denied for the UI Control
 	LastModifiedUserCode	INT,
 	LastModifiedDateTime	DATETIME,
-	CONSTRAINT PK_AccessControlGroupRules PRIMARY KEY (AccessControlGroupCode, UIControlCode) 
+	CONSTRAINT AccessControlGroupRules_PK PRIMARY KEY (AccessControlGroupCode, UIControlCode) 
 ) ON B1Core
 
 GO
 
 ALTER TABLE B1.AccessControlGroupRules
-ADD CONSTRAINT FK_AccessControlGroupRules_UIControls
+ADD CONSTRAINT AccessControlGroupRules_FK_UIControls
 FOREIGN KEY (UIControlCode)
 REFERENCES B1.UIControls(UIControlCode)
 
 GO
 
 ALTER TABLE B1.AccessControlGroupRules
-ADD CONSTRAINT FK_AccessControlGroupRules_UserMaster
+ADD CONSTRAINT AccessControlGroupRules_FK_UserMaster
 FOREIGN KEY (LastModifiedUserCode)
 REFERENCES B1.UserMaster(UserCode)
 

@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="558ae5ef-541d-4ef4-b997-3a1e864cb9fa" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.4 release</para>
+    </introduction>
+
+    <section address="New">
+      <title>What's new 1.4</title>
+      <content>
+        <para>DataAccess improvements</para>
+        <list class="bullet">
+          <listItem><para>Added join support for update/delete</para></listItem>
+          <listItem><para>Added in/between clause for SQL predicates</para></listItem>
+          <listItem><para>Converted all exsting queries/updates/inserts to use new where condition predicates</para></listItem>
+          <listItem><para>Improved Execute* methods (e.g., ExecuteDataSet, ExecuteReader, etc) to accept parameter names</para>
+          <alert class="note">
+            <para>THIS WAS AN INTERFACE CHANGE.  IF YOU WERE CALLING THESE METHODS AND PASSING IN AN ARRAY 
+						OF PARAMETER VALUES, YOU MUST CHANGE YOUR CALL TO INCLUDE PARAMETER NAMES;
+				This is a safer interface to debug, refactor and prevents a bind issue with Oracle ref_cursor parameters
+		    </para>
+		  </alert>
+		  </listItem>
+          <listItem><para>Added Compound Indexes and alternate indexes (non primary key, unique indexes) to PagingMgr interface</para></listItem>
+          <listItem><para>Modified TestUpdate to utilize PagingMgr</para></listItem>
+        </list>
+      </content>     
+      <content>
+        <para>DB2Provider support (DB2UDB v9.7.2.2)</para>
+        <list class="bullet">
+          <listItem><para>Ability to setup a new database</para></listItem>
+          <listItem><para>Ability to perform all operations that were provided in Oracle and Sqlserver
+				EXCEPT (for this release until further analysis) Compound SQL with Multiple Transactions in a 
+				single CommandText (of DB2Command object).</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Unit tests</para>
+        <list class="bullet">
+          <listItem><para>Unit tests for ConfigManager</para></listItem>
+        </list>
+      </content>       
+      <content>
+        <para>Misc.</para>
+        <list class="bullet">
+          <listItem><para>Utility Web started for managing configuration - javascript for editing grid
+							REQUIRES MVC 3 TO BE INSTALLED
+          </para></listItem>
+          <listItem><para>Refactored Config into IDAL, DAL and Config component</para></listItem>
+          <listItem><para>Bug fix in caching manager</para></listItem>
+		</list>
+      </content>  
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

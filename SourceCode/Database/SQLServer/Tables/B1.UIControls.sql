@@ -1,25 +1,24 @@
-
 CREATE TABLE B1.UIControls
 (
 	UIControlCode			INT NOT NULL,
-	UIControlURI			VARCHAR(128) NOT NULL,
-	Description				VARCHAR(512),
+	UIControlURI			NVARCHAR(128) NOT NULL,
+	Description				NVARCHAR(512),
 	LastModifiedUserCode	INT,
 	LastModifiedDateTime	DATETIME,
-	CONSTRAINT PK_UIControls_UIControlCode PRIMARY KEY (UIControlCode)
+	CONSTRAINT UIControls_PK_UIControlCode PRIMARY KEY (UIControlCode)
 )
 ON B1Core
 
 GO
 
-CREATE UNIQUE INDEX UX_UIControls_UIControlURI 
+CREATE UNIQUE INDEX UIControls_UX_UIControlURI 
 ON B1.UIControls (UIControlURI)
 ON B1CoreIdx
 
 GO
 
 ALTER TABLE B1.UIControls
-ADD CONSTRAINT FK_UIControls_UserMaster
+ADD CONSTRAINT UIControls_FK_UserMaster
 FOREIGN KEY (LastModifiedUserCode)
 REFERENCES B1.UserMaster(UserCode)
 

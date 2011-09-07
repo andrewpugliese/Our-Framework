@@ -1,0 +1,12 @@
+var resultQuery = from a in entities.TestSequences
+				   orderby new { a.AppSequenceName, a.AppSequenceId } ascending
+				   select new { a.AppSequenceId, a.AppSequenceName };
+
+DbPagingManager testSequenceMgr = new DbPagingManager(daMgr, query, DbConstants.PageSize, 10);
+DbPagingManagerEnumerator<TestSequence> pagingMgrEnumerator = new DbPagingManagerEnumerator<TestSequence>(testSequenceMgr);
+int count = 0;
+// This loop will enumerate every row in every page
+foreach (TestSequence t in pagingMgrEnumerator)
+{
+	count++;
+}

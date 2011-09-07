@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="da02511b-cd66-4d3d-b9b9-082b9922f19f" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The appendices in this section provide additional information for the DCF</para>
+    </introduction>
+
+    <section address="Appendices">
+      <title>Appendices</title>
+      <content>
+        <para>Select an appendix to view</para>
+		<list class="bullet">
+		  <listItem><para><link xlink:href="7c01d22e-f086-4593-93bc-5f3f566717a4" /></para></listItem>
+		  <listItem><para><link xlink:href="3883c81f-d5e2-46fc-b4f7-591ac46ce538" /></para></listItem>
+		</list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="7d75cefa-8c2e-411e-86a8-80f5b514d755" />
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+      <link xlink:href="1b88be0d-fd29-4067-9041-c613def825c0" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

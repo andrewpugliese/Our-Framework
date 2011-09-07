@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="0e940087-a454-445e-8882-f020c23fd208" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.12 release</para>
+    </introduction>
+
+    <section address="New">
+      <title>What's new 1.12</title>
+      <content>
+        <para>DataAccesss</para>
+        <list class="bullet">
+          <listItem><para>iSeries Support Implementation</para>
+            <list class="bullet">
+          	  <listItem><para>Scripts for creating tables, indexes, stored procedures</para></listItem>
+            </list>
+          </listItem>
+          <listItem><para>EntityFramework Compatibility</para>
+            <list class="bullet">
+          	  <listItem><para>Parameterization of queries</para></listItem>
+          	  <listItem><para>Cross Schema support</para></listItem>
+          	  <listItem><para>OrderBy / Distinct support</para></listItem>
+            </list>
+          </listItem>
+        </list>
+      </content>
+      <content>
+        <para>Logging</para>
+        <list class="bullet">
+          <listItem><para>LoggerManager: default instance uses Lazy construct</para></listItem>
+          <listItem><para>MemoryMappedLof: default instances use Lazy construct</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Refactoring (naming conventions)</para>
+        <list class="bullet">
+          <listItem><para>Removed enum prefix or suffix from datatypes and variables</para></listItem>
+          <listItem><para>Removed lock(this) and replaced with dummy private objects</para></listItem>
+          <listItem><para>Removed lock(type) for creating default static instances</para></listItem>
+          <listItem><para>Renamed CspTypeEnum  to AsymmetricAlgorithmType</para></listItem>
+          <listItem><para>Lazy initialization instead of double checking mechanism</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>DataAccess</para>
+        <list class="bullet">
+          <listItem><para>iSeries Support Implementation</para>
+            <list class="bullet">
+              <listItem><para>Scripts for creating tables, indexes, stored procedures</para></listItem>
+            </list>
+          </listItem>
+        </list>
+      </content>     
+      <content>
+        <para>Configuration</para>
+        <list class="bullet">
+          <listItem><para>Publish version, controller and data layer</para></listItem>
+          <listItem><para>Effective date time UI</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Unit tests</para>
+        <list class="bullet">
+          <listItem><para>All config, security and logging tests runs (only failing are the ConfigEntityDAL: oracle beta entity
+  							unit tests)</para></listItem>
+          <listItem><para>Connection unit tests againt SQL Server, including testing exceptions</para></listItem>
+          <listItem><para>Update/Insert/Delete unit tests added going against SQL Server database</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Help System</para>
+        <list class="bullet">
+          <listItem><para>Re-organized table of contents</para></listItem>
+          <listItem><para>Added additional installation instructions</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <section address="InProcess">
+      <title>What's in process for the upcoming releases</title>
+       <content>
+        <para>Unit Tests</para>
+        <list class="bullet">
+          <listItem><para>Existing unit tests to run against Oracle and DB2</para></listItem>
+          <listItem><para>Add context information where unit tests can be run against all supported database in sequential order
+          </para></listItem>
+          <listItem><para>Add additional unit tests for transaction processing and other functionality</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Configuration</para>
+        <list class="bullet">
+          <listItem><para>Adminweb with funtionality to add, edit and delete configuration sets and parameters
+          </para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>DataAccess</para>
+        <list class="bullet">
+          <listItem><para>Linq interface support for DbAccessManager</para></listItem>
+          <listItem><para>iSeries Support Implementation</para>
+          <list class="bullet">
+              <listItem><para>Scripts for creating initial data and general compound SQL</para></listItem>
+          </list>
+          </listItem>
+          <listItem><para>Additional Commenting and Documentation</para></listItem>
+          <listItem><para>Additional Unit Test Functions</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Security</para>
+        <list class="bullet">
+          <listItem><para>Support for all the symmetric algorithm in the digital envelope //?? Do we need that
+          </para></listItem>
+          <listItem><para>Ingrian hardware support</para></listItem>
+          <listItem><para>Keyed hash algorithm</para></listItem>
+          <listItem><para>Xml package - hardcoded doc_key and xml format changes, validation changes
+          </para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Help System</para>
+        <list class="bullet">
+          <listItem><para>Completion of installation instructions</para></listItem>
+          <listItem><para>Completion of documentation for all config fie settings</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <section address="InQueue">
+      <title>What's in the queue to be addressed</title>
+      <content>
+        <para>DataAccess</para>
+        <list class="bullet">
+          <listItem><para>Linq interface support for DbAccessManager</para></listItem>
+          <listItem><para>Configurable setting on whether to use application catalog tables or direct to database catalog tables/views
+          </para></listItem>
+          <listItem><para>DbCommand: Extend with DebugScript property</para></listItem>
+        </list>
+      </content>
+      <content>
+        <para>Unit Tests</para>
+        <list class="bullet">
+          <listItem><para>Implement addition DataAccess unit tests (e.g. Binary Objects)
+          </para></listItem>
+         </list>
+      </content>
+      <content>
+        <para>Cryptography and Archiving Utility</para>
+        <list class="bullet">
+          <listItem><para>Bring the old VB and older version of cryptography and zip libraries and upgrade to new libraries
+          </para></listItem>
+         </list>
+      </content>
+      <content>
+        <para>Documentation</para>
+        <list class="bullet">
+          <listItem><para>DataAccess</para></listItem>
+          <listItem><para>Paging</para></listItem>
+          <listItem><para>Logging</para></listItem>
+          <listItem><para>AdminWeb</para></listItem>
+          <listItem><para>Testing</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

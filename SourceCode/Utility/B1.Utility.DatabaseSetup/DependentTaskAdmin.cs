@@ -13,6 +13,9 @@ using B1.ILoggingManagement;
 
 namespace B1.Utility.DatabaseSetup
 {
+    /// <summary>
+    /// Class for editing the dependancy tasks of a task process
+    /// </summary>
     public partial class DependentTaskAdmin : Form
     {
         DataAccessMgr _daMgr = null;
@@ -22,6 +25,12 @@ namespace B1.Utility.DatabaseSetup
         DataTable _completionCodes = null;
         string _taskQueueCode = null;
 
+        /// <summary>
+        /// Constructor for the dependency tasks dialog
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueCode">The task's unique code that has the dependency</param>
+        /// <param name="taskQueueItem">DataRow object containing all the dependency tasks details</param>
         public DependentTaskAdmin(DataAccessMgr daMgr, string taskQueueCode, DataRow taskQueueItem)
         {
             InitializeComponent();
@@ -31,6 +40,10 @@ namespace B1.Utility.DatabaseSetup
             PopulateForm();
         }
 
+        /// <summary>
+        /// Property returns a Dictionary of all columns and their new values 
+        /// that have changed from the edit.
+        /// </summary>
         public Dictionary<string, object> EditedColumns
         {
             get { return _editedColumns; }

@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="cf2a3feb-3a4c-41bb-a08b-a39457527267" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Required introduction</para>
+    </introduction>
+
+    <section address="Overview">
+      <title>Overview</title>
+      <content>
+        <para>Every sample application project in the DCF is missing an app.config file which would contain the configurations settings for the project.  This is by design.  What is included in the project directory is a SampleApp.config file.  This file is the template from which you will create an app.config file that is set up with the appropriate configuration for your environment and for the databases you want to connect to.</para>
+        <para>Follow the instructions below to set up your app.config file.  Note that the same instructions apply to any application that is build using the DCF.</para>
+      </content>
+    </section>
+
+    <section address="Instructions">
+      <title>Instructions to follow:</title>
+      <content>
+        <list class="ordered">
+          <listItem>
+            <para>
+			  Within the project folder you are working with, copy the SampleApp.config file to App.config.   For example, regarding the DatabaseSetup utility/test application:
+            </para>
+            <para>copy DTFramework\COMPONENTSNET\DealerTrack.CORE.Common.Utils.DatabaseSetup SampleApp.config to app.config in the same directory
+            </para>
+          </listItem>
+          <listItem>
+            <para>
+			  There are four sections in the app.config file which you will need to review.  You will either add an entry or modify an existing entry in these configurations sections
+            </para>
+            <list class="bullet">
+              <listItem>
+                <para>
+            		ConnectionStrings 
+                </para>
+                <para>
+            		The example that follows shows examples of entries for connecting to each supported database.  Note that entries have been included for local and remote databases to illustrate some difference in the connection string.
+					To connect to a database, you must create an connection string entry in this section.  You can either add a new one or change on the entries in the list
+                </para>
+		        <code lang="xml" title="Example of connectionStrings section" source="ExampleFiles\connectionStrings.xml" />
+              </listItem>
+              <listItem>
+                <para>
+            		ObjectFactories 
+                </para>
+                <para>
+            		The ObjectFactories section is used to load any object dynamically.  The example below is for the database helper class.  You need to modify the AssemblyPath attribute for your environment.  Note that the value of the  ObjectKey attribute matches the value of the name attribute in the connection string.  This is by convention and allows us to use the  ConnectionKey key value in the appsettings section to reference a set of entries 
+                </para>
+		        <code lang="xml" title="Example of ObjectFactories section" source="ExampleFiles\ObjectFactories.xml" />
+              </listItem>
+              <listItem>
+                <para>
+            		DbSetupConfigurations 
+                </para>
+                <para>
+            		This section contains an entry that is used by the utility application to create a database.  If you want to create a database, either local or remote, from your application, then you must create a DbSetupConfig entry in this section.   See the example that follows to use as a guide in creating or modifying an appropriate entry for your database.
+                </para>
+                <alert><para>
+                	Note: To create a database, internal scripts are provided with the DCF.  See the section “Modify your internal database scripts” if you plan on creating databases using the utility application.
+                </para></alert>
+		        <code lang="xml" title="Example of DbSetupConfigurations section" source="ExampleFiles\DbSetupConfigurations.xml" />
+              </listItem>
+              <listItem>
+                <para>
+            		LoggingConfigurations 
+                </para>
+                <para>
+            		This section is used to control your logging options.  By default, it is set up for default logging.  But you could comment in other logging targets if you chose to.  Note that logging to MSMQ, and MemoryFile is supported 
+                </para>
+		        <code lang="xml" title="Example of LoggingConfigurations" source="ExampleFiles\LoggingConfigurations.xml" />
+              </listItem>
+            </list>
+          </listItem>
+          <listItem>
+            <para>
+          	  Modification to values in the AppSettings Section
+            </para>
+            <list class="bullet">
+            		<listItem><para>Set the ConnectionKey value to an entry that you created or modify for your database connection
+            		</para></listItem>
+   					<listItem><para>b.	Set the LoggingKey value to the entry that you want to use for logging
+            		</para></listItem>
+            </list>
+          </listItem>
+         </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

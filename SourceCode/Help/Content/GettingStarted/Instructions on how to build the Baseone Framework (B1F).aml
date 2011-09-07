@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="60336e2b-d27f-4a1d-9b9f-ff92de886f7c" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Building the Baseone Framework (B1F)</para>
+    </introduction>
+
+    <section address="Install">
+      <title>Steps to build the B1F</title>
+      <content>
+        <list class="ordered">
+      		<para>After installing the software, setting up machine environment, and adjusting your config file, you are ready to build and run sample programs for the B1F</para>
+        	<listItem><para>
+        	Open VS Studio Solution file B1Framework\SourceCode\B1.Framework.sln
+        	</para></listItem>
+        	<listItem><para>Select Rebuild All</para></listItem>
+        	<listItem><para>Set B1.Utility.DbSetup as the startup project</para></listItem>
+        	<listItem><para>Run the application (in debug or release mode)</para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

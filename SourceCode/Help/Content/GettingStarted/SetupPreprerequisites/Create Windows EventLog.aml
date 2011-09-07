@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="03fb4e5f-8795-4723-8dbd-b337f60a62ea" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Windows Event Log Creation</para>
+    </introduction>
+
+    <section address="Create">
+      <title>Create Windows EventLog source</title>      
+      <content>
+        <para>Perform the following steps to create a Windows EventLog for the DT Common Framework</para>
+        <list class="bullet">
+          <listItem><para>Launch a DOS command prompt in Administrator mode</para></listItem>
+          <listItem><para>Type in the following command in the dos prompt:</para>
+            <list class="bullet">
+              <listItem><para>eventcreate /so DbSetupMgr /L Application /D SourceCreate /T Information /ID 1
+              </para></listItem>
+            </list>
+          </listItem>
+          <listItem><para>Type exit to close the DOS command prompt</para></listItem>
+        </list>
+      </content>   
+    </section>
+
+    <relatedTopics>
+       <link xlink:href="c297708e-1179-4b75-809b-057ddc7bffb8" />
+   </relatedTopics>
+  </developerConceptualDocument>
+</topic>

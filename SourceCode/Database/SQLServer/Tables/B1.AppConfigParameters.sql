@@ -1,10 +1,6 @@
 CREATE TABLE B1.AppConfigParameters(
-  ParameterName Varchar(48) not null,
-  ParameterValue Varchar(256) not null,
- CONSTRAINT PK_AppConfigParameters PRIMARY KEY(ParameterName)
+  ParameterName NVARCHAR(48) not null,
+  ParameterValue NVARCHAR(256) not null,
+ CONSTRAINT AppConfigParameters_PK PRIMARY KEY(ParameterName)
 ) ON B1Core
-go
-grant references on B1.AppConfigParameters to public
-go
-grant insert, select, update, delete on B1.AppConfigParameters to public
-go
+GO

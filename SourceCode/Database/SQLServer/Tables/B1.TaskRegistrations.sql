@@ -9,25 +9,25 @@
 --
 CREATE TABLE B1.TaskRegistrations
 (
-	TaskId					VARCHAR(64) NOT NULL, -- Fully Qualified Class Name
-	AssemblyName			VARCHAR(64) NOT NULL, -- Name of the assembly to containing the class
+	TaskId					NVARCHAR(64) NOT NULL, -- Fully Qualified Class Name
+	AssemblyName			NVARCHAR(64) NOT NULL, -- Name of the assembly to containing the class
 	LastRegisteredDate		DATETIME DEFAULT GETDATE() NOT NULL,
-	TaskDescription			VARCHAR(512) NOT NULL,
+	TaskDescription			NVARCHAR(512) NOT NULL,
 	LastModifiedUserCode	INT NULL,
 	LastModifiedDateTime	DATETIME NULL,
-CONSTRAINT PK_TaskRegistrations_TaskId PRIMARY KEY (TaskId)
+CONSTRAINT TaskRegistrations_PK_TaskId PRIMARY KEY (TaskId)
 ) ON B1Core
   
 GO
 
 ALTER TABLE B1.TaskRegistrations
-ADD CONSTRAINT FK_TaskRegistrations_UserMaster_Code
+ADD CONSTRAINT TaskRegistrations_FK_UserMaster_Code
 FOREIGN KEY (LastModifiedUserCode)
 REFERENCES B1.UserMaster(UserCode)
 
 GO
 
-CREATE UNIQUE INDEX UI_TaskRegistrations_AssemblyName_TaskId
+CREATE UNIQUE INDEX TaskRegistrations_UX_AssemblyName_TaskId
 ON B1.TaskRegistrations
 (
 	AssemblyName,

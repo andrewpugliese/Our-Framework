@@ -1,5 +1,8 @@
 ﻿namespace B1.Utility.DatabaseSetup
 {
+    /// <summary>
+    /// Dialog for TaskProcessingQueue administration
+    /// </summary>
     partial class TaskProcessingQueueAdmin
     {
         /// <summary>

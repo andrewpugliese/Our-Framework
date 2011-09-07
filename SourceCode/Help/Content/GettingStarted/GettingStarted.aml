@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="43113ffa-03e5-4c28-91d7-5a838a174a38" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+        <para>The topics in this section will help you install and setup your workstation to make use of the DealerTrack Common Framework (DCF).  This section will help you become familiar with the sample application that is provided with the DCF which demonstrates much of the functionality within the framework.
+        </para>
+    </introduction>
+
+    <section address="Started">
+      <title>Getting Started</title>
+      <content>
+        <para>The Getting Started section contains valuable information that you will need to</para>
+	      <list class="bullet">
+	        <listItem><link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054">Install the required software on your workstation</link></listItem>
+	        <listItem><link xlink:href="c297708e-1179-4b75-809b-057ddc7bffb8">Set up the environment on your workstation</link></listItem>
+	        <listItem><link xlink:href="cf2a3feb-3a4c-41bb-a08b-a39457527267">Modification of config file used by the DCF</link></listItem>
+	        <listItem><link xlink:href="9a80f655-ad0f-416c-8f3f-13d43e5f5ced">Modification of internal database creation scripts</link></listItem>
+	        <listItem><link xlink:href="60336e2b-d27f-4a1d-9b9f-ff92de886f7c">Instructions on how to build the DealerTrack Common Framework (DCF</link></listItem>
+	        <listItem><link xlink:href="00ca0d43-40ea-4c0d-9f52-f54410838da6">Instructions on working with the database utility application</link></listItem>
+	        <listItem><link xlink:href="277f5d16-0d01-4548-a54d-b3dd91fc0d14">Common Object Configuration</link></listItem>
+	      </list>
+      </content>
+	</section>
+    <relatedTopics>
+      <link xlink:href="7d75cefa-8c2e-411e-86a8-80f5b514d755" />
+      <link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+      <link xlink:href="da02511b-cd66-4d3d-b9b9-082b9922f19f" />
+      <link xlink:href="1b88be0d-fd29-4067-9041-c613def825c0" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

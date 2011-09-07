@@ -37,13 +37,13 @@ namespace B1.LoggingManagement
         private int _logFileSize;
 
         /// <summary>
-        /// 
+        /// Contructs a new MemoryMapped FileLogging object
         /// </summary>
         /// <param name="logName">Machine unique log name.</param>
-        /// <param name="logFileDirectory"></param>
-        /// <param name="logFileNamePrefix"></param>
-        /// <param name="logFileSize"></param>
-        /// <param name="priorities"></param>
+        /// <param name="logFileDirectory">Path to serialize the log file</param>
+        /// <param name="logFileNamePrefix">Unique prefix for log file name</param>
+        /// <param name="logFileSize">Maximun size of log file before rollover</param>
+        /// <param name="priorities">Enumeration of EventPriorites</param>
         public MemoryFileLog(string logName, string logFileNamePrefix, string logFileDirectory, int logFileSize, 
                 params enumEventPriority[] priorities)
         {
@@ -51,26 +51,36 @@ namespace B1.LoggingManagement
             _logFileNamePrefix = logFileNamePrefix;
             _logFileDirectory = logFileDirectory;
             _logFileSize = logFileSize;
-            _writer = new MemoryMappedLogWriter(_logName + Guid.NewGuid(), GenerateLogFileName(), "txt", _logFileDirectory, false, _logFileSize);
+            _writer = new MemoryMappedLogWriter(_logName + Guid.NewGuid()
+                    , GenerateLogFileName()
+                    , "txt"
+                    , _logFileDirectory
+                    , false
+                    , _logFileSize);
             _priorities = priorities;
         }
 
         /// <summary>
-        /// 
+        /// Writes the given message to the memory mapped file.
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="appendText"></param>
-        /// <param name="eventId"></param>
-        /// <param name="eventReference"></param>
-        /// <param name="entryType"></param>
-        /// <param name="enumPriority"></param>
-        public void Write(string message, bool appendText, int eventId, long eventReference, System.Diagnostics.EventLogEntryType entryType, enumEventPriority enumPriority)
+        /// <param name="message">String to write</param>
+        /// <param name="appendText">always true</param>
+        /// <param name="eventId">0; not used</param>
+        /// <param name="eventReference">0; not used</param>
+        /// <param name="entryType">Not used</param>
+        /// <param name="enumPriority">Not used</param>
+        public void Write(string message
+                , bool appendText = true
+                , int eventId = 0
+                , long eventReference = 0
+                , System.Diagnostics.EventLogEntryType entryType = System.Diagnostics.EventLogEntryType.Information
+                , enumEventPriority enumPriority = enumEventPriority.All)
         {
             _writer.Write(message + Environment.NewLine);
         }
 
         /// <summary>
-        /// 
+        /// Returns the enumerable collection of priorities
         /// </summary>
         public IEnumerable<enumEventPriority> Priorities
         {
@@ -78,8 +88,9 @@ namespace B1.LoggingManagement
         }
 
         /// <summary>
+        /// Generates a unique log file name
         /// </summary>
-        /// <returns></returns>       
+        /// <returns>Unique file name string</returns>       
         private string GenerateLogFileName()
         {
             DateTime now = DateTime.Now;
@@ -89,7 +100,7 @@ namespace B1.LoggingManagement
         }
 
         /// <summary>
-        /// 
+        /// Disposes the InMemory FileLogger's resources
         /// </summary>
         public void Dispose()
         {
@@ -99,6 +110,9 @@ namespace B1.LoggingManagement
             }
         }
 
+        /// <summary>
+        /// Destructor for InMemory FileLog
+        /// </summary>
         ~MemoryFileLog()
         {
             Dispose();

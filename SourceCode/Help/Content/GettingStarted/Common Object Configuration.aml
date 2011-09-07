@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="277f5d16-0d01-4548-a54d-b3dd91fc0d14" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>There are 150 App domains installed on the web servers and each application in the app domains maintains multiple configuration settings. Different configuration sets are needed for development, staging, testing and production servers. Currently the configurations are scattered in machine.config and other configuration files and is very hard to manage. This document explains the common object approach to address various issues</para>
+      <para>To avoid managing all the app and web configuration files on the application server, the Common object approach is to store the configuration setting in the database.</para>
+	   <list class="bullet">
+	      <listItem><para>Each application defines a set of configuration settings which is called ConfigSet. Every ConfigSet has a Name, Version and a collection of config Key and Value.</para></listItem>
+	      <listItem><para>There is one pre-defined “Global” ConfigSet which is available to all the DealerTrack applications. The config API exposes both Global and your App specific ConfigSets.</para></listItem>
+	      <listItem><para>There is a concept of placeholders in the config value called ConfigParameter. A configuration value can have one or more of these parameters which is denoted as $ParameterName$. When the application runs, the config component substitutes these parameters with their corresponding value from the system specific ConfigParameters table.</para></listItem>
+	      <listItem><para>“ConfigManager” is the class which is used by programmer to access these settings.</para></listItem>
+	      <listItem><para><codeInline>DealerTrack.CORE.Common.ConfigManager</codeInline> is the fully qualified name of the ConfigManager.</para></listItem>
+	      <listItem><para><codeInline>DealerTrack.CORE.Common.Configuration.DLL</codeInline> implements this class.</para></listItem>
+	  </list>      
+      <autoOutline />    
+    </introduction>
+
+    <section address="Section1">
+      <title>App.config / Web.config Setup</title>
+      <content>
+        <autoOutline />
+      </content>
+      <sections>
+          <section address="SubSection1">
+              <title>Custom Configuration Section Registration</title>
+              <content>
+                  <para>Register the ConfigManager section reader component in your App/Web config file. This component is used by the System.Configuration to load and parse the custom configuration sections.</para>
+					<code language="XML">
+					<![CDATA[
+						<configSections>
+							<section name="ConfigManager" type="DealerTrack.CORE.Common.ConfigSection, DealerTrack.CORE.Common.Configuration"/>
+						</configSections>
+ 					]]>
+        			</code>                  
+              </content>
+          </section>
+          <section address="SubSection2">
+              <title>Add ConfigManager section</title>
+              <content>
+                  <para>Add the following ConfigManager section in your App/Web config file.</para>
+		        <code lang="xml" title="" source="ExampleFiles\ConfigManagerSection.xml" />
+              </content>
+          </section>
+          <section address="SubSection3">
+              <title>For accessing the Configuration Settings with NO Database (Dev environment)</title>
+              <content>
+                  <para>Add the following keys in your App/Web config files in the &lt;appSettings&gt; section. This causes the ConfigManager component to load the configuration settings from the aplication config file.</para>
+					<code language="XML">
+					<![CDATA[
+						<appSettings>
+							<add key="ConfigSetName" value="DT.Utility.DatabaseSetup"/>
+							<add key="ConfigSetVer" value="1.0"/>
+						</appSettings>
+ 					]]>
+        			</code> 
+        	  </content>
+          </section>
+          <section address="SubSection4">
+              <title>For accessing the Configuration Settings from the Database with DAL lookup</title>
+              <content>
+                  <para>Add the following keys in your App/Web config files in the &lt;appSettings&gt; section. ConfgManager looks up the application bin folder for the Configuration DAL component to load the configuration settings. ConfigConnKey refers to the connection string specified in Enterprise database block configuration sections.</para>
+					<code language="XML">
+					<![CDATA[
+						<appSettings>
+							<add key="ConfigConnKey" value="SQLSERVER2008LOCAL"/>
+							<add key="ConfigSetName" value="DT.Utility.DatabaseSetup"/>
+							<add key="ConfigSetVer" value="1.0"/>
+						</appSettings>
+ 					]]>
+        			</code> 
+        	  </content>
+          </section>
+          <section address="SubSection5">
+              <title>For accessing the Configuration Settings from the Database with specified DAL</title>
+              <content>
+                  <para>Add the following keys in your App/Web config files in the &lt;appSettings&gt; section. ConfigManager dynamically loads the DAL defined in the configuration file and use the IConfigurationDAL interface to load the class.</para>
+					<code language="XML">
+					<![CDATA[
+						<appSettings>
+							<add key="ConfigAssembly" value="DealerTrack.DAL.Common.Configuration" />
+							<add key="ConfigClass" value="DealerTrack.DAL.Common.ConfigDAL" />
+							<add key="ConfigConnKey" value="SQLSERVER2008LOCAL"/>
+							<add key="ConfigSetName" value="DT.Utility.DatabaseSetup"/>
+							<add key="ConfigSetVer" value="1.0"/>
+						</appSettings>
+ 					]]>
+        			</code>
+        	  </content>
+          </section>
+          <section address="SubSection6">
+              <title>For accessing the latest Configuration Settings from the Database</title>
+              <content>
+                  <para>Omit the <codeInline>ConfigSetVer</codeInline> from the appSettings. When ConfgiSetVer is NOT found or Empty then the Config component loads the latest effective published config set.</para>
+					<code language="XML">
+					<![CDATA[
+						<appSettings>
+							<add key="ConfigConnKey" value="SQLSERVER2008LOCAL"/>
+							<add key="ConfigSetName" value="DT.Utility.DatabaseSetup"/>
+						</appSettings>
+ 					]]>
+        			</code>
+        	  </content>
+          </section>
+        </sections>
+    </section>
+
+    <section address="Section2">
+      <title>ConfigManager component</title>
+      <content>
+		<list class="bullet">
+		  <listItem><para>Reads all the configuration settings for “Global” config set. Loop through each config value and replaces the parameter placeholders from ConfigParameters table</para></listItem>
+		  <listItem><para>Reads the configuration settings for ConfigSetName defined in the appSettings of the application config file. Does the parameter replacement before it can be used.</para></listItem>
+		</list>
+		<table>
+		  <tableHeader>
+		    <row>
+		      <entry><para><legacyBold>ConfigSettings – flatten view of config settings</legacyBold></para></entry>
+		      <entry><para></para></entry>
+		      <entry><para></para></entry>
+		      <entry><para></para></entry>
+		    </row>
+		    <row>
+		      <entry><para><legacyBold>ConfigSetName</legacyBold></para></entry>
+		      <entry><para><legacyBold>Version</legacyBold></para></entry>
+		      <entry><para><legacyBold>Key</legacyBold></para></entry>
+		      <entry><para><legacyBold>Value</legacyBold></para></entry>		      
+		    </row>
+		  </tableHeader>
+		  <row>
+		    <entry><para>Global</para></entry>
+		    <entry><para>1.0</para></entry>
+		    <entry><para>ChromeQueue</para></entry>
+		    <entry><para>$QID$/Chrome</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>Global</para></entry>
+		    <entry><para>1.0</para></entry>
+		    <entry><para>TraceLevel</para></entry>
+		    <entry><para>5</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>eContracting</para></entry>
+		    <entry><para>1.0</para></entry>
+		    <entry><para>ServerTimeoutSecs</para></entry>
+		    <entry><para>30</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>eContracting</para></entry>
+		    <entry><para>1.0</para></entry>
+		    <entry><para>DefaultCreditBureau</para></entry>
+		    <entry><para>TransUnion</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>eContracting</para></entry>
+		    <entry><para>1.0</para></entry>
+		    <entry><para>DeploymentServer</para></entry>
+		    <entry><para>$PrimaryServer$</para></entry>
+		  </row>
+		</table>
+		<para></para>
+		<table>
+		  <tableHeader>
+		    <row>
+		      <entry><para><legacyBold>ConfigParameters</legacyBold></para></entry>
+		      <entry><para></para></entry>
+		    </row>
+		    <row>
+		      <entry><para><legacyBold>ParameterName</legacyBold></para></entry>
+		      <entry><para><legacyBold>ParameterValue</legacyBold></para></entry>
+		    </row>
+		  </tableHeader>
+		  <row>
+		    <entry><para>QID</para></entry>
+		    <entry><para>E1850QUEUE</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>PrimaryServer</para></entry>
+		    <entry><para>NJ/EQRPRIMARY</para></entry>
+		  </row>
+		</table>
+		<code language="C#">
+		<![CDATA[
+            string chromeQueue = ConfigManager.Global.GetValue("ChromeQueue");	// = E1850QUEUE/Chrome
+            int serverTimeoutSecs = ConfigManager.Global.GetValueAsInt32("ServerTimeoutSecs");	// = 30
+		]]>
+		</code>
+      </content>
+    </section>
+
+    <section address="Section3">
+      <title>API Usage Examples</title>
+      <content>
+        <code lang="C#" title="Examples" source="ExampleFiles\APIUsageExamples.cs" />
+      </content>
+    </section>
+
+    <section address="Section4">
+      <title>Configuration Database Schema</title>
+      <content>
+		<table>
+		  <tableHeader>
+		    <row>
+		      <entry><para><legacyBold>ConfigSettings</legacyBold></para></entry>
+		      <entry><para></para></entry>
+		      <entry><para></para></entry>
+		    </row>
+		  </tableHeader>
+		  <row>
+		    <entry><para>ConfigSetName</para></entry>
+		    <entry><para>Varchar(48) PK</para></entry>
+		    <entry><para>Name of the config set</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>Version</para></entry>
+		    <entry><para>Varchar(48) PK</para></entry>
+		    <entry><para>Version of the config set</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>ConfigXML</para></entry>
+		    <entry><para>Text</para></entry>
+		    <entry><para>Config XML BLOB which has the config settings</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>PublishedDateTime</para></entry>
+		    <entry><para>Datetime</para></entry>
+		    <entry><para>Date and time when these config set was published for use in application</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>EffectiveDateTime</para></entry>
+		    <entry><para>Datetime</para></entry>
+		    <entry><para>When these settings are effective</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>PublishedByUserCode</para></entry>
+		    <entry><para>Int</para></entry>
+		    <entry><para>Who published this config set</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>Description</para></entry>
+		    <entry><para>Varchar(255)</para></entry>
+		    <entry><para>Any additional remark for this ConfigSet</para></entry>
+		  </row>
+		</table>
+		<para></para>
+		<table>
+		  <tableHeader>
+		    <row>
+		      <entry><para><legacyBold>ConfigParameters</legacyBold></para></entry>
+		      <entry><para></para></entry>
+		      <entry><para></para></entry>
+		    </row>
+		  </tableHeader>
+		  <row>
+		    <entry><para>ParameterName</para></entry>
+		    <entry><para>Varchar(48) PK</para></entry>
+		    <entry><para>Name of the parameter</para></entry>
+		  </row>
+		  <row>
+		    <entry><para>ParameterValue</para></entry>
+		    <entry><para>Varchar(256)</para></entry>
+		    <entry><para>Value of the parameter</para></entry>
+		  </row>
+		</table>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="43113ffa-03e5-4c28-91d7-5a838a174a38" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

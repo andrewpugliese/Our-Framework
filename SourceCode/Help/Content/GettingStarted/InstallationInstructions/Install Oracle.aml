@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="3247f384-ab77-4234-a80c-ed32372e368f" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Instructions for installing Oracle 11g R2 database</para>
+    </introduction>
+    <section address="ServerInstall">
+      <title>Install Oracle 11g R2 database server</title>
+      <content>
+        <para>Download the software for Oracle 11g R2 from Oracle web site and select all of the core and client components for installation.</para>
+      </content>
+    </section>
+
+    <section address="ClientInstall">
+      <title>Install Oracle 11g R2 Client Only</title>
+      <content>
+        <para>Download the software for Oracle 11g R2 and select the client tools option for installation.</para>
+      </content>
+    </section>
+
+    <section address="ClientODPInstall">
+      <title>Install Oracle 11g R2 ODP.NET drivers (only on client machine)</title>
+      <content>
+        <para>The following instructions are for installing the latest version of Oracle ODP.NET drivers on a Windows machine.</para>
+		<list class="ordered">
+		  <listItem><para>Download the 32 or 64 bit drivers of <token>ODP.NET</token>.
+		  <alert class="note">
+			  <para>At the time of this writing, the version supported is ODP.NET production release for ODAC 11.2 Release 3 (11.2.0.2.1)</para>
+		  </alert>
+		  </para></listItem>
+		  <listItem><para>Unzip the downloaded file to a temporary directory.</para></listItem>
+		  <listItem><para>Launch a Visual Studio MS-DOS command prompt in Administrator mode.</para></listItem>
+		  <listItem><para>In the DOS window, change directory to the root directory containing the unzipped ODP.NET files.</para></listItem>
+		  <listItem><para>Locate the variables you will need to properly execute the install.bat file.</para>
+				<list>
+				  <listItem><para>Locate the ORACLE_HOME_NAME and ORACLE_HOME_PATH values for your machine</para></listItem>
+				  <listItem><para>Open regedit and navigate to: [HKEY_LOCAL_MACHINE][SOFTWARE][ORACLE].  You will see a key that was generated with the prefix of KEY_.  Expand that key and you will see the ORACLE_HOME_NAME and ORACLE_HOME values.  Write these values down.  The ORACLE_HOME value will be used for ORACLE_HOME_PATH.</para></listItem>
+				</list>
+		  </listItem>
+		  <listItem><para>Construct the install command for the version of the ODP files you want to install.</para>
+		  <para>The format of the command is: <computerOutputInline>install.bat component_name oracle_home_path oracle_home_name [install_dependents]</computerOutputInline></para>
+				<para>For the DCF, the value for component_name is odp.net4.  So an example of the command is:</para>
+				<para><computerOutputInline>install odp.net4 C:\app\user\product\11.2.0\client_2 OraClient11g_home1</computerOutputInline> where “OraClient11g_home1” is the ORACLE_HOME_NAME value and “C:\app\user\product\11.2.0\client_2” is the ORACLE_HOME_PATH value</para>
+				<para>Plug the values obtained in the previous step into your install command.</para>
+			</listItem>
+			<listItem><para>Execute the command you built in the previous step.</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>Perform the following steps to add the driver to the proper location for Visual Studio development:</para>
+		<list class="ordered">
+		  <listItem><para>Navigate to the directory containing the newly installed Oracle.DataAccess.dll.  Following the example above, the file would be in <computerOutputInline>“C:\app\User\product\11.2.0\client_2\ODP.NET\bin\4”</computerOutputInline>.</para></listItem>
+		  <listItem><para>Copy Oracle.DataAccess.dll from the installed location to the reference assemblies directory for the framework you are working with.  For .NET 4.0, the directory would be:</para>
+		  <para><computerOutputInline>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0</computerOutputInline></para></listItem>
+		</list>
+      </content>
+    </section>
+
+    <section address="OracleDevTools">
+      <title>Install Oracle Developer Tools (Optional)</title>
+      <content>
+		<para>Use the following instructions to install Oracle Developer Tools for Visual Studio 2010</para>
+		<list class="ordered">
+		  <listItem><para><para>Download the software for <token>Oracle Developer Tools</token></para></para></listItem>
+		  <listItem><para>Unzip the file to a temporary directory</para></listItem>
+  		  <listItem><para>Run setup.exe</para></listItem>
+  		  <listItem><para>On the "Select a Product to Install" screen, select Oracle Data Access Components for Oracle Client</para></listItem>
+  		  <listItem><para>On the next screen, select the oracle home and directory for your installation</para></listItem>
+		</list>
+      </content>
+    </section>
+    
+    <section address="Validation">
+      <title>Some steps to validate your Oracle 11g R2 Installation</title>
+      <content>
+        <para>Make sure sqlplus is available in path and can communicate to server</para>
+        <list class="ordered">
+        <listItem>
+        <para>From dos command prompt: sqlplus myusername/mypassword@Host/servicename</para>
+        <para>Host specifies hostname or ipAddress of database server</para>
+        <para>Servicename specifies the service name of the database instance</para>
+          <list class="bullet">
+            <listItem><para>If your sqlplus is not found; you must ensure that it exists on your machine and that directory is in your PATH
+            </para></listItem>
+            <listItem><para>If sqlplus can be found, but you receive an error:
+			</para>
+			<para>ORA-12154: TNS:could not resolve the connect identifier specified.</para>
+			<para>Then you must do the following:</para>
+						<para>a. Then you must verify that there is a tnsnames.ora file in your path (and only 1).</para>
+						<para>b. Make sure the service name is setup properly in your tnsnames.ora file</para>	
+			</listItem>
+          </list>
+        </listItem>
+        <listItem><para>If you received the sql prompt, then you have succeeded; just type EXIT or CTRL - C.
+        </para></listItem>
+        </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <externalLink>
+          <linkText>For more information about ODP.NET</linkText>
+          <linkUri>http://www.oracle.com/technetwork/database/windows/index-085163.html</linkUri>
+      </externalLink>
+      <externalLink>
+          <linkText>For more information about Oracle Developer Tools</linkText>
+          <linkUri>http://www.oracle.com/technetwork/developer-tools/visual-studio/overview/index-097110.html</linkUri>
+      </externalLink>      
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

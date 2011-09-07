@@ -14,41 +14,41 @@ CREATE TABLE B1.TaskDependencies
 											-- NULL; 128: Failed; 255: Succeeded
 	LastModifiedUserCode	INT NULL,
 	LastModifiedDateTime	DATETIME NULL,
-	CONSTRAINT PK_TaskDependencies_TaskQueueCode_WaitTaskQueueCode 
+	CONSTRAINT TaskDependencies_PK_TaskQueueCode_WaitTaskQueueCode 
 		PRIMARY KEY (TaskQueueCode, WaitTaskQueueCode)
 ) ON B1Core
 
 GO
 
 ALTER TABLE B1.TaskDependencies
-ADD CONSTRAINT FK_TaskDependencies_TaskProcessingQueue_TaskQueueCode
+ADD CONSTRAINT TaskDependencies_FK_TaskProcessingQueue_TaskQueueCode
 FOREIGN KEY (TaskQueueCode)
 REFERENCES B1.TaskProcessingQueue(TaskQueueCode)
 
 GO
 
 ALTER TABLE B1.TaskDependencies
-ADD CONSTRAINT FK_TaskDependencies_TaskProcessingQueue_WaitTaskQueueCode
+ADD CONSTRAINT TaskDependencies_FK_TaskProcessingQueue_WaitTaskQueueCode
 FOREIGN KEY (WaitTaskQueueCode)
 REFERENCES B1.TaskProcessingQueue(TaskQueueCode)
 
 GO
 
 ALTER TABLE B1.TaskDependencies
-ADD CONSTRAINT FK_TaskDependencies_TaskStatusCodes
+ADD CONSTRAINT TaskDependencies_FK_TaskStatusCodes
 FOREIGN KEY (WaitTaskCompletionCode) REFERENCES B1.TaskStatusCodes(StatusCode)
 
 GO
 
 ALTER TABLE B1.TaskDependencies
-ADD CONSTRAINT FK_TaskDependencies_UserMaster_Code
+ADD CONSTRAINT TaskDependencies_FK_UserMaster_Code
 FOREIGN KEY (LastModifiedUserCode)
 REFERENCES B1.UserMaster(UserCode)
 
 GO
 
 ALTER TABLE B1.TaskDependencies
-ADD CONSTRAINT CC_TaskDependencies_WaitTaskCompletionCode
+ADD CONSTRAINT TaskDependencies_CC_WaitTaskCompletionCode
 CHECK (WaitTaskCompletionCode < 128)
 
 GO

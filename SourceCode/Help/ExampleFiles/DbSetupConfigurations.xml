@@ -1,0 +1,42 @@
+﻿<DbSetupConfigurations>
+	<!-- Used to adjust the database setup options -->
+	<!-- DbSetupKey: pointed to by Connectionkey in AppSettings section -->
+	<!-- DbServer: use tnsname for oracle; server name for SqlServer; blank for Db2 local or ServerName for remote  -->
+	<!-- DbName:  database name to create and connect to -->
+	<!-- DbType: database type (Oracle, SqlServer, Db2)  -->
+	<!-- UserName: database login username (if you IntegratedSecurity for SqlServer , leave "") -->
+	<!-- UserPassword: database login password (if you IntegratedSecurity for SqlServer, leave "")  -->
+	<!-- AsSysDba: for oracle only and only if performing certain Oracle specific cmds requiring SysDba  -->
+	<!-- DDLSourceDirectory: Full path to where DDL files for given DbType are located  -->
+	<!-- TextEditor: use any text editor; notepad is also good if you do not have notepadd++ -->
+	<!-- InputFilename: relative path from DDLSourceDir to where the input command file can be found -->
+	<!-- OutputFilename: relative path from DDLSourceDir to where the output text file will be created  -->
+	<!-- Params: Can contain any key(s) that will be used by the dbSetup command files
+                for example: the samples show 2 options: ResetDb is used to create a new DB 
+                except for Oracle; then the script just recreates a tablespace 
+                DropObjects will just drop User objects -->
+	<DbSetupConfig DbSetupKey="SQLSERVER2008LOCAL" DbServer="(local)" DbName="B1SAMPLE"  DbType ="SqlServer"
+				   UserName="" UserPassword="" InputFileName="scripts\setup\B1.SampleDb.cmd" OutputFileName="B1.SampleDb.BuildResults.txt"
+				   DDLSourceDirectory="C:\B1\B1Framework\Database\SqlServer" AsSysDba="" TextEditor="notepad++" >
+		<Params>
+			<Param ParamKey="ResetDb" ParamValue="ServerOnly scripts\setup\B1.SampleDb.giorgio.sql"/>
+			<Param ParamKey="DropObjects" ParamValue="scripts\setup\B1.SampleDb.DropObjects.sql"/>
+		</Params>
+	</DbSetupConfig>
+	<DbSetupConfig DbSetupKey="ORACLELOCAL" DbServer="B1SAMPLE" DbName="B1SAMPLE"  DbType ="Oracle"
+				   UserName="system" UserPassword="xxxx" InputFileName="scripts\setup\B1.SampleDb.cmd" OutputFileName="B1.SampleDb.BuildResults.txt"
+				   DDLSourceDirectory="C:\B1\B1Framework\Database\Oracle" AsSysDba="false" TextEditor="notepad++" >
+		<Params>
+			<Param ParamKey="ResetDb" ParamValue="ServerOnly scripts\setup\B1.SampleDb.developer.sql"/>
+			<Param ParamKey="DropObjects" ParamValue="scripts\setup\B1.SampleDb.DropObjects.sql"/>
+		</Params>
+	</DbSetupConfig>
+	<DbSetupConfig DbSetupKey="DB2LOCAL" DbServer="" DbName="B1SAMPLE" DbType ="DB2"
+				   UserName="id" UserPassword="xxxx" InputFileName="scripts\setup\B1.SampleDb.cmd" OutputFileName="B1.SampleDb.BuildResults.txt"
+				   DDLSourceDirectory="C:\B1\B1Framework\Database\Db2" AsSysDba="" TextEditor="notepad++" >
+		<Params>
+			<Param ParamKey="ResetDb" ParamValue="ServerOnly scripts\setup\B1.SampleDb.DropCreateDb.Andrew.sql"/>
+			<Param ParamKey="DropObjects" ParamValue="scripts\setup\B1.SampleDb.DropCreateSchema.sql"/>
+		</Params>
+	</DbSetupConfig>
+</DbSetupConfigurations>

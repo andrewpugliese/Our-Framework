@@ -1,0 +1,10 @@
+var resultQuery = from a in entities.TestSequences
+				   orderby new { a.AppSequenceName, a.AppSequenceId } ascending
+				   select new { a.AppSequenceId, a.AppSequenceName };
+
+DbPagingManager pagingMgr = new DbPagingManager(daMgr, resultQuery, DbConstants.PageSize, 20);
+DataTable dtFirst = pagingMgr.GetFirstPage();
+DataTable dtNext = pagingMgr.GetNextPage();
+
+IEnumerable <dynamic> data1 = pagingMgr.GetNextPage <dynamic>();
+IEnumerable <object> data2 = pagingMgr.GetNextPage <object>();

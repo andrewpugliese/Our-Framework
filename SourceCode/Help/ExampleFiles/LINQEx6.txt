@@ -1,0 +1,4 @@
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+				   group b by b.DealerCode into g
+				   select new { a.DealerCode, Users = g };

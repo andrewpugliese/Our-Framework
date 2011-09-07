@@ -59,7 +59,7 @@ Narayan Singhal
 	
 Andrew Pugliese
 	- DDL Merge from latest CG release
-		- modify varchar to Unicode columns
+		- modify NVARCHAR to Unicode columns
 		- modify flag columns to boolean columns
 		- Remove old LModKey from new tables
 		- Remove new LModKey from old tables //??
@@ -88,3 +88,11 @@ Not Assigned (Controls)
 	- DateTimePicker with Null value
 	- ComboBox (scrollable)
 	- GridControl (WPF)
+	
+	- DbSetup
+		- Add descriptions on Tables, Columns, Indexes
+			- Define syntax and update database catalog with descriptions
+		- Add descriptions to B1F database objects
+		- Add descriptions to CG database objects
+		
+	

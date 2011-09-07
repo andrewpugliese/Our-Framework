@@ -95,7 +95,7 @@ namespace B1.LoggingManagement
             _traceQueue.Value.Enqueue(new TraceMessage()
                     {
                         Time = DateTime.Now.ToString("HH:mm:ss.fffffff"),
-                        Context = LoggingContext.ToString,
+                        Context = LoggingContext.ContextString,
                         ContextLevel = LoggingContext.Level,
                         MachineName = Environment.MachineName,
                         ProcessId = Process.GetCurrentProcess().Id,

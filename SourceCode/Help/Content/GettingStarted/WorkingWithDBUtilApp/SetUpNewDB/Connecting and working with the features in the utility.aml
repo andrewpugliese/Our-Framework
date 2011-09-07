@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="8022deb8-db67-4eed-bc2b-60c046c5ac1f" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>The database setup utility application provides many features that test many of the componenets in the DCF</para>
+      <para>Database functionality allowing you to test insert, update, and delete records is present.  Features to deomnistrate paging within a grid view is shown.</para>
+      <para>Additional functionality such as logging is also present.</para>
+    </introduction>
+
+    <section address="Section1">
+      <title>The steps below can be followed showing you how to exercise some of the functionality within the application</title>
+      <content>
+      <list class="bullet">
+      	<listItem><para>Launch the DealerTrack.CORE.Common.Utils.DatabaseSetup application</para></listItem>
+      	<listItem><para>Switch to the TestDataAccessMgr tab</para></listItem>
+      	<listItem><para>Click the rowcount button to verify the table is empty and DataAccessMgr is working.
+		Note: First time may seem slow if running locally with a database server as the server
+			may need to startup.  (more pronounced with local oracle)</para></listItem>
+      	<listItem><para>To test Inserts: Click StartInsert;  Verify with Rowcount button and paging buttons.
+			This will begin to insert records into the B1.TestSequence table.  
+			You can hit the "Stop Insert" button at any point in time to stop inserting records.</para></listItem>
+      	<listItem><para>To test Updates: Click the StartUpdate; this will update the records (starting from first)
+			and update datetimes, remarks and add a clob.  You can click on the "Stop Update" button to stop the updates.</para></listItem>
+      	<listItem><para>To test Deletes: Click the StartDelete; this will delete the records (starting from first).</para></listItem>
+      	<listItem><para>To test Merge: Click the StartMerge; this will Merge/Update the records (starting from first)
+			and update datetimes, remarks and add a clob.  Then it will perform Merge/Insert of 5 new records (check rowcount).</para></listItem>
+      	<listItem><para>You can change TraceLevel and see tracing (while inserting or updating)</para></listItem>
+      	<listItem><para>You can perform transaction tests (success adds 4 rows, failures add 2 rows; check rowcount before/after)</para></listItem>
+      	<listItem><para>Paging can be tested with First, Last, Prev, Next buttons.  The radio buttons demonstrate differnet indexes
+			and paging with join queries as well as a stateless version to be used in a web environement</para></listItem>
+      </list>
+      </content>
+    </section>
+ 
+    <relatedTopics>
+      <link xlink:href="00ca0d43-40ea-4c0d-9f52-f54410838da6" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

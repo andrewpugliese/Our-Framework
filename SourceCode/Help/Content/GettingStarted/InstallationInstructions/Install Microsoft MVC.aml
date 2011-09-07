@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="0498a435-0925-4e70-b639-e7e04199fe34" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <!-- Uncomment this to generate an outline of the section and sub-section
+           titles.  Specify a numeric value as the inner text to limit it to
+           a specific number of sub-topics when creating the outline.  Specify
+           zero (0) to limit it to top-level sections only.  -->
+      <!-- <autoOutline /> -->
+      <para>The DealerTrack Common Framework makes use of the ASP.NET MVC 3 framework</para>
+      <para>ASP.NET MVC 3 is a framework for building scalable, standards-based web applications using well-established design patterns.
+      </para>
+      <para>ASP.NET MVC 3 provides a Model-View-Controller (MVC) framework on top of the ASP.NET 4 runtime.
+      </para>
+      <para>Install the latest version of ASP.NET MVC 3 which can be found on the <token>Microsoft Download Center</token> web site.
+      </para>
+      <para>Additional details about ASP.NET MVC 3 can be found at the <token>The Official Microsoft ASP.NET Site</token>.
+      </para>
+      <alert class="note">
+      <para>An <token>update</token> to the MVC 3 tools is out and it is recommended that you apply this update.
+      </para>
+      </alert>
+    </introduction>
+
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

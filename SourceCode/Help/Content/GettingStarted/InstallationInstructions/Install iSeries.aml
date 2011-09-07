@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="06a81279-db45-46b8-9ed0-738764f4443e" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Instructions for installing iSeries client</para>
+    </introduction>
+    <section address="ServerInstall">
+      <title>Install iSeries database server</title>
+      <content>
+      <alert class="note">
+        <para>Developers will not be able to install iSeries server software on their local workstation due to OS requirements.
+        </para>
+      </alert>
+      </content>
+    </section>    
+
+    <section address="ClientInstall">
+      <title>Install iSeries Client Only</title>
+      <content>
+        <para>Installation Steps for installing V6R1M0 version of iSeries with fixpack SI41053 on Windows 7</para>
+        <list class="ordered">
+          <listItem><para>Obtain iSeries software for 32/64 bit from iSeries\V6R1M0-SI29455 directory
+          </para></listItem>
+          <listItem><para>Unzip the file into a temp directory and run setup.exe
+          </para></listItem>
+          <listItem><para>Accept all defaults and reboot machine
+          </para></listItem>
+          <listItem><para>Install security patch from Microsoft.  Navigate to iSeries\V6R1M0-SI41053 directory
+   and for 32/64 bit run the appropriate vcredist?.exe file
+          </para></listItem>
+          <listItem><para>Obtain latest service pack for 32/64 bit from iSeries\V6R1M0-SI41053 directory and run exe file
+          </para></listItem>
+          <listItem><para>Accept all defaults and reboot machine
+          </para></listItem>
+        </list>
+        <para>For additional information visit <token>IBM iSeries</token> web page.
+        </para>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="46d9f510-4df3-43d1-a988-67a1af303054" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

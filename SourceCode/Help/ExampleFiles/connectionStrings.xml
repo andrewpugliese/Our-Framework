@@ -1,0 +1,21 @@
+﻿<!-- Identifies the default database when CreateDatabase does not have a connection key -->
+<dataConfiguration defaultDatabase="SQLSERVER2008LOCAL"></dataConfiguration>
+<!-- Identifies the different database connection options -->
+<!-- Identifies the different database connection options -->
+<!-- name: pointed to by key in AppSettings section or the defaultDatabase -->
+<!-- providerName: Name of database vendor's ADO provider file -->
+<!-- connectionString: valid connection string for the database type -->
+<connectionStrings>
+	<add name="ORACLELOCAL" connectionString="Data Source=DTSAMPLE;user id=system; password=xxxxxxx"
+		providerName="Oracle.DataAccess.Client" />
+	<add name="ORACLEDTDEV" connectionString="Data Source=DEV_IXC;user id=FUSION; password=xxxxx"
+		providerName="Oracle.DataAccess.Client" />
+	<add name="SQLSERVER2008LOCAL" connectionString="Database=DTSample;Server=(local);Integrated Security=SSPI"
+		providerName="System.Data.SqlClient" />
+	<add name="SQLSERVER2008DEV" connectionString="Database=DTSample;Server=192.168.1.1;User Id=sa;Password=xxxxx;"
+			providerName="System.Data.SqlClient" />
+	<add name="DB2LOCAL" connectionString="Database=DTSample; Server=MachineName; UID=id; PWD=xxxxxx"
+		providerName="IBM.Data.DB2" />
+	<add name="DB2DEV" connectionString="Database=DTSample; Server=ServerName; UID=id; PWD=xxxxxx"
+		providerName="IBM.Data.DB2" />
+</connectionStrings>

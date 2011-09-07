@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="5b668966-46b2-4025-ac51-fedb35e2bb0a" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>GAC procedures to follow</para>
+    </introduction>
+
+    <section address="DB2">
+      <title>Special instructions when upgrading to IBM DB2 v9.7.4</title>
+      <content>
+		<para>If you are upgrading from an earlier version of IBM DB2 9.7.x, then you need to uninstall IBM.Data.DB2.dll from the GAC.  If you are installing IBM DB2 9.7 for the first time, then you can skip this section.</para>
+		<para>Instructions are as follows:</para>
+		<list class="ordered">
+		  <listItem><para>Open a Visual Studio 2010 command prompt as follows: Click Start, point to All Programs, point to Microsoft Visual Studio 2010, point to Visual Studio Tools, and then click right-click Microsoft Visual Studio Command Prompt (2010) and select Run as administrator.</para></listItem>
+		  <listItem><para>At the command prompt, type the following command:
+		  				gacutil /u "IBM.Data.DB2,Version=9.0.0.2, Culture=neutral, PublicKeyToken=7c307b91aa13d208"</para></listItem>
+  		  <listItem><para>If you get an error, go into the GAC and obtain the properties for IBM.Data.DB2 and substitute the appropriate values in step two and run the command again.</para></listItem>
+		</list>
+      </content>
+    </section>
+<!--
+    <section address="GAC">
+      <title>Notes and instructions to changes that may be needed to the GAC</title>
+      <content>
+		<para>If you will be executing from externally hosted Applications or Services (e.g. ISS or Studio Debugger for web site)
+		where you do not control what version of that .exe is, then you may need to have both versions of the DLL (if you are
+		on a x64 bit OS).</para>
+		<para>To do this just register both versions of the dll in the GAC for example:</para>
+		<para>Oracle 64 bit</para>
+		<para>    C:\Windows\system32>gacutil /i c:\dt\dtframework\thirdparty\oracle\odp.net\11gv2_x64\Oracle.DataAccess.dll</para>
+		<para>    or</para>
+		<para>Oracle 32 bit</para>
+		<para>    C:\Windows\system32>gacutil /i c:\dt\dtframework\thirdparty\oracle\odp.net\11gv2_x32\Oracle.DataAccess.dll</para>
+      </content>
+    </section>
+-->
+    
+    <relatedTopics>
+      <link xlink:href="c297708e-1179-4b75-809b-057ddc7bffb8" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

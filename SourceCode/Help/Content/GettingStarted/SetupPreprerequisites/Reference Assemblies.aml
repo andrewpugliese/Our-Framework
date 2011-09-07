@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="79ca4fde-b589-4e5b-9d9a-c307b32ef899" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Reference Assemblies</para>
+    </introduction>
+
+    <section address="Notes">
+      <title>Notes and instructions to address build issues in regards to third party DLL's</title>
+      <content>
+        <para>Since the DataAccess assemblies have references to Oracle and DB2 libraries, your workstation must be able to find this reference so that the Build process can copy these DLLs locally to the application's bin directory.</para>
+        <para>EVEN IF YOU ARE USING A SINGLE DATABASE SERVER, YOU MUST DO THIS ONE TIME STEP.</para>
+		<para></para>
+        <para>If the Oracle or DB2 dll does not show up in the VS Studio Add References dialog box, you can copy the file to the following directory:</para>
+        <para>(Just adjust path for OS version (x32 vs x64 bit) and .NetFramework version (4.0 vs 2.0))</para>
+        <para>x64 Bit</para>
+        <para>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0</para>
+        <para>x32 Bit</para>
+        <para>C:\Program Files\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0</para>
+      </content>
+    </section>
+
+    <relatedTopics>
+      <link xlink:href="c297708e-1179-4b75-809b-057ddc7bffb8" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

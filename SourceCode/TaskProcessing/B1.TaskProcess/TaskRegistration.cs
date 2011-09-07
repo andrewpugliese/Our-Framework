@@ -40,7 +40,7 @@ namespace B1.TaskProcessing
             int typesFound = 0;
             foreach (Type t in ObjectFactory.SearchTypes<TaskProcess>(asm))
             {
-                TaskProcess tp = ObjectFactory.Create<TaskProcess>(assemblyFileName, t.FullName, null, null, null, null);
+                TaskProcess tp = ObjectFactory.Create<TaskProcess>(assemblyFileName, t.FullName, null, null, null, null, null, null);
                 dbCmd.Parameters[daMgr.BuildParamName(Constants.TaskId)].Value = t.FullName; 
                 dbCmd.Parameters[daMgr.BuildParamName(Constants.AssemblyName)].Value = assemblyName;
                 dbCmd.Parameters[daMgr.BuildParamName(Constants.TaskDescription)].Value = tp.TaskDescription();

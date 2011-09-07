@@ -1,0 +1,18 @@
+// UserEntities defined in Users assembly
+UserEntities userEntities = new UserEntities();
+
+// DealerEntities defined in Dealers assembly
+DealerEntities dealerEntities = new DealerEntities();
+
+// LINQ queries to get the users living in NYC for all the dealers
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+				   join d in dealerEntities.Dealers on d.DealerCode equals b.DealerCode
+				   where a.City == "New York"
+				   select new { a.UserName, d.DealerName };
+
+// Get the DbCommand from the LINQ select query
+DbCommand dbCmd = daMgr.BuildSelectDbCommand(resultQuery, null);
+
+// Execute command to get the DataTable
+DataTable results = daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];

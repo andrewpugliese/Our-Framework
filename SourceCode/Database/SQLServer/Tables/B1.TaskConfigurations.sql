@@ -8,17 +8,17 @@
 --
 CREATE TABLE B1.TaskConfigurations
 (
-	ConfigId					VARCHAR(32) NOT NULL,	-- Unique string identifier for the configuration description
-	ConfigurationDescription	VARCHAR(512) NOT NULL,	-- details specific to this configuration (e.g. memory, hardware, etc)
+	ConfigId					NVARCHAR(32) NOT NULL,	-- Unique string identifier for the configuration description
+	ConfigurationDescription	NVARCHAR(512) NOT NULL,	-- details specific to this configuration (e.g. memory, hardware, etc)
 	LastModifiedUserCode		INT NULL,
 	LastModifiedDateTime		DATETIME NULL,
-	CONSTRAINT PK_TaskConfigurations_ConfigId PRIMARY KEY (ConfigId)
+	CONSTRAINT TaskConfigurations_PK_ConfigId PRIMARY KEY (ConfigId)
 ) ON B1Core
 
 GO
 
 ALTER TABLE B1.TaskConfigurations
-ADD CONSTRAINT FK_TaskConfigurations_UserMaster_Code
+ADD CONSTRAINT TaskConfigurations_FK_UserMaster_Code
 FOREIGN KEY (LastModifiedUserCode)
 REFERENCES B1.UserMaster(UserCode)
 

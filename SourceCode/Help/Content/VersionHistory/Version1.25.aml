@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<topic id="84522ed8-30fc-498c-9fee-2b23f000e4d8" revisionNumber="1">
+  <developerConceptualDocument xmlns="http://ddue.schemas.microsoft.com/authoring/2003/5" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <introduction>
+      <para>Version 1.25 release</para>
+      <para>Required introduction</para>
+    </introduction>
+    
+    <section address="New">
+      <title>What's new 1.25</title>
+      <content>
+        <para>DbAccessManager</para>
+        <list class="bullet">
+		  <listItem><para>Refactored SelectColumns propery of DbTableDmlManager from a SortedSet to a Dictionary
+					in order to allow default queries to have columns listed in table definition (ordinal) order</para></listItem>
+		  <listItem><para>Modified BuildChangeDbCommand to check for the existence of the New Value parameter (used in set clause)
+						and to create one if it did not exist</para></listItem>
+		  <listItem><para>Added ExecuteDynamic function to return collection of dynamic objects</para></listItem>
+		  <listItem><para>DbPagingManager - added support for returning buffer of dynamic object</para></listItem>
+		  <listItem><para>TestDataAccessMgr - added function for testing dynamic paging buffers</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>DbSetup Utility</para>
+        <list class="bullet">
+		  <listItem><para>Added button on the DbSetupApp for testing dynamic paging buffers</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>Administration Web</para>
+		<list class="bullet">
+		  <listItem><para>Changed the web sample of paging manager to use the dynamic objects</para></listItem>
+		  <listItem><para>Added CSS to Paging Grid View</para></listItem>
+	    </list>
+      </content>
+      <content>
+        <para>Unit tests and documentation</para>
+		<list class="bullet">
+		  <listItem><para>Verify unit tests work against all 3 databases on Build Server</para></listItem>
+		  <listItem><para>Corrected ConfigEntityDALConstructorTest_with_parameters to point to ConnectionKey of Oracle on BuildBox</para></listItem>
+		  <listItem><para>Updated SampleApp.config for DbAccess and Configuration tests</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>Help System</para>
+	  </content>
+    </section>
+
+	<section address="InProcess">
+      <title>What's in process</title>
+      <content>
+        <para>Unit tests, documentation, and Help System</para>
+          <list class="bullet">
+            <listItem><para>Documentation: Comment all methods (find any undocumented methods);  Provide contextual helpful
+				comments into code summary to be used in Sandcastle documentation help system</para></listItem>
+            <listItem><para>Unit Test coverage: Ensure 75% minimum code coverage with unit tests; docuument unit tests</para></listItem>
+          </list>
+      </content>
+      <content>
+        <para>DbSetup</para>
+          <list class="bullet">
+            <listItem><para>Modify scripts to include Sequence Number UDFs</para></listItem>
+            <listItem><para>Write Sequence Number UDF for DB2UDB</para></listItem>
+            <listItem><para>WPF Sample Grid Control utilizing PagingManager</para></listItem>
+          </list>
+      </content>
+      <content>
+        <para>Technical Support</para>
+          <list class="bullet">
+            <listItem><para>Assistance, analysis, bug fixes in support of Common Objects</para></listItem>
+          </list>
+	  </content>
+    </section>
+
+    <section address="OnHold">
+      <title>What is On Hold</title>
+      <content>
+        <para>Common Entity Reference Application (Common Objects R2 or DT2.0 components)</para>
+        <list class="bullet">
+          <listItem><para>MVC Samples of using Common Objects for Business Layer Objects</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>DbAccess</para>
+        <list class="bullet">
+          <listItem><para>EF compatibility: Full DB change support (Merge)</para></listItem>
+          <listItem><para>EF compatibility: Complete select support (cannonical function support in LINQ expressions)</para></listItem>
+
+          <listItem><para>EF compatibility: DataLayer interface for Stored Procedure support for custom implementations</para></listItem>	
+          <listItem><para>EF compatibility: LINQ to AppFabric support (provides interface to allow programmer to simply request data;
+						it will be retrieved from either the cache or database after populating cache)</para></listItem>
+          <listItem><para>EF compatibility: Entity generation engine (replaces need for EF driver to create classes)</para></listItem>
+          <listItem><para>Oracle 10g compatibility: Make additional modifications based upon feedback requirements</para></listItem>
+		</list>		
+      </content>
+      <content>
+        <para>Logging/Exceptions</para>
+      </content>
+      <content>
+        <para>Tracing</para>
+        <list class="bullet">
+          <listItem><para>Tracing Traceviewer search completion</para></listItem>
+          <listItem><para>Trace File Serialization</para></listItem>
+          <listItem><para>Tracing Unit tests</para></listItem>
+          <listItem><para>Tracing Documentation</para></listItem>
+          <listItem><para>Multiple Process Synchronization of a single memory mapped trace file</para></listItem>
+		</list>
+      </content>
+      <content>
+        <para>Security</para>
+        <list class="bullet">
+          <listItem><para>Certificate caching and stores</para></listItem>
+          <listItem><para>Generic data packager with custom XML meta data</para></listItem>
+          <listItem><para>Key and hash validation with the XREF_ARCHIVE_KEYS table</para></listItem>
+          <listItem><para>Security usage convention</para></listItem>
+          <listItem><para>Security standard component with DT defined algorithms</para></listItem>
+          <listItem><para>Unit tests</para></listItem>
+          <listItem><para>Documentation</para></listItem>
+	    </list>
+      </content>
+    </section>
+
+    <relatedTopics>
+		<link xlink:href="e6a2ec31-2890-4f06-9d98-e81f0bc04103" />
+    </relatedTopics>
+  </developerConceptualDocument>
+</topic>

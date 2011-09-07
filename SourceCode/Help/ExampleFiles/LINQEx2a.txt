@@ -1,0 +1,27 @@
+// UserEntities defined in Users assembly
+UserEntities userEntities = new UserEntities();
+
+// DealerEntities defined in Dealers assembly
+DealerEntities dealerEntities = new DealerEntities();
+
+// Variable which holds the name of the Dealer
+string dealerName = "Honda Dealer";
+
+// LINQ queries to get all the users for the dealer referened by the dealerName
+var resultQuery = from a in userEntities.Users
+				   join b in dealerEntities.DealerUsers on a.UserCode equals b.UserCode
+				   join d in dealerEntities.Dealers on d.DealerCode equals b.DealerCode
+				   where d.DealerName == dealerName
+				   select new { a.UserName, d.DealerName };
+
+// Get the DbCommand from the LINQ select query
+DbCommand dbCmd = daMgr.BuildSelectDbCommand(resultQuery, null);
+
+// Execute command to get the DataTable for “Honda Dealer”
+DataTable results = daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
+
+// Now change the dealer name
+dealerName = "Toyota Dealer";
+
+// Execute command to get the DataTable for “Toyota Dealer”
+results = daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];

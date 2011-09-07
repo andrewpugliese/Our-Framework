@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+	<!-- Other Settings...   -->
+	
+	<add key="DbServer" value=""/>             <!-- Set to empty string when going against local machine -->
+	<add key="DbName" value="Sample"/>         <!-- Name of database you want to create -->
+	<add key="DbType" value="Db2"/>            <!-- DB type -->
+	<add key="UserName" value="username"/>     <!-- User id that will have privelages to create database, tables, etc. -->
+	<add key="UserPassword" value="password"/> <!-- Password for ther user id -->
+
+	<!-- Other Settings...   -->	
+</configuration>

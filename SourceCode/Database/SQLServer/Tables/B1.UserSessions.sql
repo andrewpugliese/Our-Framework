@@ -13,39 +13,39 @@ CREATE TABLE B1.UserSessions
 (
 	SessionCode				BIGINT NOT NULL, -- Unqiue Code for this user's session
 	UserCode				INT NOT NULL, -- Unique numeric identifier for this user
-	UserId					VARCHAR(64) NOT NULL, -- Unique string identifier for this user
+	UserId					NVARCHAR(64) NOT NULL, -- Unique string identifier for this user
 	SignonDateTime			DATETIME NOT NULL DEFAULT (GETUTCDATE()), -- Time User signed onto system
 	SessionDateTime			DATETIME NOT NULL DEFAULT (GETUTCDATE()), -- Time User last updated the session record
 	ForceSignoff			BIT NOT NULL DEFAULT(0), -- Indicates that this session must be forced off
 	AppCode					INT NOT NULL, -- unique code of the application User was signed on
-	AppId					VARCHAR(32) NOT NULL, -- unique identifier of the application User was signed on
-	AppVersion				VARCHAR(24) NOT NULL, -- version of the application User was signed on
-	AppMachine				VARCHAR(64)	NOT NULL, -- Machine name where the application User was signed on
-	RemoteAddress			VARCHAR(64), -- IP address where a user's browser was located
-	CONSTRAINT PK_UserSessions PRIMARY KEY (SessionCode, UserCode)
+	AppId					NVARCHAR(32) NOT NULL, -- unique identifier of the application User was signed on
+	AppVersion				NVARCHAR(24) NOT NULL, -- version of the application User was signed on
+	AppMachine				NVARCHAR(64)	NOT NULL, -- Machine name where the application User was signed on
+	RemoteAddress			NVARCHAR(64), -- IP address where a user's browser was located
+	CONSTRAINT UserSessions_PK PRIMARY KEY (SessionCode, UserCode)
 ) ON B1Core
 
 GO
 
-CREATE UNIQUE INDEX UX_UserSessions_UserCode
+CREATE UNIQUE INDEX UserSessions_UX_UserCode
 ON B1.UserSessions(UserCode, SessionCode)
 
 GO
 
-CREATE UNIQUE INDEX UX_UserSessions_UserId
+CREATE UNIQUE INDEX UserSessions_UX_UserId
 ON B1.UserSessions(UserId, SessionCode)
 
 GO
 
 ALTER TABLE B1.UserSessions
-ADD CONSTRAINT FK_UserSessions_UserMaster_UserCode
+ADD CONSTRAINT UserSessions_UX_UserMaster_UserCode
 FOREIGN KEY (UserCode)
 REFERENCES B1.UserMaster(UserCode)
 
 GO
 
 ALTER TABLE B1.UserSessions
-ADD CONSTRAINT FK_UserSessions_UserMaster_UserId
+ADD CONSTRAINT UserSessions_FK_UserMaster_UserId
 FOREIGN KEY (UserId)
 REFERENCES B1.UserMaster(UserId)
 

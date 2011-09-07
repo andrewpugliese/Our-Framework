@@ -1,0 +1,41 @@
+﻿<!-- Used to control the logging options -->
+<!-- LoggingKey: pointed to by key in AppSettings section -->
+<!-- BackupLogFileName: name of file used when all targets fail for Critical Messages only -->
+<!-- BackupLogFileDirectory: directory path where backupLogFile will be stored -->
+<!-- TraceLevel: Controls tracing output: NONE, PROD, DR, QA_MIN, QA, DEV, All -->
+<!-- TargetType: Where/what to log to: (WindowsEventLog, File, MSMQ, MemoryFile) -->
+<!-- LogName: Used as a name for the Target (windows EventLog or MSMQ QueueName,etc -->
+<!-- Priorities: Used to control which type of messages go to that target (Normal,Warning,Trace,Critical,All) -->
+<!-- Params: Can contain any key(s) that will be used by the logging target -->
+<LoggingConfigurations>
+	<LoggingConfig LoggingKey="BasicLogging" BackupLogFileName="BackupDbSetupMgrLog" BackupLogFileDirectory="C:\B1\EventLog" TraceLevel ="NONE">
+		<LoggingTargets>
+			<LoggingTarget TargetType="WindowsEventLog" LogName="Application" Priorities="All">
+				<Params>
+					<Param ParamKey="EventLogSource" ParamValue="DbSetup1"/>
+				</Params>
+			</LoggingTarget>
+		</LoggingTargets>
+		<!-- MSMQ Logging Target-->
+		<!-- MSMQPath: Path to queue -->
+		<!--
+                <LoggingTarget TargetType="MSMQ" LogName="MSMQLog" Priorities="All">
+                    <Params>
+                        <Param ParamKey="MSMQPath" ParamValue=".\Private$\NOC"/>
+                    </Params>
+                </LoggingTarget>  -->
+
+		<!-- Memory File Logging (Fast disk IO logging)-->
+		<!-- LogFileDirectory: Directory for log files -->
+		<!-- LogFileNamePrefix: Prefix of log file name. Rest of file name will be date and time plus rollover number. -->
+		<!-- LogFileSize: Mamiximum log file size. Will spill over into new file when current file is full.-->
+		<!--
+                <LoggingTarget TargetType="MemoryFile" LogName="MSMQLog" Priorities="All">
+                    <Params>
+                        <Param ParamKey="LogFileDirectory" ParamValue="C:\Temp"/>
+                        <Param ParamKey="LogFileNamePrefix" ParamValue="AppLog"/>
+                        <Param ParamKey="LogFileSize" ParamValue="1000000"/>
+                    </Params>
+                </LoggingTarget>  -->
+	</LoggingConfig>
+</LoggingConfigurations>

@@ -82,7 +82,7 @@ namespace B1.LoggingManagement
         private static Stack<string> _Context = new Stack<string>();
 
         /// <summary>
-        /// 
+        /// Returns the entire context stack object
         /// </summary>
         public static Stack<string> Context
         {
@@ -95,7 +95,10 @@ namespace B1.LoggingManagement
             }
         }
 
-        public static string ToString
+        /// <summary>
+        /// Returns the Context Level and Message as a string
+        /// </summary>
+        public static string ContextString
         {
             get
             {
@@ -110,6 +113,9 @@ namespace B1.LoggingManagement
             }
         }
 
+        /// <summary>
+        /// Returns the nested level of the context
+        /// </summary>
         public static int Level
         {
             get
@@ -122,7 +128,7 @@ namespace B1.LoggingManagement
         }
 
         /// <summary>
-        /// 
+        /// Removes the current context level
         /// </summary>
         public void Dispose()
         {
@@ -130,7 +136,7 @@ namespace B1.LoggingManagement
         }
 
         /// <summary>
-        /// 
+        /// Contructs a new context object with the given context message
         /// </summary>
         /// <param name="newContext"></param>
         public LoggingContext(string newContext)
