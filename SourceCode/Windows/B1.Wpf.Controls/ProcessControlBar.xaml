@@ -1,0 +1,18 @@
+﻿<UserControl x:Class="B1.Wpf.Controls.ProcessControlBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" Name="ProcessControl" BorderBrush="#FF9D2F0E" BorderThickness="3" Height="42" Width="401" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FF3F8275">
+    <Grid Name="gridProcessControl" Height="25" Width="389" Background="#FFD4FFD5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="40*" />
+        </Grid.RowDefinitions>
+        <Button Content="Start" DataContext="{Binding ElementName=btnStart}" Height="23" HorizontalAlignment="Left" Name="btnStart" VerticalAlignment="Bottom" Width="75" Click="btnStart_Click" Grid.RowSpan="2" />
+        <Button Content="Stop" DataContext="{Binding ElementName=btnStop}" Height="23" HorizontalAlignment="Left" Margin="77,0,0,0" Name="btnStop" VerticalAlignment="Bottom" Width="75" Click="btnStop_Click" Grid.RowSpan="2" />
+        <Button Content="Pause" DataContext="{Binding ElementName=btnPause}" Height="23" HorizontalAlignment="Left" Margin="154,0,0,0" Name="btnPause" VerticalAlignment="Bottom" Width="75" Click="btnPause_Click" Grid.Row="1" />
+        <Button Content="Resume" DataContext="{Binding ElementName=btnResume}" Height="23" HorizontalAlignment="Left" Margin="231,0,0,0" Name="btnResume" VerticalAlignment="Bottom" Width="75" Click="btnResume_Click" Grid.Row="1" />
+        <Button Content="Status" DataContext="{Binding ElementName=btnStatus}" Height="23" HorizontalAlignment="Left" Margin="309,0,0,0" Name="btnStatus" VerticalAlignment="Bottom"  Width="75" Click="btnStatus_Click" Grid.RowSpan="2" />
+    </Grid>
+</UserControl>

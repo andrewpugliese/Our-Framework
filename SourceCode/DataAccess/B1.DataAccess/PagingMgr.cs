@@ -175,6 +175,8 @@ namespace B1.DataAccess
 #pragma warning disable 1591 // disable the xmlComments warning
         public enum PagingDbCmdEnum { First, Last, Next, Previous };
 #pragma warning restore 1591 // restore the xmlComments warning
+        PagingDbCmdEnum _refreshDirection = PagingDbCmdEnum.First; // default
+        bool _isRefresh = false;
 
         DbCommand _dbCmdFirstPage = null;
         DbCommand _dbCmdLastPage = null;
@@ -784,6 +786,7 @@ namespace B1.DataAccess
                 SetKeyItemValues(_pageFirstItem, newPage.Rows[0]);
                 SetKeyItemValues(_pageLastItem, newPage.Rows[newPage.Rows.Count - 1]);
             }
+            _isRefresh = false;
             return newPage;
         }
 
@@ -858,6 +861,12 @@ namespace B1.DataAccess
             return null;
         }
 
+        public DataTable RefreshPage(short? pageSize = null)
+        {
+            _isRefresh = true;
+            return GetPage(_refreshDirection, pageSize);
+        }
+
         /// <summary>
         /// GetPage returns the buffer for the given paging direction. This function can be called with an entity or a specific
         /// concrete type. This function can also be called with "dynamic" for the type T in which case the dynamic
@@ -897,8 +906,10 @@ namespace B1.DataAccess
         /// <returns>First buffer of data</returns>
         public DataTable GetFirstPage(Int16 pageSize)
         {
+            _refreshDirection = PagingDbCmdEnum.First;
             // set parameter values
-            _dbCmdFirstPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+            if (!_isRefresh)
+                _dbCmdFirstPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
             return ProcessNewPage(_daMgr.ExecuteDataSet(_dbCmdFirstPage, null, null).Tables[0]);
         }
 
@@ -913,8 +924,10 @@ namespace B1.DataAccess
         /// <returns>First buffer of data</returns>
         public IEnumerable<T> GetFirstPage<T>(Int16 pageSize) where T : new()
         {
+            _refreshDirection = PagingDbCmdEnum.First;
             // set parameter values
-            _dbCmdFirstPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+            if (!_isRefresh)
+                _dbCmdFirstPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
 
             // If called with GetFirstPage<dynamic>() OR GetFirstPage(Object) - returns the ExpandoObject
             // The BaseType is null when the type is Object or dynamic
@@ -932,7 +945,7 @@ namespace B1.DataAccess
             {
                 ret = _daMgr.ExecuteCollection<T>(_dbCmdFirstPage, null, GetCollectionAndProcess<T>, null);
             }
-
+            _isRefresh = false;
             return ret;
         }
 
@@ -961,8 +974,10 @@ namespace B1.DataAccess
         /// <returns>last buffer of data</returns>
         public DataTable GetLastPage(Int16 pageSize)
         {
+            _refreshDirection = PagingDbCmdEnum.Last;
             // set parameter values
-            _dbCmdLastPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+            if (!_isRefresh)
+                _dbCmdLastPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
             return ProcessNewPage(_daMgr.ExecuteReader(_dbCmdLastPage, null, GetReverseOrderDataTable));
         }
 
@@ -973,8 +988,10 @@ namespace B1.DataAccess
         /// <returns>last buffer of data</returns>
         public IEnumerable<T> GetLastPage<T>(Int16 pageSize) where T : new()
         {
+            _refreshDirection = PagingDbCmdEnum.Last;
             // set parameter values
-            _dbCmdLastPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+            if (!_isRefresh)
+                _dbCmdLastPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
 
             // If called with GetLastPage<dynamic>() OR GetLastPage(Object) - returns the ExpandoObject
             // The BaseType is null when the type is Object or dynamic
@@ -993,7 +1010,7 @@ namespace B1.DataAccess
             {
                 ret = _daMgr.ExecuteCollection<T>(_dbCmdLastPage, null, ReverseCollectionAndProcess<T>, null);
             }
-
+            _isRefresh = false;
             return ret;
         }
 
@@ -1055,9 +1072,13 @@ namespace B1.DataAccess
         {
             if (_pageLastItem != null && _pageLastItem.Count > 0)
             {
-                foreach (string pageKey in _pageKeys.Keys)
-                    _dbCmdNextPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageLastItem[pageKey];
-                _dbCmdNextPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+                _refreshDirection = PagingDbCmdEnum.Next;
+                if (!_isRefresh)
+                {
+                    foreach (string pageKey in _pageKeys.Keys)
+                        _dbCmdNextPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageLastItem[pageKey];
+                    _dbCmdNextPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+                }
                 return ProcessNewPage(_daMgr.ExecuteDataSet(_dbCmdNextPage, null, null).Tables[0]);
             }
             else return GetFirstPage(pageSize);
@@ -1073,11 +1094,15 @@ namespace B1.DataAccess
         /// <returns>Next buffer of data</returns>
         public IEnumerable<T> GetNextPage<T>(Dictionary<string, object> pageLastItem, Int16 pageSize) where T : new()
         {
+            _refreshDirection = PagingDbCmdEnum.Next;
             if (_pageLastItem != null && _pageLastItem.Count > 0)
             {
-                foreach (string pageKey in _pageKeys.Keys)
-                    _dbCmdNextPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageLastItem[pageKey];
-                _dbCmdNextPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+                if (!_isRefresh)
+                {
+                    foreach (string pageKey in _pageKeys.Keys)
+                        _dbCmdNextPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageLastItem[pageKey];
+                    _dbCmdNextPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value = pageSize > 0 ? pageSize : _pageSize;
+                }
 
                 // If called with GetNextPage<dynamic>() OR GetNextPage(Object) - returns the ExpandoObject
                 // The BaseType is null when the type is Object or dynamic
@@ -1095,7 +1120,7 @@ namespace B1.DataAccess
                 {
                     ret = _daMgr.ExecuteCollection<T>(_dbCmdNextPage, null, GetCollectionAndProcess<T>, null);
                 }
-
+                _isRefresh = false;
                 return ret;
             }
             else return GetFirstPage<T>(pageSize);
@@ -1181,10 +1206,14 @@ namespace B1.DataAccess
         {
             if (_pageFirstItem != null && _pageFirstItem.Count > 0)
             {
-                foreach (string pageKey in _pageKeys.Keys)
-                    _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageFirstItem[pageKey];
-                _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value
-                        = pageSize > 0 ? pageSize : _pageSize;
+                _refreshDirection = PagingDbCmdEnum.Previous;
+                if (!_isRefresh)
+                {
+                    foreach (string pageKey in _pageKeys.Keys)
+                        _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageFirstItem[pageKey];
+                    _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value
+                            = pageSize > 0 ? pageSize : _pageSize;
+                }
                 return ProcessNewPage(_daMgr.ExecuteReader(_dbCmdPreviousPage, null, GetReverseOrderDataTable));
             }
             else return GetLastPage(pageSize);
@@ -1200,12 +1229,16 @@ namespace B1.DataAccess
         /// <returns>Previous buffer of data</returns>
         public IEnumerable<T> GetPreviousPage<T>(Dictionary<string, object> pageFirstItem, Int16 pageSize) where T : new()
         {
+            _refreshDirection = PagingDbCmdEnum.Previous;
             if (_pageFirstItem != null && _pageFirstItem.Count > 0)
             {
-                foreach (string pageKey in _pageKeys.Keys)
-                    _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageFirstItem[pageKey];
-                _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value
-                        = pageSize > 0 ? pageSize : _pageSize;
+                if (!_isRefresh)
+                {
+                    foreach (string pageKey in _pageKeys.Keys)
+                        _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(pageKey)].Value = pageFirstItem[pageKey];
+                    _dbCmdPreviousPage.Parameters[_daMgr.BuildParamName(_pageSizeParam)].Value
+                            = pageSize > 0 ? pageSize : _pageSize;
+                }
 
                 // If called with GetPreviousPage<dynamic>() OR GetPreviousPage(Object) - returns the ExpandoObject
                 // The BaseType is null when the type is Object or dynamic
@@ -1224,7 +1257,7 @@ namespace B1.DataAccess
                 {
                     ret = _daMgr.ExecuteCollection<T>(_dbCmdPreviousPage, null, ReverseCollectionAndProcess<T>, null);
                 }
-
+                _isRefresh = false;
                 return ret;
             }
             else return GetLastPage<T>(pageSize);

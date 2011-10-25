@@ -12,8 +12,10 @@ namespace B1.TaskProcessing
         public const string AssemblyVersion = "AssemblyVersion";
         public const string ClassName = "ClassName";
         public const string ClearParametersAtEnd = "ClearParametersAtEnd";
+        public const string ConfigId = "ConfigId";
         public const string CompletedDateTime = "CompletedDateTime";
         public const string DeQueueTask = "DeQueueTask";
+        public const string EngineId = "EngineId";
         public const string IntervalCount = "IntervalCount";
         public const string IntervalSecondsRequeue = "IntervalSecondsRequeue";
         public const string LastCompletedCode = "LastCompletedCode";
@@ -21,6 +23,7 @@ namespace B1.TaskProcessing
         public const string LastModifiedDateTime = "LastModifiedDateTime";
         public const string LastModifiedUserCode = "LastModifiedUserCode";
         public const string LastRegisteredDate = "LastRegisteredDate";
+        public const string MaxTasksInParallel = "MaxTasksInParallel";
         public const string PriorityCode = "PriorityCode";
         public const string ProcessEngineId = "ProcessEngineId";
         public const string QueuedTaskList = "QueuedTaskList";
@@ -29,6 +32,7 @@ namespace B1.TaskProcessing
         public const string StatusDateTime = "StatusDateTime";
         public const string StatusMsg = "StatusMsg";
         public const string StatusName = "StatusName";
+        public const string TaskAssemblyPath = "TaskAssemblyPath";
         public const string TaskId = "TaskId";
         public const string TaskDependencies = "TaskDependencies";
         public const string TaskDescription = "TaskDescription";

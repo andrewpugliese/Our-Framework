@@ -235,6 +235,10 @@
       <Project>{62E644C1-BEE0-49EA-BC6F-40621BE8A86B}</Project>
       <Name>B1.TaskProcessing</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Windows\B1.Wpf.Controls\B1.Wpf.Controls.csproj">
+      <Project>{E860EF8E-1AF2-417A-B656-89A466D04B90}</Project>
+      <Name>B1.Wpf.Controls</Name>
+    </ProjectReference>
     <ProjectReference Include="..\B1.Utility.SecondEntities\B1.Utility.SecondEntities.csproj">
       <Project>{23642148-7B7A-4682-8F6F-FA4BFA7C1296}</Project>
       <Name>B1.Utility.SecondEntities</Name>

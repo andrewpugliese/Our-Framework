@@ -5,13 +5,14 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E7235249-37D8-41B3-B66E-1D206988C825}</ProjectGuid>
+    <ProjectGuid>{E860EF8E-1AF2-417A-B656-89A466D04B90}</ProjectGuid>
     <OutputType>library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>B1.Windows.Controls</RootNamespace>
-    <AssemblyName>B1.Windows.Controls</AssemblyName>
+    <RootNamespace>B1.Wpf.Controls</RootNamespace>
+    <AssemblyName>B1.Wpf.Controls</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -49,13 +50,25 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="ThoughtBubble.xaml">
+    <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="IPagingControl.cs" />
+    <Compile Include="IPagingTableControl.cs" />
+    <Compile Include="PagingTableControl.xaml.cs">
+      <DependentUpon>PagingTableControl.xaml</DependentUpon>
+    </Compile>
+    <Page Include="PagingTableControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ProcessControlBar.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="Properties\SharedAssemblyInfo.cs" />
-    <Compile Include="ThoughtBubble.xaml.cs">
-      <DependentUpon>ThoughtBubble.xaml</DependentUpon>
+    <Compile Include="IProcessControl.cs" />
+    <Compile Include="ProcessControlBar.xaml.cs">
+      <DependentUpon>ProcessControlBar.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -82,6 +95,12 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataAccess\B1.DataAccess\B1.DataAccess.csproj">
+      <Project>{DAA8DEAF-7EB8-4E57-92FA-31248AE360E9}</Project>
+      <Name>B1.DataAccess</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

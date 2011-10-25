@@ -22,7 +22,7 @@
       </Settings>
     </ConfigSet>
     
-    <ConfigSet ConfigSetName="DT.Utility.DatabaseSetup" Version="1.0">
+    <ConfigSet ConfigSetName="B1.Utility.DatabaseSetup" Version="1.0">
       <Settings>
         <Config Key="SomeKey" Value="SomeValue" />
       </Settings>

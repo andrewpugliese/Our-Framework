@@ -47,7 +47,7 @@ namespace B1.SessionManagement
         bool _allowMultipleSessions;
         SignonControl _signonControl = null;
         DataTable _appSessions = null;
-        System.Threading.Timer _heartbeatTimer;
+        System.Threading.Timer _heartbeatTimer = null;
         HeartbeatStatusHandler _heartbeatStatusHdlr = null;
 
         /// <summary>
@@ -255,8 +255,9 @@ namespace B1.SessionManagement
         /// <param name="configSettings">A string of configuration settings used by the application</param>
         /// <param name="statusMsg">A startup status message by the application</param>
         /// <param name="overwrite">Indicates whether or not to overwrite an existing record for the AppId</param>
+        /// <param name="tpeEndpointAddress">Indentifies the WCF host endpoint address of when app is a TPE</param>
         /// <returns>Null for success; error message otherwise.</returns>
-        public string Start(string configSettings, string statusMsg, bool overwrite)
+        public string Start(string configSettings, string statusMsg, bool overwrite, string tpeEndpointAddress = null)
         {
             DbTableDmlMgr dmlSelectMgr = _daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                     , Constants.AppSessions);
@@ -274,6 +275,8 @@ namespace B1.SessionManagement
             dmlInsertMgr.AddColumn(Constants.ConfigSettings, _daMgr.BuildParamName(Constants.ConfigSettings));
             dmlInsertMgr.AddColumn(Constants.EnvironmentSettings, _daMgr.BuildParamName(Constants.EnvironmentSettings));
             dmlInsertMgr.AddColumn(Constants.MachineName, _daMgr.BuildParamName(Constants.MachineName));
+            if (tpeEndpointAddress != null)
+                dmlInsertMgr.AddColumn(Constants.TpeEndpointAddress, _daMgr.BuildParamName(Constants.TpeEndpointAddress));
 
             DbCommand dbCmdInsert = _daMgr.BuildInsertDbCommand(dmlInsertMgr);
             DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);
@@ -304,6 +307,7 @@ namespace B1.SessionManagement
                 dbCmdMgr.TransactionBeginBlock();
                 DbCommand dbCmdDelete = GetDeleteSessionRecordCmd();
                 dbCmdDelete.Parameters[_daMgr.BuildParamName(Constants.AppCode)].Value = _appCode;
+                dbCmdDelete.Parameters[_daMgr.BuildParamName(Constants.MultipleSessionCode)].Value = _appSessionCode;
                 dbCmdMgr.AddDbCommand(dbCmdDelete);
                 dbCmdMgr.AddDbCommand(dbCmdInsert);
                 dbCmdMgr.TransactionEndBlock();
@@ -330,10 +334,12 @@ namespace B1.SessionManagement
                         , EventLogEntryType.Information
                         , enumEventPriority.Critical);
             }
-            catch(Exception e)
+            catch(DbException dbe)
             {
+                if (_daMgr.loggingMgr != null)
+                    _daMgr.loggingMgr.WriteToLog(dbe);
                 return "AppCode record already exists in AppSession table.  If you wish to cleanup record and continue,"
-                + " please resubmit. Message: " + e.Message;
+                + " please resubmit.";
             }
             return null;
         }
@@ -434,8 +440,12 @@ namespace B1.SessionManagement
         public void End()
         {
             // stop timer
-            _heartbeatTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-            _heartbeatTimer.Dispose();
+            if (_heartbeatTimer != null)
+            {
+                _heartbeatTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                _heartbeatTimer.Dispose();
+                _heartbeatTimer = null;
+            }
             DbCommand dbCmdDelete = GetDeleteSessionRecordCmd();
             dbCmdDelete.Parameters[_daMgr.BuildParamName(Constants.AppCode)].Value = _appCode;
             dbCmdDelete.Parameters[_daMgr.BuildParamName(Constants.MultipleSessionCode)].Value = _appSessionCode;

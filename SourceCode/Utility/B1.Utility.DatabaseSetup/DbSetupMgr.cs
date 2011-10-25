@@ -501,7 +501,7 @@ namespace B1.Utility.DatabaseSetup
         {
             if (_tpe != null)
             {
-                _tpe.Stop();
+                _tpe.Stop(null);
                 _tpe.Dispose();
                 _tpe = null;
             }
@@ -1796,7 +1796,7 @@ namespace B1.Utility.DatabaseSetup
                 StartAppSession();
             _tpe = new TaskProcessingEngine(_daMgr, assemblyPath, engineId, configId, _appSession.SignonControl);
             
-            _tpe.Start();
+            _tpe.Start(null);
 
             if(_appSessionTPE == null)
                 _appSessionTPE = new AppSession(_daMgr, engineId, _tpe.GetType().Assembly.GetName().Version.ToString(), 
@@ -1813,7 +1813,7 @@ namespace B1.Utility.DatabaseSetup
         {
             btnStopTPE.Enabled = btnPauseTPE.Enabled = btnResumeTPE.Enabled = false;
             btnStartTPE.Enabled = true;
-            _tpe.Stop();
+            _tpe.Stop(null);
             _appSessionTPE.End();
         }
 
@@ -1821,14 +1821,14 @@ namespace B1.Utility.DatabaseSetup
         {
             btnPauseTPE.Enabled = false;
             btnResumeTPE.Enabled = true;
-            _tpe.Pause();
+            _tpe.Pause(null);
         }
 
         private void btnResumeTPE_Click(object sender, EventArgs e)
         {
             btnPauseTPE.Enabled = true;
             btnResumeTPE.Enabled = false;
-            _tpe.Resume();
+            _tpe.Resume(null);
         }
 
         private void btnTaskRegister_Click(object sender, EventArgs e)

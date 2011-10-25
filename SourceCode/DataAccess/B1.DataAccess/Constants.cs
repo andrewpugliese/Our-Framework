@@ -34,6 +34,10 @@ namespace B1.DataAccess
         /// Returns the schema string which owns the core objects
         /// </summary>
         public const string SCHEMA_CORE = "B1";
+        /// <summary>
+        /// Returns the connection key string
+        /// </summary>
+        public const string ConnectionKey = "ConnectionKey";
 
         internal const string TABLE_UniqueIds = "UniqueIds";
         /// <summary>

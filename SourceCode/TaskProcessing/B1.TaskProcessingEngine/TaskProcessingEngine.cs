@@ -13,6 +13,7 @@ using B1.ILoggingManagement;
 using B1.LoggingManagement;
 using B1.SessionManagement;
 using B1.TaskProcessing;
+using B1.Wpf.Controls;
 
 namespace B1.TaskProcessing
 {
@@ -23,12 +24,12 @@ namespace B1.TaskProcessing
     /// <para>When the task queue is empty, the engine will idle until tasks are added or the engine is stopped.</para>
     /// <para>The engine can be paused (it will idle without dequeing) until resumed or stopped.</para>
     /// </summary>
-    public class TaskProcessingEngine : IDisposable
+    public class TaskProcessingEngine : ITaskProcessingEngine
     {
         public enum EngineStatusEnum { Off = 0, Started = 1, Running = 2, Paused = 3, Stopped = 4 };
         DataAccessMgr _daMgr = null;
         EngineStatusEnum _engineStatus = EngineStatusEnum.Off;
-        byte _maxTaskProcesses = 1;
+        int _maxTaskProcesses = 1;
         byte _tasksInProcess = 0;
         object _taskCounterLock = new object();
         ManualResetEvent _stopEvent = new ManualResetEvent(false);
@@ -58,7 +59,7 @@ namespace B1.TaskProcessing
                 , string engineId
                 , string configId
                 , SignonControl signonControl
-                , byte maxTaskProcesses = 1)
+                , int maxTaskProcesses = 1)
         {
             if (daMgr.loggingMgr == null)
                 throw new ExceptionEvent(enumExceptionEventCodes.NullOrEmptyParameter
@@ -219,27 +220,41 @@ namespace B1.TaskProcessing
             }
         }
 
-        public byte MaxTaskProcesses(sbyte delta)
+        public void Connect()
+        {
+        }
+
+        public void Disconnect()
+        {
+        }
+
+        public Dictionary<string, string> ConfigSettings()
+        {
+            return new Dictionary<string, string>();
+        }
+
+        public int MaxTaskProcesses(int delta)
         {
             if (delta != 0)
-            if (delta > 0 && (delta + _maxTaskProcesses) <= byte.MaxValue)
-                _maxTaskProcesses = Convert.ToByte(_maxTaskProcesses + delta);
+            if (delta > 0 && (delta + _maxTaskProcesses) <= int.MaxValue)
+                _maxTaskProcesses = _maxTaskProcesses + delta;
             if (delta < 0 && (delta + _maxTaskProcesses) > 0)
-                _maxTaskProcesses = Convert.ToByte(_maxTaskProcesses + delta);
+                _maxTaskProcesses = _maxTaskProcesses + delta;
             return _maxTaskProcesses;
         }
 
         /// <summary>
         /// Initiates the dequeing of tasks from the queue
         /// </summary>
-        public void Start()
+        public void Start(object context)
         {
             _mainThread = new Thread(Run);
             _mainThread.IsBackground = true;
             _mainThread.Start();
+            _engineStatus = EngineStatusEnum.Started;
         }
 
-        public void Stop()
+        public void Stop(object context)
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
@@ -257,7 +272,7 @@ namespace B1.TaskProcessing
             }
         }
 
-        public void Pause()
+        public void Pause(object context)
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
@@ -266,7 +281,7 @@ namespace B1.TaskProcessing
             }
         }
 
-        public void Resume()
+        public void Resume(object context)
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
@@ -276,7 +291,7 @@ namespace B1.TaskProcessing
             }
         }
 
-        public string Status()
+        public string Status(object context)
         {
             return string.Format("Engine Status: {0}; taskHandlers available: {1}; taskHandlers processing: {2}{3}"
                 , _engineStatus.ToString(), _maxTaskProcesses - _tasksInProcess, _tasksInProcess, Environment.NewLine);
