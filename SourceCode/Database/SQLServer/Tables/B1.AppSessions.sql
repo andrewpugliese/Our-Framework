@@ -25,7 +25,7 @@ CREATE TABLE B1.AppSessions
 	EnvironmentSettings		NVARCHAR(512) NOT NULL, -- Various environment settings (ie. OS version, etc)
 	ConfigSettings			NVARCHAR(512) NOT NULL, -- Various configuration settings of the app.
 	StatusMessage			VARCHAR(512) NOT NULL, 
-	TaskProcessingHostAddress NVARCHAR(128) NULL, 
+	TpeEndpointAddress		NVARCHAR(256) NULL, 
 	CONSTRAINT AppSessions_PK PRIMARY KEY (AppCode, MultipleSessionCode) 
 ) ON B1Core
 

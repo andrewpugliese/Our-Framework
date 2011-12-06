@@ -19,8 +19,8 @@ namespace B1.Wpf.Controls
     /// </summary>
     public partial class ProcessControlBar : UserControl
     {
-        IProcessControl _clientControl = null;
-        object _clientContext = null;
+        IProcessControl _parentControl = null;
+        object _parentContext = null;
 
         public ProcessControlBar()
         {
@@ -28,16 +28,57 @@ namespace B1.Wpf.Controls
             InitializeButtonState();
         }
 
-        public void SetContext(IProcessControl clientControl
-                , object clientContext = null
+        public bool Enabled
+        {
+            get
+            {
+                return this.IsEnabled;
+            }
+            set
+            {
+                if (this.IsEnabled != value)
+                    this.IsEnabled = value;
+            }
+        }
+
+        public void DisplayPausedState()
+        {
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
+                                 , new Action<bool>(UpdateButtons),
+                                 true);
+        }
+
+        public void DisplayResumedState()
+        {
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
+                                 , new Action<bool>(UpdateButtons),
+                                 false);
+        }
+
+        void UpdateButtons(bool isPaused)
+        {
+            if (isPaused)
+            {
+                btnResume.IsEnabled = true;
+                btnPause.IsEnabled = !btnResume.IsEnabled;
+            }
+            else
+            {
+                btnResume.IsEnabled = false;
+                btnPause.IsEnabled = !btnResume.IsEnabled;
+            }
+        }
+
+        public void SetContext(IProcessControl parentControl
+                , object parentContext = null
                 , string btnStartContent = null
                 , string btnStopContent = null
                 , string btnPauseContent = null
                 , string btnResumeContent = null
                 , string btnStatusContent = null)
         {
-            _clientControl = clientControl;
-            _clientContext = clientContext;
+            _parentControl = parentControl;
+            _parentContext = parentContext;
             if (!string.IsNullOrEmpty(btnStartContent))
                 btnStart.Content = btnStartContent;
             if (!string.IsNullOrEmpty(btnStopContent))
@@ -60,32 +101,30 @@ namespace B1.Wpf.Controls
         {
             btnStart.IsEnabled = btnResume.IsEnabled = false;
             btnPause.IsEnabled = btnStop.IsEnabled = btnStatus.IsEnabled = !btnStart.IsEnabled;
-            _clientControl.Start(_clientContext);
+            _parentControl.Start(_parentContext);
         }
 
         private void btnStop_Click(object sender, RoutedEventArgs e)
         {
             InitializeButtonState();
-            _clientControl.Stop(_clientContext);
+            _parentControl.Stop(_parentContext);
         }
 
         private void btnPause_Click(object sender, RoutedEventArgs e)
         {
-            btnResume.IsEnabled = true;
-            btnPause.IsEnabled = !btnResume.IsEnabled;
-            _clientControl.Pause(_clientContext);
+            DisplayPausedState();
+            _parentControl.Pause(_parentContext);
         }
 
         private void btnResume_Click(object sender, RoutedEventArgs e)
         {
-            btnResume.IsEnabled = false;
-            btnPause.IsEnabled = !btnResume.IsEnabled;
-            _clientControl.Resume(_clientContext);
+            DisplayResumedState();
+            _parentControl.Resume(_parentContext);
         }
 
         private void btnStatus_Click(object sender, RoutedEventArgs e)
         {
-            _clientControl.Status(_clientContext);
+            _parentControl.Status(_parentContext);
         }
 
     }

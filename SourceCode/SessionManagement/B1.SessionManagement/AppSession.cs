@@ -334,12 +334,14 @@ namespace B1.SessionManagement
                         , EventLogEntryType.Information
                         , enumEventPriority.Critical);
             }
-            catch(DbException dbe)
+            catch(ExceptionEvent e)
             {
                 if (_daMgr.loggingMgr != null)
-                    _daMgr.loggingMgr.WriteToLog(dbe);
-                return "AppCode record already exists in AppSession table.  If you wish to cleanup record and continue,"
-                + " please resubmit.";
+                    _daMgr.loggingMgr.WriteToLog(e);
+                if (e.ExceptionEventCode == enumExceptionEventCodes.DbTablePrimaryKeyViolation)
+                    return "AppCode record already exists in AppSession table.  If you wish to cleanup record and continue,"
+                    + " please resubmit.";
+                throw;
             }
             return null;
         }

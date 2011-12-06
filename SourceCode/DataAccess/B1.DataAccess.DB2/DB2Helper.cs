@@ -658,5 +658,18 @@ namespace B1.DataAccess.DB2
             return string.Format("{0}", db2Param.DB2Type);
         }
 
+        /// <summary>
+        /// Returns a boolean indicating whether or not the given dbException is for a primary key constraint
+        /// </summary>
+        /// <param name="dbe">DbException object</param>
+        /// <returns>True if dbException is a primary key violation</returns>
+        public override bool IsPrimaryKeyViolation(DbException dbException)
+        {
+            DB2Exception db2Exception = (DB2Exception)dbException;
+            if (db2Exception.ErrorCode == DB2.Constants.DBError_UniqueConstraintViolation)
+                return true;
+            return false;
+        }
+
     }
 }

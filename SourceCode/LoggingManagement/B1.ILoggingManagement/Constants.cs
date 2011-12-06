@@ -21,16 +21,16 @@ namespace B1.ILoggingManagement
         /// </summary>
         public const string TraceLevel = "TraceLevel";
 
-        public static List<string> TraceLevels()
+        public static List<enumTraceLevel> TraceLevels()
         {
-            List<string> traceLevels = new List<string>();
-            traceLevels.Add(enumTraceLevel.None.ToString());
-            traceLevels.Add(enumTraceLevel.Level1.ToString());
-            traceLevels.Add(enumTraceLevel.Level2.ToString());
-            traceLevels.Add(enumTraceLevel.Level3.ToString());
-            traceLevels.Add(enumTraceLevel.Level4.ToString());
-            traceLevels.Add(enumTraceLevel.Level2.ToString());
-            traceLevels.Add(enumTraceLevel.All.ToString());
+            List<enumTraceLevel> traceLevels = new List<enumTraceLevel>();
+            traceLevels.Add(enumTraceLevel.None);
+            traceLevels.Add(enumTraceLevel.Level1);
+            traceLevels.Add(enumTraceLevel.Level2);
+            traceLevels.Add(enumTraceLevel.Level3);
+            traceLevels.Add(enumTraceLevel.Level4);
+            traceLevels.Add(enumTraceLevel.Level2);
+            traceLevels.Add(enumTraceLevel.All);
             return traceLevels;
         }
 

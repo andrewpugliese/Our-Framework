@@ -4544,7 +4544,11 @@ namespace B1.DataAccess
             StringBuilder msg = new StringBuilder();
             msg.AppendFormat("Excecuting DbCommandText: {0}",
                 _dbProviderLib.GetCommandDebugScript(dbCommand));
-            ExceptionEvent excEvent = new ExceptionEvent(enumExceptionEventCodes.UnknownException
+            enumExceptionEventCodes eventCode = enumExceptionEventCodes.UnknownException;
+            if (e is DbException)
+                if (_dbProviderLib.IsPrimaryKeyViolation((DbException)e))
+                        eventCode = enumExceptionEventCodes.DbTablePrimaryKeyViolation;
+            ExceptionEvent excEvent = new ExceptionEvent(eventCode
                                             , msg.ToString()
                                             , e);
             if (_loggingMgr != null)

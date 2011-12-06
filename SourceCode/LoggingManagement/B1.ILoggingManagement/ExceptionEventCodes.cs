@@ -34,6 +34,7 @@ namespace B1.ILoggingManagement
         , DbTablePrimaryKeyUndefined = 9
         , DbTableIndexNotFound = 10
         , AppCodeNotFound = 11
+        , DbTablePrimaryKeyViolation = 12
         #pragma warning restore 1591 // disable the xmlComments warning
     };
 }

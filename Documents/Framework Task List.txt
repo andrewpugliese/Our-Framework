@@ -95,4 +95,4 @@ Not Assigned (Controls)
 		- Add descriptions to B1F database objects
 		- Add descriptions to CG database objects
 		
-WPG
+- Toggle Connect Button by property

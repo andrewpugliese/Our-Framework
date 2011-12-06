@@ -22,10 +22,12 @@ namespace B1.Wpf.Controls
     /// </summary>
     public partial class PagingTableControl : UserControl, IPagingControl
     {
+        public delegate void SelectionChangedDelegate(PagingMgr source, DataRow currentRow);
         PagingMgr _pagingMgr = null;
         string _title = null;
         short _pageSize = 1;
         static string _ErrMsgInvalidPageSize = "Invalid Page Size. Enter a number between 1 and " + Int16.MaxValue.ToString();
+        SelectionChangedDelegate _selectionChangedHandler = null;
 
         public PagingTableControl()
         {
@@ -41,6 +43,7 @@ namespace B1.Wpf.Controls
                 _pageSize = _pagingMgr.PageSize;
                 tbPageSize.Text = _pageSize.ToString();
             }
+            get { return _pagingMgr; }
         }
 
         public string Title
@@ -52,12 +55,11 @@ namespace B1.Wpf.Controls
             }
         }
 
-        public DataRow CurrentRow
+        public SelectionChangedDelegate SelectionChangedHandler
         {
-            get
+            set
             {
-                return dataGridPaging.Items != null && dataGridPaging.Items.Count > 0
-                    ? (DataRow)dataGridPaging.Items[0] : null;
+                _selectionChangedHandler = value;
             }
 
         }
@@ -143,6 +145,14 @@ namespace B1.Wpf.Controls
                     tbPageSize.SelectAll();
                 }
             }
+        }
+
+        private void dataGridPaging_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            System.Windows.Controls.DataGrid dg = (System.Windows.Controls.DataGrid)sender;
+            if (dg.HasItems && dg.SelectedIndex >= 0)
+                if (_selectionChangedHandler != null)
+                    _selectionChangedHandler(_pagingMgr, ((DataRowView)dg.SelectedItem).Row);
         }
     }
 }

@@ -16,6 +16,8 @@ namespace B1.TaskProcessing
         public const string CompletedDateTime = "CompletedDateTime";
         public const string DeQueueTask = "DeQueueTask";
         public const string EngineId = "EngineId";
+        public const string EngineStatus = "EngineStatus";
+        public const string HostEndpointAddress = "HostEndpointAddress";
         public const string IntervalCount = "IntervalCount";
         public const string IntervalSecondsRequeue = "IntervalSecondsRequeue";
         public const string LastCompletedCode = "LastCompletedCode";

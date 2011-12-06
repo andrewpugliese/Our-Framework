@@ -24,7 +24,7 @@ namespace B1.CacheManagement
     public class CacheMgr<TValue>
     {
         Dictionary<string, TValue> _cache = null;
-        
+            
         /// <summary>
         /// Defaults to a case-sensitive key
         /// </summary>

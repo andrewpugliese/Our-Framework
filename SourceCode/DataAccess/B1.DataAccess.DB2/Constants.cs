@@ -9,6 +9,7 @@ namespace B1.DataAccess.DB2
 {
     internal class Constants
     {
+        internal const Int32 DBError_UniqueConstraintViolation = 1;
         internal const string NoOpDbCommandText = "--";
         internal const string DefaultTableAlias = "T";
         internal const string ParameterPrefix = "@";

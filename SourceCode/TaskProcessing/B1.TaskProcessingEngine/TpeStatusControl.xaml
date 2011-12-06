@@ -24,9 +24,6 @@
             <Label Content="Required Configuration Identifier" Height="Auto" HorizontalAlignment="Left" Name="lblConfigId" VerticalAlignment="Bottom" Width="Auto" HorizontalContentAlignment="Left" Padding="5" Grid.Row="1" Grid.Column="1" Margin="0,0,0,30" VerticalContentAlignment="Bottom" />
             <TextBox Height="32" HorizontalAlignment="Left" IsReadOnly="True" Margin="0,0,0,0" Name="tbEngineId" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="190" Grid.Row="1" />
             <Label Content="Task Processing Engine Identifier" Height="auto" HorizontalAlignment="Left" Name="lblEngineId" VerticalAlignment="Bottom" Width="auto" Margin="0,0,0,30" Grid.Row="1" />
-            <Label Content="Maximum Tasks To Run In Parallel" Grid.Column="3" Height="auto" HorizontalAlignment="Left" Name="lblMaxTasks" VerticalAlignment="Bottom" Width="auto" Margin="20,0,0,30" Grid.Row="1" />
-            <ScrollBar Grid.Column="3" Margin="6,0,256,0" Name="sbMaxTasks" Orientation="Vertical" Grid.Row="1" ValueChanged="sbMaxTasks_ValueChanged" TouchUp="sbMaxTasks_TouchUp" KeyUp="sbMaxTasks_KeyUp" Maximum="10" Minimum="1" LargeChange="0" Value="1" SmallChange="1" IsEnabled="True" KeyDown="sbMaxTasks_KeyDown" TouchDown="sbMaxTasks_TouchDown" StylusButtonDown="sbMaxTasks_StylusButtonDown" StylusButtonUp="sbMaxTasks_StylusButtonUp" />
-            <TextBox Grid.Column="3" Height="23" HorizontalAlignment="Left" IsReadOnly="True" Margin="24,29,0,0" Name="tbMaxTasks" TextAlignment="Right" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="67" Grid.Row="1" />
             <TextBox Height="32" HorizontalAlignment="Left" IsReadOnly="True" Margin="2,28,0,0" Name="tbConnKey" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="243" Grid.Row="2" />
             <localHostControl:ProcessControlBar Name="tpeControl" Grid.Row="4" VerticalAlignment="Bottom" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.ColumnSpan="4" Margin="215,7,228,7" />
             <Label Content="Connection Key" Height="27" HorizontalAlignment="Left" Margin="0,0,0,30" Name="lblConnKey" VerticalAlignment="Bottom" Width="190" Grid.Row="2" />
@@ -40,6 +37,7 @@
             <Label Content="Trace Level" Height="24" HorizontalAlignment="Left" Margin="7,00,0,30" Name="lblTraceLevel" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="87" Grid.Column="3" Grid.Row="2" />
             <Label Content="Host Endpoint Address" HorizontalAlignment="Left" Margin="0,0,0,50" Name="lblHostEndpointAddress" VerticalAlignment="Bottom" Width="126" Grid.Row="3" />
             <TextBox Grid.ColumnSpan="3" Height="32" HorizontalAlignment="Left" IsReadOnly="True" Margin="140,0,0,50" Name="tbHostEndpointAddress" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="651" Grid.Row="3" />
+            <localHostControl:NumericPlusMinus Grid.Column="2" Grid.Row="1" HorizontalAlignment="Left" Name="npmMaxTasks" VerticalAlignment="Bottom" Height="55" Width="123" Label="MaxTasks" TabIndex="2147483647" />
         </Grid>
     </Grid>
 </UserControl>

@@ -513,5 +513,18 @@ namespace B1.DataAccess.SqlServer
             return string.Format("{0}", sqlParam.SqlDbType);
         }
 
+        /// <summary>
+        /// Returns a boolean indicating whether or not the given dbException is for a primary key constraint
+        /// </summary>
+        /// <param name="dbe">DbException object</param>
+        /// <returns>True if dbException is a primary key violation</returns>
+        public override bool IsPrimaryKeyViolation(DbException dbException)
+        {
+            SqlException sqlException = (SqlException)dbException;
+            if (sqlException.Number == SqlServer.Constants.DBError_UniqueKeyViolation)
+                return true;
+            return false;
+        }
+
     }
 }

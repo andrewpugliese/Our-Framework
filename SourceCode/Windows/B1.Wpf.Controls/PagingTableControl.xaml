@@ -18,7 +18,7 @@
             <Button Content="Next" Height="24" HorizontalAlignment="Left" Margin="168,0,0,0" Name="btnPageNext" VerticalAlignment="Bottom" Width="50" Click="btnPageNext_Click" />
             <Button Content="Refresh" Height="24" HorizontalAlignment="Left" Margin="221,0,0,0" Name="btnPageRefresh" VerticalAlignment="Bottom" Width="50" Click="btnPageRefresh_Click" />
         </Grid>
-        <DataGrid AutoGenerateColumns="true" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Name="dataGridPaging" VerticalAlignment="Stretch" CanUserAddRows="True" IsReadOnly="True" CanUserDeleteRows="True" SelectionMode="Single" />
+        <DataGrid AutoGenerateColumns="true" Grid.Row="1" HorizontalAlignment="Stretch" Margin="0,0,0,0" Name="dataGridPaging" VerticalAlignment="Stretch" CanUserAddRows="True" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow" SelectionChanged="dataGridPaging_SelectionChanged" />
         <Label Content="Title" Height="Auto" HorizontalAlignment="Left" Margin="1,12,0,0" Name="lblPagingGridTitle" VerticalAlignment="Bottom" Width="Auto" Padding="0" VerticalContentAlignment="Bottom" />
         <Label Content="Msg" Height="Auto" HorizontalAlignment="Right" Margin="0" Name="lblPagingGridMsg" Padding="0" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="Auto" HorizontalContentAlignment="Right" />
         <Label Content="Page Size:" Height="Auto" HorizontalAlignment="Right" Margin="0,0,100,0" Name="lblPageSize" Padding="0" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" Width="Auto" Grid.Row="2" />

@@ -14,7 +14,7 @@ namespace B1.ILoggingManagement
     public interface ILoggingMgr
     {
         enumTraceLevel TraceLevel { get; set; }
-
+        string LoggingKey { get;}
         Int64 WriteToLog(Exception e);
         Int64 WriteToLog(Exception e, enumEventPriority enumPriority);
         Int64 WriteToLog(string message, EventLogEntryType entryType, enumEventPriority enumPriority);

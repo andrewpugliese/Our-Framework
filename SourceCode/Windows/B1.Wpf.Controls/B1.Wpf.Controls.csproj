@@ -53,11 +53,19 @@
     <Compile Include="..\..\Core\B1.Core\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="INumericPlusMinus.cs" />
     <Compile Include="IPagingControl.cs" />
     <Compile Include="IPagingTableControl.cs" />
+    <Compile Include="NumericPlusMinus.xaml.cs">
+      <DependentUpon>NumericPlusMinus.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PagingTableControl.xaml.cs">
       <DependentUpon>PagingTableControl.xaml</DependentUpon>
     </Compile>
+    <Page Include="NumericPlusMinus.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PagingTableControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -164,6 +164,7 @@ namespace B1.LoggingManagement
         enumTraceLevel _configuredTraceLevel = enumTraceLevel.None; // default value; obtain from cacheMgr
         FileLog _backupFileLog;
         StringBuilder _configuredOptions = new StringBuilder();
+        string _loggingKey = null;
 
         Dictionary<enumEventPriority, List<ILoggingTarget>> _loggingTargets = 
             new Dictionary<enumEventPriority,List<ILoggingTarget>>();
@@ -199,6 +200,14 @@ namespace B1.LoggingManagement
         {
             get { return _configuredOptions.ToString(); }
         }
+
+        /// <summary>
+        /// Returns the string key used in the configuration file
+        /// </summary>
+        public string LoggingKey
+        {
+            get { return _loggingKey; }
+        }
         
 
         /// <summary>
@@ -221,6 +230,7 @@ namespace B1.LoggingManagement
         /// <param name="loggingConfigKey">Key into LoggingConfigurations section to obtain settings</param>
         public LoggingMgr(string loggingConfigKey)
         {
+            _loggingKey = loggingConfigKey;
             _configuredOptions.AppendFormat("LogKey: {0}{1}", loggingConfigKey, Environment.NewLine);
             LoggingConfiguration loggingConfigSection 
                     = AppConfigMgr.GetSection<LoggingConfiguration>(LoggingConfiguration.ConfigSectionName); 

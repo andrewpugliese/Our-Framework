@@ -4,13 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Configuration;
 using System.IO;
+using System.Runtime.Serialization;
+using System.Xml;
 
 namespace B1.Core
 {
     /// <summary>
     /// Static functions to help with various tasks
     /// </summary>
-    public class Functions
+    public static class Functions
     {
         /// <summary>
         /// Retuns a unique number that can sequences across multiple threads and processses as well as 
@@ -88,6 +90,37 @@ namespace B1.Core
                 if (char.IsLetterOrDigit(text[i]))
                     return false;
             return true;
+        }
+
+        public static string Serialize<T>(T obj)
+        {
+            return Serialize<T>(obj, null);
+        }
+
+        public static string Serialize<T>(T obj, IEnumerable<Type> knownTypes)
+        {
+            var serializer = new DataContractSerializer(obj.GetType(), knownTypes);
+            using (var writer = new StringWriter())
+            using (var stm = new XmlTextWriter(writer))
+            {
+                serializer.WriteObject(stm, obj);
+                return writer.ToString();
+            }
+        }
+
+        public static T Deserialize<T>(string serialized)
+        {
+            return Deserialize<T>(serialized, null);
+        }
+
+        public static T Deserialize<T>(string serialized, IEnumerable<Type> knownTypes)
+        {
+            var serializer = new DataContractSerializer(typeof(T), knownTypes);
+            using (var reader = new StringReader(serialized))
+            using (var stm = new XmlTextReader(reader))
+            {
+                return (T)serializer.ReadObject(stm);
+            }
         }
     }
 }

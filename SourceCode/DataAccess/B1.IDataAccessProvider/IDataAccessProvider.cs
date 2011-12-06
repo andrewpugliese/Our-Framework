@@ -361,5 +361,12 @@ namespace B1.IDataAccess
         /// <param name="dbCmd">DAAB DbCommand object</param>
         /// Returns a back-end compliant script that can be executed in an interactive editor
         public abstract string GetCommandDebugScript(DbCommand dbCmd);
+
+        /// <summary>
+        /// Returns a boolean indicating whether or not the given dbException is for a primary key constraint
+        /// </summary>
+        /// <param name="dbe">DbException object</param>
+        /// <returns>True if dbException is a primary key violation</returns>
+        public abstract bool IsPrimaryKeyViolation(DbException dbe);
     }
 }

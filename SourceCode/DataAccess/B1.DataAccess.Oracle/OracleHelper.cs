@@ -767,5 +767,18 @@ namespace B1.DataAccess.OracleDb
                 else return oracleParam.Value.ToString();
             else return "null";
         }
+
+        /// <summary>
+        /// Returns a boolean indicating whether or not the given dbException is for a primary key constraint
+        /// </summary>
+        /// <param name="dbe">DbException object</param>
+        /// <returns>True if dbException is a primary key violation</returns>
+        public override bool IsPrimaryKeyViolation(DbException dbException)
+        {
+            OracleException oracleException = (OracleException)dbException;
+            if (oracleException.ErrorCode == OracleDb.Constants.DBError_UniqueConstraintViolation)
+                return true;
+            return false;
+        }
     }
 }

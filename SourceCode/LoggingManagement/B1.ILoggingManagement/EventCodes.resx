@@ -145,6 +145,10 @@
     <value>The database table was not defined with a primary key and the operation required a table with a primary key or some other alternative index which was not supplied.</value>
     <comment>9</comment>
   </data>
+  <data name="DbTablePrimaryKeyViolation" xml:space="preserve">
+    <value>The record could not be inserted because the data caused a violation of the primary key constraint which requires all column values to be not null and together they must be unique.</value>
+    <comment>12</comment>
+  </data>
   <data name="EventLogFailoverFileWriteFailed" xml:space="preserve">
     <value>The primary target of the EventLog could not be written to and the failover file could also not be written to for the given critical prioirty event.</value>
     <comment>3</comment>

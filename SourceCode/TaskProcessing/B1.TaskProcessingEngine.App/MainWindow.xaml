@@ -7,7 +7,7 @@
             VerticalContentAlignment="Stretch" Name="wdwDashboard" Background="#FF7D0909" mc:Ignorable="d" 
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-            d:DesignHeight="692" d:DesignWidth="880" Foreground="Black" BorderThickness="5" OpacityMask="{x:Null}">
+            d:DesignHeight="692" d:DesignWidth="880" Foreground="Black" BorderThickness="5" OpacityMask="{x:Null}" Closed="wdwDashboard_Closed">
     <Grid ClipToBounds="True" ShowGridLines="True" Name="gridDashboard" Background="#FF7D9B7D">
         <TabControl HorizontalAlignment="Stretch" Margin="12,12,12,52" Name="tabCtrlHostViews" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" BorderBrush="Gray">
             <TabItem Header="Local Host" Name="tabLocalHost" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" >
@@ -39,7 +39,7 @@
                         <RowDefinition Height=".5*" />
                     </Grid.RowDefinitions>
                     <Grid Grid.Row="0" Height="auto" HorizontalAlignment="Stretch" Margin="8,6,0,0" Name="gridRemotHosts" VerticalAlignment="Stretch" Width="auto">
-                        <wpf:PagingTableControl Margin="1,0,0,0" Name="pagingTableRemoteHosts" VerticalAlignment="Stretch" Height="Auto" Width="Auto" />
+                        <wpf:PagingTableControl Margin="1,0,0,0" Name="pagingTableRemoteHosts" VerticalAlignment="Stretch" Width="Auto" />
                     </Grid>
                     <Grid Grid.Row="1" Name="gridRemoteTpeStatus">
                         <tpe:TpeStatusControl Name="remoteTpeStatus" Width="Auto"></tpe:TpeStatusControl>
