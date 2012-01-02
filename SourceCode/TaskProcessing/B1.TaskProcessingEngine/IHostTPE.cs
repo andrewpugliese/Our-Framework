@@ -5,7 +5,10 @@ using System.Text;
 
 namespace B1.TaskProcessing
 {
-    interface ILocalHost
+    /// <summary>
+    /// Interface supported by a Task Processing Engine (TPE) Host Application or Service
+    /// </summary>
+    interface IHostTPE
     {
         void Start();
         void Stop();

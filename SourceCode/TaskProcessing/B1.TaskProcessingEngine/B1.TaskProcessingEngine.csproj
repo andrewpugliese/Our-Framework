@@ -53,9 +53,10 @@
     </Compile>
     <Compile Include="RemoteHostClient.cs" />
     <Compile Include="DequeuedTask.cs" />
-    <Compile Include="ILocalHost.cs" />
-    <Compile Include="IRemoteEngineHost.cs" />
+    <Compile Include="IHostTPE.cs" />
+    <Compile Include="IRemoteHostTPE.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemoteHostProxy.cs" />
     <Compile Include="TaskProcessingEngine.cs" />
     <Compile Include="TasksInProcess.cs" />
     <Compile Include="TpeStatusControl.xaml.cs">

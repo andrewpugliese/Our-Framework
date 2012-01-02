@@ -59,7 +59,7 @@ namespace B1.Utility.DatabaseSetup
             {
                 btnSave.Text = "Change";
                 LoadWaitTasks();
-                cmbWaitTasks.SelectedItem = _taskQueueItem[TaskProcessing.Constants.WaitTaskId].ToString();
+                cmbWaitTasks.SelectedItem = _taskQueueItem[TaskProcessing.Constants.WaitTaskQueueCode].ToString();
                 LoadCompletionCodes();
             }
             tbTaskQueueCode.Text = _taskQueueCode;
@@ -84,8 +84,8 @@ namespace B1.Utility.DatabaseSetup
             {
                 _editedColumns.Add(TaskProcessing.Constants.WaitTaskQueueCode
                         , GetWaitTaskQueueCode());
-                _editedColumns.Add(TaskProcessing.Constants.WaitTaskId
-                        , GetWaitTaskId());
+              //  _editedColumns.Add(TaskProcessing.Constants.WaitTaskId
+                //        , GetWaitTaskId());
                 _editedColumns.Add(TaskProcessing.Constants.WaitTaskCompletionCode
                         , GetWaitCompletionCode());
             }
@@ -104,7 +104,7 @@ namespace B1.Utility.DatabaseSetup
             // before processing storing selection in the database, we need to verify that it would
             // not result in an endless loop of dependencies
             string deadlockMsg = IsDependencyDeadlock(Convert.ToInt32(tbTaskQueueCode.Text)
-                    , Convert.ToInt32(_editedColumns[TaskProcessing.Constants.WaitTaskQueueCode]));
+                    , GetWaitTaskQueueCode());
             if (!string.IsNullOrEmpty(deadlockMsg))
             {
                 MessageBox.Show(deadlockMsg);

@@ -21,6 +21,7 @@ namespace B1.Wpf.Controls
     {
         IProcessControl _parentControl = null;
         object _parentContext = null;
+        enum ProcessControlState { Disconnected, Paused, Resumed };
 
         public ProcessControlBar()
         {
@@ -44,28 +45,39 @@ namespace B1.Wpf.Controls
         public void DisplayPausedState()
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
-                                 , new Action<bool>(UpdateButtons),
-                                 true);
+                                 , new Action<ProcessControlState>(UpdateButtons),
+                                 ProcessControlState.Paused);
         }
 
         public void DisplayResumedState()
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
-                                 , new Action<bool>(UpdateButtons),
-                                 false);
+                                 , new Action<ProcessControlState>(UpdateButtons),
+                                 ProcessControlState.Resumed);
         }
 
-        void UpdateButtons(bool isPaused)
+        public void DisplayDisconnectedState()
         {
-            if (isPaused)
+            Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
+                                 , new Action<ProcessControlState>(UpdateButtons),
+                                 ProcessControlState.Disconnected);
+        }
+
+        void UpdateButtons(ProcessControlState processControlState)
+        {
+            if (processControlState == ProcessControlState.Paused)
             {
                 btnResume.IsEnabled = true;
                 btnPause.IsEnabled = !btnResume.IsEnabled;
             }
-            else
+            else if (processControlState == ProcessControlState.Resumed)
             {
                 btnResume.IsEnabled = false;
                 btnPause.IsEnabled = !btnResume.IsEnabled;
+            }
+            else if (processControlState == ProcessControlState.Disconnected)
+            {
+                InitializeButtonState();
             }
         }
 

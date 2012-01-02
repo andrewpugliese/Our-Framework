@@ -23,7 +23,7 @@ namespace B1.SessionManagement
         /// <summary>
         /// Database table used to hold the application session records
         /// </summary>
-        internal const string AppSessions = "AppSessions";
+        public const string AppSessions = "AppSessions";
         /// <summary>
         /// Database table used to hold the application master records
         /// </summary>

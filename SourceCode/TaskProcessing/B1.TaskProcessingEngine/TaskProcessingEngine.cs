@@ -27,7 +27,7 @@ namespace B1.TaskProcessing
     /// <para>When the task queue is empty, the engine will idle until tasks are added or the engine is stopped.</para>
     /// <para>The engine can be paused (it will idle without dequeing) until resumed or stopped.</para>
     /// </summary>
-    public class TaskProcessingEngine : TaskProcessing.ILocalHost, TaskProcessing.IRemoteEngineHost
+    public class TaskProcessingEngine : TaskProcessing.IHostTPE//, TaskProcessing.IRemoteEngineHost
     {
         public enum EngineStatusEnum { Off = 0, Started = 1, Running = 2, Paused = 3, Stopped = 4 };
         static string _engineId = null;
@@ -60,9 +60,12 @@ namespace B1.TaskProcessing
         /// Constructs a new instance of the TaskProcessingEngine class
         /// </summary>
         /// <param name="daMgr">DataAccessMgr object instance</param>
-        /// <param name="engineId"></param>
-        /// <param name="configId"></param>
+        /// <param name="taskAssemblyPath">String path to task implementation assemblies can be found</param>
+        /// <param name="engineId">Unique identifier of this TPE instance</param>
+        /// <param name="configId">Optional configuration identifier to be used to compare to task configurations</param>
+        /// <param name="signonControl">SignonControl object providing runtime configuration</param>
         /// <param name="maxTaskProcesses">Configures the engine for a maximum number of concurrent task handlers</param>
+        /// <param name="wcfHostBaseAddress">Optional string address that host will use for WCF clients</param>
         public TaskProcessingEngine(DataAccessMgr daMgr
                 , string taskAssemblyPath
                 , string engineId
@@ -110,6 +113,16 @@ namespace B1.TaskProcessing
                     , "Cannot create Remote TaskProcessingEngine because local instance not created.");
         }
 
+        internal string EngineId
+        {
+            get { return _engineId; }
+        }
+
+        internal void Trace(string msg, enumTraceLevel traceLevel)
+        {
+            _daMgr.loggingMgr.Trace(msg, traceLevel);
+        }
+
         public EngineStatusEnum EngineStatus
         {
             get { return _engineStatus; }
@@ -136,24 +149,24 @@ namespace B1.TaskProcessing
                 _clientConnections.Remove(remoteClientId);
         }
 
-        public string ConfigSettings()
+        public Dictionary<string, string> ConfigSettings()
         {
-            return Core.Functions.Serialize(_configSettings);
+            return _configSettings;
         }
 
-        public string RemoteClients()
+        public Dictionary<string, string> RemoteClients()
         {
-            return Core.Functions.Serialize(_clientConnections);
+            return _clientConnections;
         }
 
-        public string DynamicSettings()
+        public Dictionary<string, string> DynamicSettings()
         {
             Dictionary<string, string> dynamicSettings = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
             dynamicSettings.Add(TaskProcessing.Constants.MaxTasksInParallel, _maxTaskProcesses.ToString());
             dynamicSettings.Add(ILoggingManagement.Constants.TraceLevel, _daMgr.loggingMgr.TraceLevel.ToString());
             dynamicSettings.Add(TaskProcessing.Constants.EngineStatus, _engineStatus.ToString());
             dynamicSettings.Add(TaskProcessing.Constants.StatusMsg, Status());
-            return Core.Functions.Serialize(dynamicSettings);
+            return dynamicSettings;
         }
 
         public int SetMaxTasks(int delta)
@@ -232,6 +245,12 @@ namespace B1.TaskProcessing
                         taskProcess.Stop();
                     }
                 }
+                if (_configSettings != null
+                    && _configSettings.Count > 0)
+                    _configSettings.Clear();
+                if (_clientConnections != null
+                    && _clientConnections.Count > 0)
+                    _clientConnections.Clear();
             }
         }
 
@@ -338,7 +357,7 @@ namespace B1.TaskProcessing
             // Create a binding that uses a username/password credential.
 
             // Step 2 of the hosting procedure: Create ServiceHost
-            _wcfServiceHost = new ServiceHost(typeof(TaskProcessing.TaskProcessingEngine), baseAddress);
+            _wcfServiceHost = new ServiceHost(typeof(TaskProcessing.RemoteHostProxy), baseAddress);
             try
             {
                 WSHttpBinding binding = new WSHttpBinding(SecurityMode.None);
@@ -347,7 +366,7 @@ namespace B1.TaskProcessing
 
                 // Step 3 of the hosting procedure: Add a service endpoint. (with/without securityMode defined by binding)
                 _wcfServiceHost.AddServiceEndpoint(
-                    typeof(TaskProcessing.IRemoteEngineHost),
+                    typeof(TaskProcessing.IRemoteHostTPE),
                     binding,
                     _engineId);
 

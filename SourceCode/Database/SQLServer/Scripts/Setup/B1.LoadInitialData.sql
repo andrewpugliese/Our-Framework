@@ -654,3 +654,6 @@ INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (128, 'Failed')
 INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (255, 'Succeeded')
 
 GO
+
+INSERT INTO B1.TaskConfigurations (ConfigId, ConfigurationDescription) VALUES ('ConfigX', 'Sample Configuration')
+GO

@@ -54,6 +54,12 @@ namespace B1.TaskProcessing
             return daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
+        /// <summary>
+        /// Builds the DbCommand to get a list of task processing queue records
+        /// sorted by taskId.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         static DbCommand BuildCmdGetTPQListByTaskId(DataAccessMgr daMgr)
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
@@ -68,6 +74,12 @@ namespace B1.TaskProcessing
             return daMgr.BuildSelectDbCommand(dmlSelectMgr, null);
         }
 
+        /// <summary>
+        /// Builds the DbCommand to get a list of task processing queue records
+        /// sorted by WaitDateTime.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         static DbCommand BuildCmdGetTPQListByWaitDateTime(DataAccessMgr daMgr)
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
@@ -86,6 +98,12 @@ namespace B1.TaskProcessing
             return daMgr.BuildSelectDbCommand(dmlSelectMgr, null);
         }
 
+        /// <summary>
+        /// Builds the DbCommand to get a list of task processing queue records
+        /// sorted by StatusDateTime.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         static DbCommand BuildCmdGetTPQListByStatusDateTime(DataAccessMgr daMgr)
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
@@ -104,6 +122,12 @@ namespace B1.TaskProcessing
             return daMgr.BuildSelectDbCommand(dmlSelectMgr, null);
         }
 
+        /// <summary>
+        /// Builds the DbCommand to get a list of the given task's dependency records
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueCode">Unique identifier of the task whose dependencies will be returned</param>
+        /// <returns>DateTable of the given task's dependencies</returns>
         public static DataTable TaskDependenciesList(DataAccessMgr daMgr, Int32 taskQueueCode)
         {
             DbCommand dbCmd = daMgr.DbCmdCacheGetOrAdd("BuildCmdGetTaskDependencies"
@@ -112,16 +136,34 @@ namespace B1.TaskProcessing
             return daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
+        /// <summary>
+        /// Builds the DbCommand to get a list of a task's dependencies
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         static DbCommand BuildCmdGetTaskDependencies(DataAccessMgr daMgr)
         {
             DbTableDmlMgr dmlSelectMgr = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
                      , Constants.TaskDependencies);
+            string jointable = dmlSelectMgr.AddJoin(DataAccess.Constants.SCHEMA_CORE
+                    , Constants.TaskProcessingQueue
+                    , DbTableJoinType.Inner
+                    , j => j.AliasedColumn(Constants.WaitTaskQueueCode)
+                        == j.JoinAliasedColumn(Constants.TaskQueueCode)
+                    , Constants.TaskId);
             dmlSelectMgr.SetWhereCondition(w => w.Column(Constants.TaskQueueCode) == w.Parameter(Constants.TaskQueueCode));
             dmlSelectMgr.AddOrderByColumnAscending(Constants.TaskQueueCode);
-            dmlSelectMgr.AddOrderByColumnAscending(Constants.WaitTaskId);
+            dmlSelectMgr.AddOrderByColumnAscending(DataAccess.Constants.SCHEMA_CORE, Constants.TaskProcessingQueue, Constants.TaskId);
             return daMgr.BuildSelectDbCommand(dmlSelectMgr, null);
         }
 
+        /// <summary>
+        /// Builds the DbCommand to delete a dependency record for the given taskQueueItem from the
+        /// TaskDependencies table.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">Unique Identifier of the TaskDependencies record to delete</param>
+        /// <returns>DbCommand Object with given Parameter values</returns>
         public static DbCommand GetDeleteDependencyTaskCmd(DataAccessMgr daMgr, DataRow taskQueueItem)
         {
             if (taskQueueItem == null
@@ -139,6 +181,13 @@ namespace B1.TaskProcessing
             return dbCmd;
         }
 
+        /// <summary>
+        /// Builds the DbCommand to delete a task queue record for the given taskQueueItem from the
+        /// TaskProcessingQueue table.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">Unique Identifier of the TaskProcessingQueue record to delete</param>
+        /// <returns>DbCommand Object with given Parameter values</returns>
         public static DbCommand GetDeleteQueueItemCmd(DataAccessMgr daMgr, DataRow taskQueueItem)
         {
             if (taskQueueItem == null
@@ -156,6 +205,15 @@ namespace B1.TaskProcessing
             return dbCmd;
         }
 
+        /// <summary>
+        /// Builds the DbCommand to either insert or change (update) the TaskProcessingQueue
+        /// based on the given set of editedColumns.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">A Datarow containing the parameter values; If empty, then it is an insert.</param>
+        /// <param name="editedColumns">The Dictionary of edited columns</param>
+        /// <param name="userCode">The userCode of the person who changed the data</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         public static DbCommand GetDmlCmd(DataAccessMgr daMgr
                 , DataRow taskQueueItem
                 , Dictionary<string, object> editedColumns
@@ -225,7 +283,14 @@ namespace B1.TaskProcessing
         }
 
 
-        public static DbCommand GetDeleteQueueItemCmd(DataAccessMgr daMgr, DataRow taskQueueItem, bool deleteAll)
+        /// <summary>
+        /// Builds the DbCommand to delete the task dependency(s) for the given taskQueueCode.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">Datarow containing the parameter values</param>
+        /// <param name="deleteAll">Indicates whether or not to delete all dependencies.</param>
+       /// <returns>DbCommand Object with DbNull Parameter values</returns>
+         public static DbCommand GetDeleteQueueItemCmd(DataAccessMgr daMgr, DataRow taskQueueItem, bool deleteAll)
         {
             if (taskQueueItem == null
                 || !taskQueueItem.Table.Columns.Contains(TaskProcessing.Constants.TaskQueueCode))
@@ -255,6 +320,14 @@ namespace B1.TaskProcessing
         }
 
 
+        /// <summary>
+        /// Builds the DbCommand to Change the value of the edited columns found in the given dictionary.
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <param name="taskQueueItem">The data row containing the values of the parameters</param>
+        /// <param name="editedColumns">The columns that need to be updated</param>
+        /// <param name="userCode">The userCode that updated the data</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         public static DbCommand GetDependencyDmlCmd(DataAccessMgr daMgr
                 , DataRow taskQueueItem
                 , Dictionary<string, object> editedColumns
@@ -341,6 +414,12 @@ namespace B1.TaskProcessing
             return daMgr.ExecuteDataSet(dbCmd, null, null).Tables[0];
         }
 
+        /// <summary>
+        /// Builds the DbCommand that returns the list of dependent tasks 
+        /// and their dependent tasks for a given WaitTaskQueueCode
+        /// </summary>
+        /// <param name="daMgr">DataAccessMgr object</param>
+        /// <returns>DbCommand Object with DbNull Parameter values</returns>
         static DbCommand GetDependentTasksCmd(DataAccessMgr daMgr)
         {
             StringBuilder sb = new StringBuilder();

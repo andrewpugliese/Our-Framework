@@ -125,6 +125,11 @@ namespace B1.TaskProcessing
             tpeControl.DisplayResumedState();
         }
 
+        public void DisplayDisconnectedState()
+        {
+            tpeControl.DisplayDisconnectedState();
+        }
+
         public void DisplayTraceLevelState(ILoggingManagement.enumTraceLevel traceLevel)
         {
             lock (_displayTraceLevelChangeMonitor)

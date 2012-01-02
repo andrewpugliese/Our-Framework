@@ -49,6 +49,6 @@ GO
 
 ALTER TABLE B1.TaskDependencies
 ADD CONSTRAINT TaskDependencies_CC_WaitTaskCompletionCode
-CHECK (WaitTaskCompletionCode < 128)
+CHECK (WaitTaskCompletionCode >= 128)
 
 GO

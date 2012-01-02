@@ -275,8 +275,7 @@ namespace B1.SessionManagement
             dmlInsertMgr.AddColumn(Constants.ConfigSettings, _daMgr.BuildParamName(Constants.ConfigSettings));
             dmlInsertMgr.AddColumn(Constants.EnvironmentSettings, _daMgr.BuildParamName(Constants.EnvironmentSettings));
             dmlInsertMgr.AddColumn(Constants.MachineName, _daMgr.BuildParamName(Constants.MachineName));
-            if (tpeEndpointAddress != null)
-                dmlInsertMgr.AddColumn(Constants.TpeEndpointAddress, _daMgr.BuildParamName(Constants.TpeEndpointAddress));
+            dmlInsertMgr.AddColumn(Constants.TpeEndpointAddress, _daMgr.BuildParamName(Constants.TpeEndpointAddress));
 
             DbCommand dbCmdInsert = _daMgr.BuildInsertDbCommand(dmlInsertMgr);
             DbCommandMgr dbCmdMgr = new DbCommandMgr(_daMgr);
@@ -301,6 +300,7 @@ namespace B1.SessionManagement
             dbCmdInsert.Parameters[_daMgr.BuildParamName(Constants.ConfigSettings)].Value = configSettings;
             dbCmdInsert.Parameters[_daMgr.BuildParamName(Constants.EnvironmentSettings)].Value = sb.ToString();
             dbCmdInsert.Parameters[_daMgr.BuildParamName(Constants.StatusMessage)].Value = statusMsg;
+            dbCmdInsert.Parameters[_daMgr.BuildParamName(Constants.TpeEndpointAddress)].Value = tpeEndpointAddress;
 
             if (overwrite)
             {

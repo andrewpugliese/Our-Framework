@@ -5,8 +5,12 @@ using System.Text;
 
 namespace B1.TaskProcessing
 {
+    /// <summary>
+    /// Constants and literals used for task processing.
+    /// </summary>
     public class Constants
     {
+#pragma warning disable 1591 // disable the xmlComments warning because the following constants are mostly used as string literals
         public const string AssemblyName = "AssemblyName";
         public const string AssemblyFile = "AssemblyFile";
         public const string AssemblyVersion = "AssemblyVersion";
@@ -54,4 +58,5 @@ namespace B1.TaskProcessing
         public const string WaitTaskId = "WaitTaskId";
         public const string WaitTaskQueueCode = "WaitTaskQueueCode";
     }
+#pragma warning restore 1591 // disable the xmlComments warning
 }
