@@ -20,6 +20,8 @@ namespace B1.TaskProcessing
 {
     /// <summary>
     /// Interaction logic for TpeStatusControl.xaml
+    /// This UserControl derived class is used to update the display objects of the Task Processing Engine (TPE)
+    /// screens.  It is used in two contexts (Host TPE and Remote Host TPE).
     /// </summary>
     public partial class TpeStatusControl : UserControl
     {
@@ -35,6 +37,9 @@ namespace B1.TaskProcessing
         bool _displayOnlyTraceLevelChange = false;
         object _displayTraceLevelChangeMonitor = new object();
 
+        /// <summary>
+        /// Default constructor; Fills trace level combo box and disables all contained controls.
+        /// </summary>
         public TpeStatusControl()
         {
             InitializeComponent();
@@ -44,6 +49,18 @@ namespace B1.TaskProcessing
             SetDisplayObjects(false);
         }
 
+        /// <summary>
+        /// Allows consumer of the control provide an interface to handle the button click events.
+        /// <para>It also allows consumer to store a context object that will be returned on the click events.</para>
+        /// </summary>
+        /// <param name="parentControl">IProcessControl for parent</param>
+        /// <param name="parentContext">Optional context to return with every event</param>
+        /// <param name="maxTasksHdlr">Optional handler for the max tasks change event</param>
+        /// <param name="btnStartContent">Optional caption for the start button</param>
+        /// <param name="btnStopContent">Optional caption for the stop button</param>
+        /// <param name="btnPauseContent">Optional caption for the pause button</param>
+        /// <param name="btnResumeContent">Optional caption for the resume button</param>
+        /// <param name="btnStatusContent">Optional caption for the status button</param>
         public void SetContext(IProcessControl parentControl
                 , object parentContext = null
                 , NumericPlusMinus.ClickHandler maxTasksHdlr = null
@@ -56,6 +73,7 @@ namespace B1.TaskProcessing
             _parent = parentControl;
             _parentContext = parentContext;
             _maxTasksClickHdlr = maxTasksHdlr;
+            // set the context on the tpe control a=hanldr
             tpeControl.SetContext(_parent
                     , _parentContext
                     , btnStartContent
@@ -65,13 +83,20 @@ namespace B1.TaskProcessing
                     , btnStatusContent);
         }
 
+        /// <summary>
+        /// toggles the enable attribute on the controls based upon given input
+        /// </summary>
+        /// <param name="enable"></param>
         void SetDisplayObjects(bool enable)
         {
             cmbTraceLevel.IsEnabled = tbConfigId.IsEnabled = tbConnKey.IsEnabled = tbEngineId.IsEnabled 
                 = tbHostEndpointAddress.IsEnabled = tbLoggingKey.IsEnabled = npmMaxTasks.IsEnabled 
                 = tbTaskAssemblyPath.IsEnabled = tbTPEStatus.IsEnabled = npmMaxTasks.IsEnabled = enable;
         }
-
+        
+        /// <summary>
+        /// Resets all controls to initial state and disables them
+        /// </summary>
         public void Clear()
         {
             _maxTasksHdlr = null;
@@ -90,6 +115,19 @@ namespace B1.TaskProcessing
             SetDisplayObjects(false);
         }
 
+        /// <summary>
+        /// Sets the text of the controls to the values given
+        /// </summary>
+        /// <param name="traceLevelHdlr">Delegate handler for the change tracel level event</param>
+        /// <param name="maxTasksHdlr">Delegate handler for the change max tasks event</param>
+        /// <param name="connectionKey">Connection key string</param>
+        /// <param name="loggingKey">Logging key string</param>
+        /// <param name="configId">Configuration Id</param>
+        /// <param name="engineId">Engine Id</param>
+        /// <param name="taskAssemblyPath"></param>
+        /// <param name="hostEndpointAddress"></param>
+        /// <param name="maxTasks"></param>
+        /// <param name="traceLevel"></param>
         public void Display(TraceLevelChangeHandler traceLevelHdlr
             , MaxTasksChangeHandler maxTasksHdlr
             , string connectionKey

@@ -7,6 +7,10 @@ using System.Data;
 
 namespace B1.TaskProcessing
 {
+    /// <summary>
+    /// Utility class of the Task Processing Engine (TPE) which is used as a data structure
+    /// for the tasks that are currently being processed.
+    /// </summary>
     internal class TasksInProcess
     {
         TaskProcess _taskProcess;

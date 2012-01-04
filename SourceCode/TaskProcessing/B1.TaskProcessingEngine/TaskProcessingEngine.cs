@@ -113,6 +113,124 @@ namespace B1.TaskProcessing
                     , "Cannot create Remote TaskProcessingEngine because local instance not created.");
         }
 
+        /// <summary>
+        /// Starts the main engine thread and initiates the dequeing of tasks from the queue
+        /// </summary>
+        public void Start()
+        {
+            _mainThread = new Thread(Run);
+            _mainThread.IsBackground = true;
+            _mainThread.Start();
+            _engineStatus = EngineStatusEnum.Started;
+        }
+
+        /// <summary>
+        /// Signals a stop event and stops all tasks processes and the WCF service host.
+        /// </summary>
+        public void Stop()
+        {
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
+            {
+                _daMgr.loggingMgr.Trace("Stopping.", enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Stopped;
+                _stopEvent.Set();   // signal to stop
+                StopServiceHost();
+                lock (_taskCounterLock)
+                {
+                    foreach (string taskProcessKey in _taskProcesses.Keys)
+                    {
+                        TaskProcess taskProcess = _taskProcesses.Get(taskProcessKey).Process;
+                        taskProcess.Stop();
+                    }
+                }
+                if (_configSettings != null
+                    && _configSettings.Count > 0)
+                    _configSettings.Clear();
+                if (_clientConnections != null
+                    && _clientConnections.Count > 0)
+                    _clientConnections.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Temporarily suspends all processing of tasks until a resume event is encountered
+        /// </summary>
+        public void Pause()
+        {
+            Pause(null);
+        }
+
+        /// <summary>
+        /// Temporarily suspends all processing of tasks until a resume event is encountered
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
+        public void Pause(string remoteClientId)
+        {
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
+            {
+                _daMgr.loggingMgr.Trace(string.Format("Pausing{0}", !string.IsNullOrEmpty(remoteClientId)
+                        ? ". Initiated by RemoteClientId: " + remoteClientId : "")
+                        , enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Paused;
+            }
+        }
+
+        /// <summary>
+        /// Signals a resume event and causes all suspended threads to continue porcessing
+        /// </summary>
+        public void Resume()
+        {
+            Resume(null);
+        }
+
+        /// <summary>
+        /// Signals a resume event and causes all suspended threads to continue porcessing
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
+        public void Resume(string remoteClientId)
+        {
+            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
+            {
+                _daMgr.loggingMgr.Trace(string.Format("Resuming{0}", !string.IsNullOrEmpty(remoteClientId)
+                        ? ". Initiated by RemoteClientId: " + remoteClientId : "")
+                        , enumTraceLevel.Level2);
+                _engineStatus = EngineStatusEnum.Running;
+                _resumeEvent.Set();   // signal to resume
+            }
+        }
+
+        /// <summary>
+        /// Returns a string description of the TPE instance status
+        /// </summary>
+        /// <returns></returns>
+        public string Status()
+        {
+            return Status(null);
+        }
+
+        /// <summary>
+        /// Returns a string description of the TPE instance status
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
+        /// <returns></returns>
+        public string Status(string remoteClientId)
+        {
+            string status = string.Format("Engine Status: {0}; taskHandlers available: {1}; taskHandlers processing: {2}; remoteClients: {3}{4}"
+                , _engineStatus.ToString(), _maxTaskProcesses - _tasksInProcess, _tasksInProcess, _clientConnections.Count(), Environment.NewLine);
+            if (string.IsNullOrEmpty(remoteClientId))
+                return status;
+            else
+            {
+                Dictionary<string, string> dynamicSettings = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
+                dynamicSettings.Add(TaskProcessing.Constants.MaxTasksInParallel, _maxTaskProcesses.ToString());
+                dynamicSettings.Add(ILoggingManagement.Constants.TraceLevel, _daMgr.loggingMgr.TraceLevel.ToString());
+                dynamicSettings.Add(TaskProcessing.Constants.EngineStatus, _engineStatus.ToString());
+                dynamicSettings.Add(TaskProcessing.Constants.StatusMsg, status);
+                return Core.Functions.Serialize(dynamicSettings);
+            }
+
+        }
+
         internal string EngineId
         {
             get { return _engineId; }
@@ -123,42 +241,57 @@ namespace B1.TaskProcessing
             _daMgr.loggingMgr.Trace(msg, traceLevel);
         }
 
+        /// <summary>
+        /// Returns current state of the engine
+        /// </summary>
         public EngineStatusEnum EngineStatus
         {
             get { return _engineStatus; }
         }
 
+        /// <summary>
+        /// Validates a remote connection
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
         public void Connect(string remoteClientId)
         {
-            OperationContext context = OperationContext.Current;
-            MessageProperties properties = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint 
-                    = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
-            string clientAddress = string.Format("{0}:{1}:{2}", endpoint.Address, endpoint.Port, DateTime.UtcNow);
             if (!_clientConnections.ContainsKey(remoteClientId))
-                _clientConnections.Add(remoteClientId, clientAddress);
+                _clientConnections.Add(remoteClientId, DateTime.UtcNow.ToString());
         }
 
+        /// <summary>
+        /// Acknowledges a disconnection of a remote client 
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
         public void Disconnect(string remoteClientId)
         {
-            OperationContext context = OperationContext.Current;
-            MessageProperties properties = context.IncomingMessageProperties;
-            RemoteEndpointMessageProperty endpoint 
-                    = properties[RemoteEndpointMessageProperty.Name] as RemoteEndpointMessageProperty;
             if (_clientConnections.ContainsKey(remoteClientId))
                 _clientConnections.Remove(remoteClientId);
         }
 
+        /// <summary>
+        /// Returns the dictionary of confiuration settings
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, string> ConfigSettings()
         {
             return _configSettings;
         }
 
+        /// <summary>
+        /// Returns the dictionary of remote connections
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, string> RemoteClients()
         {
             return _clientConnections;
         }
 
+        /// <summary>
+        /// Returns the dictionary of runtime settings which may include configuration settings
+        /// that can be changed during runtime.
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, string> DynamicSettings()
         {
             Dictionary<string, string> dynamicSettings = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
@@ -169,11 +302,24 @@ namespace B1.TaskProcessing
             return dynamicSettings;
         }
 
+        /// <summary>
+        /// Changes the setting which controls the maximum number of tasks that can be run
+        /// simulataneously on this TPE instance
+        /// </summary>
+        /// <param name="delta">The change in the number of tasks (positive  or negative)</param>
+        /// <returns>The new maximum value</returns>
         public int SetMaxTasks(int delta)
         {
             return SetMaxTasks(null, delta);
         }
 
+        /// <summary>
+        /// Changes the setting which controls the maximum number of tasks that can be run
+        /// simulataneously on this TPE instance.
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
+        /// <param name="delta">The change in the number of tasks (positive  or negative)</param>
+        /// <returns>The new maximum value</returns>
         public int SetMaxTasks(string remoteClientId, int delta)
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
@@ -203,113 +349,36 @@ namespace B1.TaskProcessing
             }
         }
 
-        public void SetTraceLevel(string traceLevel)
-        {
-            SetTraceLevel(null, traceLevel);
-        }
-
-        public void SetTraceLevel(string remoteClientId, string traceLevel)
-        {
-            _daMgr.loggingMgr.TraceLevel = ILoggingManagement.Constants.ToTraceLevel(traceLevel);
-        }
-
+        /// <summary>
+        /// Returns the current setting for maximum tasks in parallel
+        /// </summary>
         public int MaxTasks
         {
             get { return _maxTaskProcesses; }
         }
 
         /// <summary>
-        /// Initiates the dequeing of tasks from the queue
+        /// Changes the trace level setting to the given level
         /// </summary>
-        public void Start()
+        /// <param name="traceLevel"></param>
+        public void SetTraceLevel(string traceLevel)
         {
-            _mainThread = new Thread(Run);
-            _mainThread.IsBackground = true;
-            _mainThread.Start();
-            _engineStatus = EngineStatusEnum.Started;
+            SetTraceLevel(null, traceLevel);
         }
 
-        public void Stop()
+        /// <summary>
+        /// Changes the trace level setting to the given level
+        /// </summary>
+        /// <param name="remoteClientId">Unique identifier of remote client application</param>
+        /// <param name="traceLevel"></param>
+        public void SetTraceLevel(string remoteClientId, string traceLevel)
         {
-            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
-            {
-                _daMgr.loggingMgr.Trace("Stopping.", enumTraceLevel.Level2);
-                _engineStatus = EngineStatusEnum.Stopped;
-                _stopEvent.Set();   // signal to stop
-                StopServiceHost();
-                lock (_taskCounterLock)
-                {
-                    foreach (string taskProcessKey in _taskProcesses.Keys)
-                    {
-                        TaskProcess taskProcess = _taskProcesses.Get(taskProcessKey).Process;
-                        taskProcess.Stop();
-                    }
-                }
-                if (_configSettings != null
-                    && _configSettings.Count > 0)
-                    _configSettings.Clear();
-                if (_clientConnections != null
-                    && _clientConnections.Count > 0)
-                    _clientConnections.Clear();
-            }
+            _daMgr.loggingMgr.TraceLevel = ILoggingManagement.Constants.ToTraceLevel(traceLevel);
         }
 
-        public void Pause()
-        {
-            Pause(null);
-        }
-
-        public void Pause(string remoteClientId)
-        {
-            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
-            {
-                _daMgr.loggingMgr.Trace(string.Format("Pausing{0}", !string.IsNullOrEmpty(remoteClientId)
-                        ? ". Initiated by RemoteClientId: " + remoteClientId : "")
-                        , enumTraceLevel.Level2);
-                _engineStatus = EngineStatusEnum.Paused;
-            }
-        }
-
-        public void Resume()
-        {
-            Resume(null);
-        }
-
-        public void Resume(string remoteClientId)
-        {
-            using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
-            {
-                _daMgr.loggingMgr.Trace(string.Format("Resuming{0}", !string.IsNullOrEmpty(remoteClientId)
-                        ? ". Initiated by RemoteClientId: " + remoteClientId : "")
-                        , enumTraceLevel.Level2);
-                _engineStatus = EngineStatusEnum.Running;
-                _resumeEvent.Set();   // signal to resume
-            }
-        }
-
-        public string Status()
-        {
-            return Status(null);
-        }
-
-        public string Status(string remoteClientId)
-        {
-            string status = string.Format("Engine Status: {0}; taskHandlers available: {1}; taskHandlers processing: {2}; remoteClients: {3}{4}"
-                , _engineStatus.ToString(), _maxTaskProcesses - _tasksInProcess, _tasksInProcess, _clientConnections.Count(), Environment.NewLine);
-            if (string.IsNullOrEmpty(remoteClientId))
-                return status;
-            else
-            {
-                Dictionary<string, string> dynamicSettings = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
-                dynamicSettings.Add(TaskProcessing.Constants.MaxTasksInParallel, _maxTaskProcesses.ToString());
-                dynamicSettings.Add(ILoggingManagement.Constants.TraceLevel, _daMgr.loggingMgr.TraceLevel.ToString());
-                dynamicSettings.Add(TaskProcessing.Constants.EngineStatus, _engineStatus.ToString());
-                dynamicSettings.Add(TaskProcessing.Constants.StatusMsg, status);
-                return Core.Functions.Serialize(dynamicSettings);
-            }
-
-        }
-
+        /// <summary>
+        /// Indicates whether or not there are no users allowed on system.
+        /// </summary>
         bool NoUsers
         {
             get
@@ -319,6 +388,13 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// Called at startup to check to see if there are any tasks found in the running state for this 
+        /// instance's engineId.  If so, then those status must be changed because they cannot be running
+        /// since this instance has not started yet and it is the only engine instance allowed with that 
+        /// same engineId.
+        /// </summary>
+        /// <returns>The number of tasks recovered</returns>
         int RecoverTasksInProcess()
         {
             _daMgr.loggingMgr.Trace("Recovering any tasks left in process status.", enumTraceLevel.Level2);
@@ -403,10 +479,14 @@ namespace B1.TaskProcessing
 
         #endregion
 
+        /// <summary>
+        /// Main engine loop.  Runs continuously until stopped.
+        /// </summary>
         void Run()
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
             {
+                // start WCF if configured for it and not started
                 if (!string.IsNullOrEmpty(_wcfHostBaseAddress)
                     && _wcfServiceHost == null)
                 {
@@ -420,6 +500,8 @@ namespace B1.TaskProcessing
                 {
                     while (_engineStatus == EngineStatusEnum.Running)
                     {
+                        // all queue queries are paged
+                        // when no users are allowed on system, we can query those tasks that require no users
                         if (NoUsers)
                         {
                             queuedTasks = pageSize == 0 ? _queuedTasksNoUsersOnly.GetFirstPage()
@@ -430,7 +512,7 @@ namespace B1.TaskProcessing
                                         , pageSize)
                                     , enumTraceLevel.Level4);
                         }
-                        else
+                        else // otherwise we query all tasks
                         {
                             queuedTasks = pageSize == 0 ? _queuedTasks.GetFirstPage()
                                     : _queuedTasks.GetNextPage();
@@ -440,14 +522,23 @@ namespace B1.TaskProcessing
                                         , pageSize)
                                     , enumTraceLevel.Level4);
                         }
+                        // loop through the paged data to see if an item can be dequeued
+                        // (a logical operation where status can only be changed by 1 thread)
+                        // (thus 'locking the record' for that TPE)
+                        // NOTE: These are the records that are recovered if this instance crashes
+                        // without changing the status of these records
                         foreach (DataRow queuedTask in queuedTasks.Rows)
                         {
+                            // as long as there are available 'threads' to process records
                             if (_tasksInProcess < _maxTaskProcesses)
                             {
+                                // check the task to see if it meets all conditions (e.g. dependencies, datetime, etc)
                                 Int32? taskQueueCode = TaskReadyToProcess(queuedTask, new CacheMgr<Int32?>(), null);
+                                // if it has a value, then it can be processed
                                 if (taskQueueCode.HasValue)
                                     try
                                     {
+                                        // Process the Task ONLY if it can be successfully dequeued as described above
                                         ProcessTask(DequeueTask(taskQueueCode.Value));
                                     }
                                     catch (Exception e)
@@ -455,17 +546,20 @@ namespace B1.TaskProcessing
                                         _daMgr.loggingMgr.WriteToLog(e);
                                     }
                             }
-                            else
+                            else // if we dont have enough threads; sleep
                             {
                                 _daMgr.loggingMgr.Trace(string.Format("MaxTasksInProcessReached: {0}"
                                             , _maxTaskProcesses), enumTraceLevel.Level5);
                                 Thread.Sleep(500);
                             }
                         }
+                        // if the number of records paged was less then a full page size, then it means we dont have 
+                        // a full queue; so we can sleep
                         if (queuedTasks.Rows.Count < pageSize)
                             pageSize = 0;
                         Thread.Sleep(1000);
                     }
+                    // if the engine was paused, then wait for a resume or stop event)
                     if (_engineStatus == EngineStatusEnum.Paused)
                     {
                         WaitHandle[] waithandles = new WaitHandle[] { _stopEvent, _resumeEvent };
@@ -475,12 +569,19 @@ namespace B1.TaskProcessing
                         if (waitResult == 1)
                             _resumeEvent.Reset();
                     }
-                    else Thread.Sleep(1000);
+                    else Thread.Sleep(500);
                 }
             }
             Off(); // if we are here then the engine must be turned off
         }
 
+        /// <summary>
+        /// Creates a TaskProcess for the task by loading the Assembly
+        /// which contains the task implementation.  Each task process will be passed
+        /// a delegate which will be called when proceess is stopped
+        /// </summary>
+        /// <param name="dequeuedTask">The data structure containing the information dequeued from Task Processing Queue</param>
+        /// <returns>TaskProces object</returns>
         TaskProcess LoadTaskProcess(DequeuedTask dequeuedTask)
         {
             TaskProcess taskProcess = Core.ObjectFactory.Create<TaskProcess>(
@@ -497,6 +598,10 @@ namespace B1.TaskProcessing
             return taskProcess;
         }
 
+        /// <summary>
+        /// Process the task process object on a new thread
+        /// </summary>
+        /// <param name="dequeuedTask">The data structure containing the information dequeued from Task Processing Queue</param>
         void ProcessTask(DequeuedTask dequeuedTask)
         {
             TaskProcess taskProcess = LoadTaskProcess(dequeuedTask);
@@ -512,6 +617,12 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// The delegate handler for the task completion event.
+        /// <para>The function updates the database status and cleans up the memory collections of tasks in process</para>
+        /// </summary>
+        /// <param name="taskQueueCode">The unique identifier of the task processing queueu recod</param>
+        /// <param name="processStatus">Indicates whether process succeeded or failed</param>
         void TaskCompleted(int taskQueueCode, TaskProcess.ProcessStatusEnum processStatus)
         {
             using (LoggingContext lc = new LoggingContext("Task Processing Engine: " + _engineId))
@@ -577,6 +688,10 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// Engine has stopped running
+        /// Stop all tasks and wait for threads to join
+        /// </summary>
         public void Off()
         {
             if (_engineStatus != EngineStatusEnum.Stopped)
@@ -611,6 +726,12 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// Makes database call on given task queue code to 'lock' the record
+        /// (change the status)
+        /// </summary>
+        /// <param name="taskQueueCode">The unique identifier of the task processing queue record</param>
+        /// <returns>A DequeuedTask object when successful; NULL otherwise</returns>
         DequeuedTask DequeueTask(Int64 taskQueueCode)
         {
             _daMgr.loggingMgr.Trace(string.Format("Dequeuing TaskCode: {0}", taskQueueCode), enumTraceLevel.Level5);
@@ -622,6 +743,13 @@ namespace B1.TaskProcessing
             else return null;
         }
 
+        /// <summary>
+        /// Checks all conditions necessary to attempt to dequeue a task; for example: Dependencies, NoUsers, Configurations, etc
+        /// </summary>
+        /// <param name="queuedTask">DataRow of task information</param>
+        /// <param name="tasksVisited">Used to determine if there are cyclic dependencies</param>
+        /// <param name="parentTask">Used to determine if there are cyclic dependencies</param>
+        /// <returns>TaskQueueCode when ready, NULL otherwise</returns>
         Int32? TaskReadyToProcess(DataRow queuedTask,  CacheMgr<Int32?> tasksVisited, Int32? parentTask)
         {
             Int32 taskQueueCode = Convert.ToInt32(queuedTask[TaskProcessing.Constants.TaskQueueCode]);
@@ -676,6 +804,12 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// Determines if the dependencies of the given task queue code have been met
+        /// </summary>
+        /// <param name="taskQueueCode">unique identifier of the task processing queue to test</param>
+        /// <param name="taskVisited">Used to determine cyclic dependencies</param>
+        /// <returns></returns>
         bool TaskDependenciesCompleted(Int32 taskQueueCode,  CacheMgr<Int32?> taskVisited)
         {
             _taskDependencies.Parameters[_daMgr.BuildParamName(TaskProcessing.Constants.TaskQueueCode)].Value 
@@ -690,6 +824,9 @@ namespace B1.TaskProcessing
             return true;
         }
 
+        /// <summary>
+        /// Builds and caches the DbCommands used
+        /// </summary>
         void CacheDbCommands()
         {
             _queuedTasks = BuildCmdGetQueuedTasksList(false);
