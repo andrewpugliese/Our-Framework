@@ -1,0 +1,15 @@
+﻿@if(Request.IsAuthenticated) 
+{
+    if (Session[B1.SessionManagement.Constants.UserSessionMgr] != null)
+    {
+        <text>Welcome <b>@Context.User.Identity.Name</b>!   
+        [ @Html.ActionLink("Sign Off", "SignOff", "Account") ]</text>
+    }
+    else {
+            FormsAuthentication.SignOut();
+            @:[@Html.ActionLink("Sign On", "SignOn", "Account") ]
+         }
+}
+else {
+    @:[ @Html.ActionLink("Sign On", "SignOn", "Account") ]
+}

@@ -43,8 +43,10 @@ namespace B1.SessionManagement
         public const string AllowMultipleSessions = "AllowMultipleSessions";
         public const string AppId = "AppId";
         public const string AppCode = "AppCode";
+        public const string ApplicationKey = "ApplicationKey";
         public const string AppMachine = "AppMachine";
         public const string AppName = "AppProduct";
+        public const string AppSession = "AppSession";
         public const string AppVersion = "AppVersion";
         public const string ControlCode = "ControlCode";
         public const string ConfigSettings = "ConfigSettings";
@@ -87,6 +89,7 @@ namespace B1.SessionManagement
         public const string UserId = "UserId";
         public const string UserPassword = "UserPassword";
         public const string UserCode = "UserCode";
+        public const string UserSessionMgr = "UserSessionMgr";
 #pragma warning restore 1591 // enable xmlComments warning
     }
 }

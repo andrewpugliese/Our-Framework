@@ -125,32 +125,25 @@ namespace B1.Utility.DatabaseSetup
         public DbSetupMgr()
         {
             InitializeComponent();
-            try
-            {
-                LoadConfigSettings();
-                // timer is used to refresh display
-                _refreshTimer.Tick += new EventHandler(RefreshHandler);
-                _refreshTimer.Interval = 2000;
-                _loggingMgr = new LoggingMgr(tbLoggingKey.Text);
+            LoadConfigSettings();
+            // timer is used to refresh display
+            _refreshTimer.Tick += new EventHandler(RefreshHandler);
+            _refreshTimer.Interval = 2000;
+            _loggingMgr = new LoggingMgr(tbLoggingKey.Text);
 
-                _configuredTraceLevel = _loggingMgr.TraceLevel;
-                _dynamicTraceLevel = _configuredTraceLevel;
-                cmbTraceLevel.SelectedItem = _configuredTraceLevel.ToString();
+            _configuredTraceLevel = _loggingMgr.TraceLevel;
+            _dynamicTraceLevel = _configuredTraceLevel;
+            cmbTraceLevel.SelectedItem = _configuredTraceLevel.ToString();
 
-                _loggingMgr.WriteToLog(string.Format("{0}; Version: {1}; Startup"
-                        , Application.ProductName
-                        , Application.ProductVersion)
-                    , EventLogEntryType.Information
-                    , enumEventPriority.Critical);
-                tbLoggingTargets.Text = _loggingMgr.ConfigOptions;
-                _loggingMgr.TraceToWindow = true;
+            _loggingMgr.WriteToLog(string.Format("{0}; Version: {1}; Startup"
+                    , Application.ProductName
+                    , Application.ProductVersion)
+                , EventLogEntryType.Information
+                , enumEventPriority.Critical);
+            tbLoggingTargets.Text = _loggingMgr.ConfigOptions;
+            _loggingMgr.TraceToWindow = true;
 
-                Init();
-            }
-            catch (Exception Exc)
-            {
-                MessageBox.Show(Exc.Message + Exc.StackTrace);
-            }
+            Init();
 
         }
 
@@ -229,6 +222,9 @@ namespace B1.Utility.DatabaseSetup
             numUDsignonLimit.Enabled = false;
             lblSignonResults.Text = "Enter UserId and Password (leave blank if new user).";
             btnSignoff.Enabled = false;
+            btnConfigTest.Enabled = false;
+            btnGetRuntimeValue.Enabled = false;
+            btnSetRuntimeValue.Enabled = true;
 
             btnStopInsert.Enabled = btnStopUpdate.Enabled = btnStopMerge.Enabled = btnStopDelete.Enabled = false;
             if (!string.IsNullOrEmpty(dbSetupConfig.AsSysDba)
@@ -1000,16 +996,12 @@ namespace B1.Utility.DatabaseSetup
 
         private void btnSetRuntimeValue_Click(object sender, EventArgs e)
         {
-            //if (_daMgr == null)
-            //    CreateDbMgr();
             AppConfigMgr.SetRuntimeValue("RuntimeConfig", () => txtSetRuntimeValue.Text);
-            btnSetRuntimeValue.Enabled = false;
+            btnGetRuntimeValue.Enabled = true;
         }
 
         private void btnGetRuntimeValue_Click(object sender, EventArgs e)
         {
-            //if (_daMgr == null)
-            //    CreateDbMgr(); 
             labelGetRuntimeValue.Text = AppConfigMgr.GetRuntimeValue<string>("RuntimeConfig");
         }
 
@@ -1281,29 +1273,39 @@ namespace B1.Utility.DatabaseSetup
                     "".PadRight(r.Next(6, 18), (char)r.Next(65, 90));
         }
 
-
+        int _configTestCount = 0;
         private void btnConfigTest_Click(object sender, EventArgs e)
         {
-#warning"NS TO FIX TEST"
-            MessageBox.Show("Function temp disabled; NS to FIX.");
-            //if (_daMgr == null)
-            //    CreateDbMgr();
-            //AppConfigMgr.InitializeDefault(_daMgr, "eContracting", "ALL");
+            MessageBox.Show(string.Format("Configuration Test: Callback function called: {0} times so far."
+                    , _configTestCount));
+        }
+
+        void ConfigTestHandler(string action)
+        {
+            ++_configTestCount;
         }
 
         private void btnWatch_Click(object sender, EventArgs e)
         {
-#warning"NS TO FIX TEST"
-            MessageBox.Show("Function temp disabled; NS to FIX.");
-            //if (_daMgr == null)
-            //    CreateDbMgr();
-            //_daMgr.dataConfigMgr.RegisterConfigChangeHandler("ExperianTimeout",
-            //        (key, oldValue, newValue) =>
-            //        {
-            //            labelConfigChangeValue.BeginInvoke((Action)delegate() { labelConfigChangeValue.Text = newValue; });
-            //            return true;
-            //        });
-            //btnWatch.Enabled = false;
+            if (_configTestCount == 0  && !RecurringCallbackMgr.Default.ContainsKey("configTest"))
+            {
+                RecurringCallbackMgr.Default.Add("configTest", ConfigTestHandler, 10);
+                MessageBox.Show("Configuration Test started with callback function set for every 10 seconds; call count = 0.");
+                btnConfigTest.Enabled = true;
+            }
+            else
+            {
+                DialogResult dr = MessageBox.Show(string.Format("Configuration Test already started; callback function call count = {0}.  "
+                    + "Click Yes to stop testing, No to reset count, Cancel to continue", _configTestCount)
+                    , "Reset Callback Function", MessageBoxButtons.YesNoCancel);
+                if (dr == DialogResult.Yes)
+                {
+                    RecurringCallbackMgr.Default.Remove("configTest");
+                    btnConfigTest.Enabled = false;
+                }
+                else if (dr == DialogResult.No)
+                    _configTestCount = 0;
+            }
         }
 
         private void rbPagingPrimaryKey_CheckedChanged(object sender, EventArgs e)

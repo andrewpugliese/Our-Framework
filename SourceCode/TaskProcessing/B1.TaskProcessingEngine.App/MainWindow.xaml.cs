@@ -95,44 +95,58 @@ namespace B1.TaskProcessingEngine.App
         /// </summary>
         public MainWindow()
         {
-            InitializeComponent();
-            _configSettings = LoadConfigurationSettings();
-            _loggingMgr = new LoggingMgr(_loggingKey);
-            _loggingMgr.TraceToWindow = true;
-            _daMgr = new DataAccessMgr(_connectionKey, _loggingMgr);
-            
-            // This host requires an app session object
-            _appSession = new AppSession(_daMgr
-                , _engineId
-                , _assemblyVersion
-                , _assemblyName
-                , Status);
+            try
+            {
+                InitializeComponent();
+                _configSettings = LoadConfigurationSettings();
+                _loggingMgr = new LoggingMgr(_loggingKey);
+                _loggingMgr.TraceToWindow = true;
+                _daMgr = new DataAccessMgr(_connectionKey, _loggingMgr);
 
-            // create paging manager for task processing queue
-            PagingMgr tpq = new PagingMgr(_daMgr
-                    , string.Format("{0}.{1}", DataAccess.Constants.SCHEMA_CORE, TaskProcessing.Constants.TaskProcessingQueue)
-                    , null, 1, null);
-
-            // pass paging manager to paging controll
-            pagingTableTPQ.Source = tpq;
-            pagingTableTPQ.Title = "Task Processing Queue";
-
-            // set the status control for the local TPE
-            localTpeStatus.SetContext(this, null, OnPlusMinusClick);
-            // pass in the configuration settings
-            localTpeStatus.Display(TraceLevelChanged
-                    , MaxTasksChanged
-                    , _connectionKey
-                    , _loggingKey
-                    , _configId
+                // This host requires an app session object
+                _appSession = new AppSession(_daMgr
                     , _engineId
-                    , _taskAssemblyPath
-                    , _hostEndpointAddress
-                    , _maxTasks
-                    , _loggingMgr.TraceLevel);
+                    , _assemblyVersion
+                    , _assemblyName
+                    , Status);
 
-            // right now we cannot connect to any remote host
-            remoteTpeStatus.IsEnabled = false;
+                // create paging manager for task processing queue
+                PagingMgr tpq = new PagingMgr(_daMgr
+                        , string.Format("{0}.{1}", DataAccess.Constants.SCHEMA_CORE, TaskProcessing.Constants.TaskProcessingQueue)
+                        , null, 1, null);
+
+                // pass paging manager to paging controll
+                pagingTableTPQ.Source = tpq;
+                pagingTableTPQ.Title = "Task Processing Queue";
+
+                // set the status control for the local TPE
+                localTpeStatus.SetContext(this, null, OnPlusMinusClick);
+                // pass in the configuration settings
+                localTpeStatus.Display(TraceLevelChanged
+                        , MaxTasksChanged
+                        , _connectionKey
+                        , _loggingKey
+                        , _configId
+                        , _engineId
+                        , _taskAssemblyPath
+                        , _hostEndpointAddress
+                        , _maxTasks
+                        , _loggingMgr.TraceLevel);
+
+                // right now we cannot connect to any remote host
+                remoteTpeStatus.IsEnabled = false;
+            }
+            catch(Exception e)
+            {
+                string errorFileName = "TaskProcessingEngine.Exception.txt";
+                string msg = "Will attempt to write exception details to file: " + errorFileName
+                    + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace + Environment.NewLine;
+                MessageBox.Show(msg, "Fatal Error - Look for file: " + errorFileName);
+                FileManagement.FileMgr.WriteTextToFile(errorFileName, msg, false, true);
+                Exit();
+            }
+            
+
         }
 
         /// <summary>

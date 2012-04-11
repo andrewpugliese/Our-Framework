@@ -32,7 +32,7 @@ namespace B1.WebSite.Admin.Models
         public string ConfirmPassword { get; set; }
     }
 
-    public class LogOnModel
+    public class SignOnModel
     {
         [Required]
         [Display(Name = "User name")]
@@ -45,10 +45,13 @@ namespace B1.WebSite.Admin.Models
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        [DataType(DataType.Url)]
+        public Uri GoBackUri { get; set; }
     }
 
 
-    public class RegisterModel
+    public class SignUpModel
     {
         [Required]
         [Display(Name = "User name")]

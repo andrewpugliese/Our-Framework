@@ -840,10 +840,10 @@ namespace B1.DataAccess
 
         /// <summary>
         /// Returns a new page of data based upon the given direction and page size
+        /// </summary>
         /// <param name="pagingDirection">Enumeration: first, last, previous, next</param>
         /// <param name="pageSize">Optional page size; null indicates use default</param>
         /// <returns>New page of data as DataTable</returns>
-        /// </summary>
         public DataTable GetPage(PagingDbCmdEnum pagingDirection, Int16? pageSize = null)
         {
             switch (pagingDirection)
@@ -861,6 +861,11 @@ namespace B1.DataAccess
             return null;
         }
 
+        /// <summary>
+        /// Returns updated buffer for the current direction, key settings, and optional pageSize parameter.
+        /// </summary>
+        /// <param name="pageSize">Optional override to default buffer page size</param>
+        /// <returns>Updated page of data as DataTable</returns>
         public DataTable RefreshPage(short? pageSize = null)
         {
             _isRefresh = true;
@@ -874,6 +879,9 @@ namespace B1.DataAccess
         /// be used with DataTable. So sometimes instead of creating concrete classes for every resultset one can use
         /// the dynamic objects. e.g. GetPage&lt;Employee&gt; or GetPage&lt;dynamic&gt;
         /// </summary>
+        /// <param name="pagingDirection">Enumeration: first, last, previous, next</param>
+        /// <param name="pageSize">Optional override to default buffer page size</param>
+        /// <returns>IEnumerable collection of type T</returns>
         public IEnumerable<T> GetPage<T>(PagingDbCmdEnum pagingDirection, Int16? pageSize = null) where T : new()
         {
             switch (pagingDirection)

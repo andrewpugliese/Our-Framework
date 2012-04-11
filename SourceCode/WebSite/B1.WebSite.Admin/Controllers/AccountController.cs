@@ -29,16 +29,18 @@ namespace B1.WebSite.Admin.Controllers
         }
 
         // **************************************
-        // URL: /Account/LogOn
+        // URL: /Account/SignOn
         // **************************************
 
-        public ActionResult LogOn()
+        public ActionResult SignOn()
         {
+//            Uri referrer = this.Request.UrlReferrer;
+  //          ViewBag.UrlReferrer = referrer;
             return View();
         }
 
         [HttpPost]
-        public ActionResult LogOn(LogOnModel model, string returnUrl)
+        public ActionResult SignOn(SignOnModel model, string returnUrl)
         {
             if (ModelState.IsValid)
             {
@@ -58,6 +60,19 @@ namespace B1.WebSite.Admin.Controllers
                 if (results.ResultEnum == SignonResultsEnum.Success)
                 {
                     FormsService.SignIn(model.UserName, model.RememberMe);
+                    Session[SessionManagement.Constants.UserSessionMgr] = results.UserSessionMgr;
+                    string[] urlParts = returnUrl.Split(new string[] { Constants.UIControlCodeTag }, StringSplitOptions.None);
+                    int controlCode = urlParts.Length > 1 ? Convert.ToInt32(urlParts[1]) : 0;
+                    if (!results.UserSessionMgr.IsAccessAllowed(controlCode) || true)
+                    {
+                        string msg = string.Format("Sorry, you are not authorized to access this page: {0}.  Please speak to your administrator."
+                                , urlParts[0]);
+                        System.Web.Routing.RouteValueDictionary dictionary = new System.Web.Routing.RouteValueDictionary();
+                        dictionary.Add("Message", msg);
+                        dictionary.Add("UrlReferrer", model.GoBackUri);
+                        return RedirectToAction("accessdenied", "home", dictionary);
+                    }
+
                     if (Url.IsLocalUrl(returnUrl))
                     {
                         return Redirect(returnUrl);
@@ -67,8 +82,9 @@ namespace B1.WebSite.Admin.Controllers
                         return RedirectToAction("Index", "Home");
                     }
                 }
-                else //?? if (results.ResultEnum == SignonResultsEnum.PasswordInitialization)
+                else
                 {
+#warning "Add other case conditions"
                     ModelState.AddModelError("", "The user name or password provided is incorrect.");
                 }
             }
@@ -78,28 +94,35 @@ namespace B1.WebSite.Admin.Controllers
         }
 
         // **************************************
-        // URL: /Account/LogOff
+        // URL: /Account/SignOff
         // **************************************
 
-        public ActionResult LogOff()
+        public ActionResult SignOff()
         {
+            if (Session[SessionManagement.Constants.UserSessionMgr] != null)
+            {
+                UserSession userSessionMgr = (UserSession)Session[SessionManagement.Constants.UserSessionMgr];
+                DataAccessMgr daMgr = (DataAccessMgr)Global.GetDataAccessMgr(this.HttpContext);
+                UserSignon.Signoff(daMgr, userSessionMgr.SessionCode);
+                Session.Remove(SessionManagement.Constants.UserSessionMgr);
+            }
             FormsService.SignOut();
-
+            Session.Abandon();
             return RedirectToAction("Index", "Home");
         }
 
         // **************************************
-        // URL: /Account/Register
+        // URL: /Account/SignUp
         // **************************************
 
-        public ActionResult Register()
+        public ActionResult SignUp()
         {
             ViewBag.PasswordLength = MembershipService.MinPasswordLength;
             return View();
         }
 
         [HttpPost]
-        public ActionResult Register(RegisterModel model)
+        public ActionResult SignUp(SignUpModel model)
         {
             if (ModelState.IsValid)
             {

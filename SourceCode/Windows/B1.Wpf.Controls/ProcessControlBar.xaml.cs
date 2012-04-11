@@ -16,6 +16,8 @@ namespace B1.Wpf.Controls
 {
     /// <summary>
     /// Interaction logic for ProcessControlBar.xaml
+    /// The Process Control Bar is a user control that contains buttons for Start,
+    /// Stop, Pause, Resume, Status that can be used to control any process.
     /// </summary>
     public partial class ProcessControlBar : UserControl
     {
@@ -23,12 +25,18 @@ namespace B1.Wpf.Controls
         object _parentContext = null;
         enum ProcessControlState { Disconnected, Paused, Resumed };
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public ProcessControlBar()
         {
             InitializeComponent();
             InitializeButtonState();
         }
 
+        /// <summary>
+        /// Sets/Resets the status of the proces control bar and its controls to enabled or dissabled
+        /// </summary>
         public bool Enabled
         {
             get
@@ -42,6 +50,9 @@ namespace B1.Wpf.Controls
             }
         }
 
+        /// <summary>
+        /// Dispatches a request to set / reset buttons so display a paused state.
+        /// </summary>
         public void DisplayPausedState()
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
@@ -49,6 +60,9 @@ namespace B1.Wpf.Controls
                                  ProcessControlState.Paused);
         }
 
+        /// <summary>
+        /// Dispatches a request to set / reset buttons so display a resumed or running state.
+        /// </summary>
         public void DisplayResumedState()
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
@@ -56,6 +70,9 @@ namespace B1.Wpf.Controls
                                  ProcessControlState.Resumed);
         }
 
+        /// <summary>
+        /// Dispatches a request to set / reset buttons so display a disconnected state.
+        /// </summary>
         public void DisplayDisconnectedState()
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
@@ -63,6 +80,10 @@ namespace B1.Wpf.Controls
                                  ProcessControlState.Disconnected);
         }
 
+        /// <summary>
+        /// Changes state of buttons to display the given process control state
+        /// </summary>
+        /// <param name="processControlState">State of the process to display</param>
         void UpdateButtons(ProcessControlState processControlState)
         {
             if (processControlState == ProcessControlState.Paused)
@@ -81,6 +102,16 @@ namespace B1.Wpf.Controls
             }
         }
 
+        /// <summary>
+        /// Sets the context for which this control will be embedded
+        /// </summary>
+        /// <param name="parentControl">The interface instance from the parent</param>
+        /// <param name="parentContext">The context provided by the parent</param>
+        /// <param name="btnStartContent">Button text override string</param>
+        /// <param name="btnStopContent">Button text override string</param>
+        /// <param name="btnPauseContent">Button text override string</param>
+        /// <param name="btnResumeContent">Button text override string</param>
+        /// <param name="btnStatusContent">Button text override string</param>
         public void SetContext(IProcessControl parentControl
                 , object parentContext = null
                 , string btnStartContent = null
@@ -102,6 +133,7 @@ namespace B1.Wpf.Controls
             if (!string.IsNullOrEmpty(btnStatusContent))
                 btnStatus.Content = btnStatusContent;
         }
+
 
         void InitializeButtonState()
         {

@@ -61,6 +61,8 @@ namespace B1.DataAccess
         /// </summary>
         public const string TABLE_AppConfigSettings = "AppConfigSettings";
 
+        public const string DataAccessMgr = "DataAccessMgr";
+
         internal const string All_Constraints = "All_Constraints";
         internal const string All_Cons_Columns = "All_Cons_Columns";
         internal const string All_Ind_Columns = "All_Ind_Columns";

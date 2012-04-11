@@ -21,6 +21,10 @@ namespace B1.ILoggingManagement
         /// </summary>
         public const string TraceLevel = "TraceLevel";
 
+        /// <summary>
+        /// Returns the list of trace levels
+        /// </summary>
+        /// <returns>List of enumTraceLevel items</returns>
         public static List<enumTraceLevel> TraceLevels()
         {
             List<enumTraceLevel> traceLevels = new List<enumTraceLevel>();
@@ -34,6 +38,11 @@ namespace B1.ILoggingManagement
             return traceLevels;
         }
 
+        /// <summary>
+        /// Converts the given string version of trace level to the equivalent enumeration
+        /// </summary>
+        /// <param name="traceLevel">String version of trace level</param>
+        /// <returns>Enumeration type of trace level</returns>
         public static enumTraceLevel ToTraceLevel(string traceLevel)
         {
             if (traceLevel.ToLower() == enumTraceLevel.None.ToString().ToLower())

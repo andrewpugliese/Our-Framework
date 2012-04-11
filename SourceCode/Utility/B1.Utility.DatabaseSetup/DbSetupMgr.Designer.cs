@@ -1228,27 +1228,27 @@
             this.labelConfigChangeValue.AutoSize = true;
             this.labelConfigChangeValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelConfigChangeValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.labelConfigChangeValue.Location = new System.Drawing.Point(399, 114);
+            this.labelConfigChangeValue.Location = new System.Drawing.Point(17, 169);
             this.labelConfigChangeValue.Name = "labelConfigChangeValue";
-            this.labelConfigChangeValue.Size = new System.Drawing.Size(75, 13);
+            this.labelConfigChangeValue.Size = new System.Drawing.Size(169, 13);
             this.labelConfigChangeValue.TabIndex = 12;
-            this.labelConfigChangeValue.Text = "Trace Level";
+            this.labelConfigChangeValue.Text = "Recurring Callback Mgr Test";
             // 
             // btnWatch
             // 
             this.btnWatch.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnWatch.Location = new System.Drawing.Point(314, 109);
+            this.btnWatch.Location = new System.Drawing.Point(17, 199);
             this.btnWatch.Name = "btnWatch";
             this.btnWatch.Size = new System.Drawing.Size(75, 23);
             this.btnWatch.TabIndex = 11;
-            this.btnWatch.Text = "Watch";
+            this.btnWatch.Text = "Begin/Reset";
             this.btnWatch.UseVisualStyleBackColor = true;
             this.btnWatch.Click += new System.EventHandler(this.btnWatch_Click);
             // 
             // btnConfigTest
             // 
             this.btnConfigTest.ForeColor = System.Drawing.SystemColors.ControlText;
-            this.btnConfigTest.Location = new System.Drawing.Point(314, 54);
+            this.btnConfigTest.Location = new System.Drawing.Point(170, 199);
             this.btnConfigTest.Name = "btnConfigTest";
             this.btnConfigTest.Size = new System.Drawing.Size(75, 23);
             this.btnConfigTest.TabIndex = 10;

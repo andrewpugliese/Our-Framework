@@ -178,20 +178,25 @@ namespace B1.DataAccess
             // load the provider helper assembly for the give database type
             if (_database is Microsoft.Practices.EnterpriseLibrary.Data.Sql.SqlDatabase)
             {
-                _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(string.Format("{0}\\{1}.dll"
-                        , string.IsNullOrEmpty(connectionKey) || 
-                            dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath == null 
+                string providerDll = string.Format("{0}\\{1}.dll"
+                        , string.IsNullOrEmpty(connectionKey) ||
+                            dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyPath == null
                             ? Constants.HelperPathSqlServerDefault
                             : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath
                         , string.IsNullOrEmpty(connectionKey) ||
-                            dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName == null 
+                            dbProviderHelper.GetFactoryObject(connectionKey,true).AssemblyName == null
                             ? Constants.HelperAssemblySqlServerDefault
-                            : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName)
-                        , string.IsNullOrEmpty(connectionKey) ||
-                            dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass == null 
+                            : dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyName);
+
+                string className = string.IsNullOrEmpty(connectionKey) ||
+                            dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass == null
                             ? Constants.HelperClassSqlServerDefault
-                        : dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass
-                    , _database);
+                            : dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass;
+
+                _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(providerDll
+                        , className
+                        , _database);
+
                 _dbType = EnumDbType.SqlServer;
                 _dbProvider = EnumDbProvider.Microsoft;
             }
@@ -199,39 +204,48 @@ namespace B1.DataAccess
             {
                 if (_database.DbProviderFactory.ToString() == Constants.DbProviderFactoryOracle)
                 {
-                    _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(string.Format("{0}\\{1}.dll"
+                string providerDll = string.Format("{0}\\{1}.dll"
                             , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath == null 
+                                dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyPath == null 
                                 ? Constants.HelperPathOracleDefault
-                                : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath
+                                : dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyPath
                             , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName == null 
+                                dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyName == null 
                                 ? Constants.HelperAssemblyOracleDefault
-                                : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName)
-                            , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass == null 
+                                : dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyName);
+
+                    string className = string.IsNullOrEmpty(connectionKey) ||
+                                dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass == null 
                                 ? Constants.HelperClassOracleDefault
-                            : dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass
-                        , _database);
+                            : dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass;
+
+                    _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(providerDll
+                            , className
+                            , _database);
+
                     _dbType = EnumDbType.Oracle;
                     _dbProvider = EnumDbProvider.Oracle;
                 }
                 if (_database.DbProviderFactory.ToString() == Constants.DbProviderFactoryDB2)
                 {
-                    _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(string.Format("{0}\\{1}.dll"
-                            , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath == null 
-                                ? Constants.HelperPathDB2Default
-                                : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyPath
-                            , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName == null 
-                                ? Constants.HelperAssemblyDB2Default
-                                : dbProviderHelper.GetFactoryObject(connectionKey).AssemblyName)
-                        , string.IsNullOrEmpty(connectionKey) ||
-                                dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass == null 
+                    string providerDll = string.Format("{0}\\{1}.dll"
+                                , string.IsNullOrEmpty(connectionKey) ||
+                                    dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyPath == null
+                                    ? Constants.HelperPathDB2Default
+                                    : dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyPath
+                                , string.IsNullOrEmpty(connectionKey) ||
+                                    dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyName == null
+                                    ? Constants.HelperAssemblyDB2Default
+                                    : dbProviderHelper.GetFactoryObject(connectionKey, true).AssemblyName);
+
+                    string className = string.IsNullOrEmpty(connectionKey) ||
+                                dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass == null 
                                 ? Constants.HelperClassDB2Default
-                                : dbProviderHelper.GetFactoryObject(connectionKey).ObjectClass
-                        , _database);
+                                : dbProviderHelper.GetFactoryObject(connectionKey, true).ObjectClass;
+
+                    _dbProviderLib = ObjectFactory.Create<DataAccessProvider>(providerDll
+                            , className
+                            , _database);
 
                     _dbType = EnumDbType.Db2;
                     _dbProvider = EnumDbProvider.IBM;

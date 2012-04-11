@@ -326,6 +326,10 @@ namespace B1.SessionManagement
             uss.UserCode = Convert.ToInt32(userMaster.Rows[0][Constants.UserCode]);
             uss.PasswordHash = userMaster.Rows[0][Constants.UserPassword].ToString();
             uss.DefaultAccessGroupCode = Convert.ToInt32(userMaster.Rows[0][Constants.DefaultAccessGroupCode]);
+            uss.UserId = userId;
+            uss.SignonApp.AppCode = userEnv.AppCode;
+            uss.SignonApp.AppId = userEnv.AppId;
+            uss.SignonApp.AppVersion = userEnv.AppVersion;
             uss.SessionCode = AddSession(daMgr, userId, uss.UserCode, userEnv);
             UserSession sessionMgr = new UserSession(daMgr, uss);
             results.ResultMessage = "Welcome.";

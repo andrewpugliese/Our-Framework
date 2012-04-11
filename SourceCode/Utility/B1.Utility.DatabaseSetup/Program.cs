@@ -45,7 +45,11 @@ namespace B1.Utility.DatabaseSetup
             }
             finally
             {
-                MessageBox.Show(e.Message + e.StackTrace);
+                string errorFileName = "DbSetupMgr.Exception.txt";
+                string msg = "Will attempt to write exception details to file: " + errorFileName
+                    + Environment.NewLine + e.Message + Environment.NewLine + e.StackTrace + Environment.NewLine;
+                MessageBox.Show(msg, "Fatal Error - Look for file: " + errorFileName);
+                FileManagement.FileMgr.WriteTextToFile(errorFileName, msg, false, true);
             }
         }
     }

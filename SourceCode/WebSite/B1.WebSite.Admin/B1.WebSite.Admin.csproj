@@ -14,6 +14,7 @@
     <AssemblyName>B1.WebSite.Admin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
+    <UseIISExpress>false</UseIISExpress>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,6 +59,14 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Models\HtmlHelperSiteMenu.cs" />
+    <Compile Include="Models\ISiteLink.cs" />
+    <Compile Include="Models\SiteLinkListHelper.cs" />
+    <Compile Include="Models\SiteMenuItem.cs" />
+    <Compile Include="Models\SiteMenuManager.cs" />
+    <Compile Include="Views\Shared\Constants.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\GridController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -72,8 +81,11 @@
   <ItemGroup>
     <Content Include="Global.asax" />
     <Content Include="Scripts\B1.js" />
+    <Content Include="Scripts\ddsmoothmenu.js" />
     <Content Include="Views\ViewUserControl1.ascx" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
@@ -116,14 +128,13 @@
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Account\ChangePassword.cshtml" />
     <Content Include="Views\Account\ChangePasswordSuccess.cshtml" />
-    <Content Include="Views\Account\LogOn.cshtml" />
-    <Content Include="Views\Account\Register.cshtml" />
+    <Content Include="Views\Account\SignOn.cshtml" />
+    <Content Include="Views\Account\SignUp.cshtml" />
     <Content Include="Views\Home\About.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Shared\_LogOnPartial.cshtml" />
+    <Content Include="Views\Shared\_SignOnPartial.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -132,6 +143,10 @@
     <Content Include="Views\Grid\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Cryptography\B1.Cryptography\B1.Cryptography.csproj">
+      <Project>{0B6CCB9E-7DC2-48DF-BCBD-C700681548D9}</Project>
+      <Name>B1.Cryptography</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\DataAccess\B1.DataAccess.SqlServer\B1.DataAccess.SqlServer.csproj">
       <Project>{169CABA1-C9B6-49D4-A717-6C65E8633AC3}</Project>
       <Name>B1.DataAccess.SqlServer</Name>
@@ -163,13 +178,28 @@
     <Content Include="Views\Grid\_Users.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Grid\_UserEdit.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Views\Grid\_TestSequences.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Grid\_PagingMgrView.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Admin\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\Error.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Shared\Index.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Home\AccessDenied.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\Admin\_UserSessions.cshtml" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" />

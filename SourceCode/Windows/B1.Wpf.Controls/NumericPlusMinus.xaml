@@ -6,7 +6,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="90" d:DesignWidth="120" Name="numericPlusMinus">
     <Grid Height="auto" Width="auto">
-        <Button Content="+" Height="auto" HorizontalAlignment="Center" Margin="15,0,0,0" Name="btnAdd" VerticalAlignment="Bottom" Width="15" Click="btnAdd_Click" />
+        <Button Content="+" Height="auto" HorizontalAlignment="Center" Margin="15,0,0,0" Name="btnAdd" VerticalAlignment="Bottom" Width="15" Click="btnPlus_Click" />
         <Button Content="-" Height="auto" HorizontalAlignment="Center" Margin="-15,0,0,0" Name="btnMinus" VerticalAlignment="Bottom" Width="15" Click="btnMinus_Click" />
         <TextBox Height="auto" HorizontalAlignment="Stretch" Margin="0,0,0,0" Name="tbNumber" VerticalAlignment="Center" Width="auto" TextAlignment="Right" />
         <GroupBox Header="numericPlusMinus" HorizontalAlignment="Stretch" Name="gbUpDown" VerticalAlignment="Stretch" Width="auto" Height="auto"/>

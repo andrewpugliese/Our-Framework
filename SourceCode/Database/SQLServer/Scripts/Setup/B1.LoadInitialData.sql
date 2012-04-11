@@ -1,26 +1,6 @@
 -- Load database initial data
 --
 
--- Setup the application configuration parameters
-insert into B1.AppConfigParameters (ParameterName, ParameterValue)
-values ('QID', 'E1850QUEUE')
-
--- Setup the application configuration settings
-insert into B1.AppConfigSettings (ConfigSetName, ConfigKey, ConfigValue, ConfigDescription)
-values ('ALL', 'ChromeQueue', '<<QID>>/Chrome', 'Chrome queue')
-
-insert into B1.AppConfigSettings (ConfigSetName, ConfigKey, ConfigValue, ConfigDescription)
-values ('ALL', 'ExperianTimeout', '300', 'Experian server timeout')
-
-insert into B1.AppConfigSettings (ConfigSetName, ConfigKey, ConfigValue, ConfigDescription)
-values ('eContracting', 'ExperianTimeout', '200', 'Experian server timeout')
-
-insert into B1.AppConfigSettings (ConfigSetName, ConfigKey, ConfigValue, ConfigDescription)
-values ('eContracting', 'CreditBureaus', 'TransUnion', 'TransUnion is supported')
-
-insert into B1.AppConfigSettings (ConfigSetName, ConfigKey, ConfigValue, ConfigDescription)
-values ('eContracting', 'CreditBureaus', 'Experian', 'Experian is supported')
-
 -- Add an entry for generating sequence ids for AppSequenceId which
 -- will be used for demo/testing utility
 insert into B1.UniqueIds (UniqueIdKey, MaxIdValue, RolloverIdValue)
@@ -639,6 +619,36 @@ VALUES
 @guests
 , @UIControlCode
 , 0
+)
+
+
+EXEC B1.usp_UniqueIdsGetNextBlock 'UIControlCode', 1, @UIControlCode out
+
+INSERT INTO B1.UIControls
+(
+UIControlCode
+, UIControlURI
+, Description
+)
+VALUES
+(
+@UIControlCode
+, 'B1.WebSite.Admin.Menu.Administration'
+, 'Administration Menu Link'
+)
+
+
+INSERT INTO B1.AccessControlGroupRules
+(
+AccessControlGroupCode
+, UIControlCode
+, AccessDenied
+)
+VALUES
+(
+@guests
+, @UIControlCode
+, 1
 )
 
 GO

@@ -86,10 +86,15 @@ namespace B1.Configuration
         /// <summary>
         /// Returns the configuration section
         /// </summary>
-        /// <returns></returns>
-        public static ObjectFactoryConfiguration GetSection()
+        /// <param name="isRequired">Indicates whether the given section is required</param>
+        /// <exception cref="ConfigValueNotFoundException">Thrown when config section not found and is required.</exception>
+        /// <returns>ObjectFactoryConfiguration object</returns>
+        public static ObjectFactoryConfiguration GetSection(bool isRequired = true)
         {
-            return (ObjectFactoryConfiguration)ConfigurationManager.GetSection(ConfigSectionName);
+            ObjectFactoryConfiguration ofc = (ObjectFactoryConfiguration)ConfigurationManager.GetSection(ConfigSectionName);
+            if (isRequired && ofc.ObjectFactories.Count == 0)
+                throw new ConfigValueNotFoundException(ConfigSectionName);
+            return ofc;
         }
 
         /// <summary>
@@ -106,11 +111,16 @@ namespace B1.Configuration
         /// Returns the element for the given object key
         /// </summary>
         /// <param name="objectKey">Identifies the key with the collection</param>
-        /// <returns></returns>
-        public ObjectFactoryElement GetFactoryObject(string objectKey)
+        /// <param name="isRequired">Indicates whether the given section is required</param>
+        /// <exception cref="ConfigValueNotFoundException">Thrown when config section not found and is required.</exception>
+        /// <returns>ObjectFactoryElement object</returns>
+        public ObjectFactoryElement GetFactoryObject(string objectKey, bool isRequired = true)
         {
-            return ObjectFactories.Cast<ObjectFactoryElement>()
+            ObjectFactoryElement ofe = ObjectFactories.Cast<ObjectFactoryElement>()
                 .FirstOrDefault(attribute => attribute.ObjectKey == objectKey);
+            if (isRequired && ofe == null)
+                throw new ConfigValueNotFoundException(string.Format("Key: {0} not found in ObjectFactories section", objectKey));
+            return ofe;
         }
 
     }

@@ -714,3 +714,37 @@ o = o.offsetParent;
 return totalOffset;
 }
 */
+
+(function($) {
+    $.fn.setUpContextMenu = function() {
+        $(this).dialog({
+            autoOpen: false,
+            modal: true,
+            resizable: false,
+            width: 'auto',
+            height: 'auto',
+            minHeight: 'auto',
+            minWidth: 'auto'
+        });
+ 
+        return $(this);
+    };
+ 
+    $.fn.openContextMenu = function(jsEvent) {
+        var menu = $(this);
+        menu.css('padding', 0);
+ 
+        menu.dialog('option', 'position', [jsEvent.clientX, jsEvent.clientY]);
+        menu.unbind('dialogopen');
+        menu.bind('dialogopen', function(event, ui) {
+            $('.ui-dialog-titlebar').hide();
+            $('.ui-widget-overlay').unbind('click');
+            $('.ui-widget-overlay').click(function() {
+                menu.dialog('close');
+            });
+        });
+        menu.dialog('open');
+ 
+        return menu;
+    };
+})(jQuery);

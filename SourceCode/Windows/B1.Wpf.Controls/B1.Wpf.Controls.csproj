@@ -55,7 +55,6 @@
     </Compile>
     <Compile Include="INumericPlusMinus.cs" />
     <Compile Include="IPagingControl.cs" />
-    <Compile Include="IPagingTableControl.cs" />
     <Compile Include="NumericPlusMinus.xaml.cs">
       <DependentUpon>NumericPlusMinus.xaml</DependentUpon>
     </Compile>
@@ -108,6 +107,10 @@
     <ProjectReference Include="..\..\DataAccess\B1.DataAccess\B1.DataAccess.csproj">
       <Project>{DAA8DEAF-7EB8-4E57-92FA-31248AE360E9}</Project>
       <Name>B1.DataAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LoggingManagement\B1.ILoggingManagement\B1.ILoggingManagement.csproj">
+      <Project>{80CEC7BC-FA4B-4B27-8DEB-3945E15418BE}</Project>
+      <Name>B1.ILoggingManagement</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

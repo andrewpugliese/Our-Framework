@@ -29,7 +29,8 @@ namespace B1.WebSite.Admin.Controllers
             {
                 // Unknown entity - return error view
             }
-
+            if (entityType == WebEntity.User)
+                @ViewBag.Status = "Accesd Denied.";
             return View();
         }
 

@@ -122,12 +122,12 @@ namespace B1.TaskProcessing
         /// <param name="maxTasksHdlr">Delegate handler for the change max tasks event</param>
         /// <param name="connectionKey">Connection key string</param>
         /// <param name="loggingKey">Logging key string</param>
-        /// <param name="configId">Configuration Id</param>
-        /// <param name="engineId">Engine Id</param>
-        /// <param name="taskAssemblyPath"></param>
-        /// <param name="hostEndpointAddress"></param>
-        /// <param name="maxTasks"></param>
-        /// <param name="traceLevel"></param>
+        /// <param name="configId">Configuration Identifier</param>
+        /// <param name="engineId">Engine Identifier </param>
+        /// <param name="taskAssemblyPath">Path to where task implementation assemblies can be found</param>
+        /// <param name="hostEndpointAddress">URL where WCF host TPE can be found</param>
+        /// <param name="maxTasks">Maximum number of tasks that can be run in parallel</param>
+        /// <param name="traceLevel">Trace level setting to allow messages to be viewed</param>
         public void Display(TraceLevelChangeHandler traceLevelHdlr
             , MaxTasksChangeHandler maxTasksHdlr
             , string connectionKey
@@ -153,21 +153,34 @@ namespace B1.TaskProcessing
             SetDisplayObjects(true);
         }
 
+        /// <summary>
+        /// Enables/Disables the appropriate buttons to show a process is in a paused state.
+        /// </summary>
         public void DisplayPausedState()
         {
             tpeControl.DisplayPausedState();
         }
 
+        /// <summary>
+        /// Enables/Disables the appropriate buttons to show a process is in resumed or running state.
+        /// </summary>
         public void DisplayResumedState()
         {
             tpeControl.DisplayResumedState();
         }
 
+        /// <summary>
+        /// Enables/Disables the appropriate buttons to show a process is in a disconnected state.
+        /// </summary>
         public void DisplayDisconnectedState()
         {
             tpeControl.DisplayDisconnectedState();
         }
 
+        /// <summary>
+        /// Dispatches a request to set the TraceLevel combo box to show the given trace level as selected
+        /// </summary>
+        /// <param name="traceLevel">Current trace level enumeration</param>
         public void DisplayTraceLevelState(ILoggingManagement.enumTraceLevel traceLevel)
         {
             lock (_displayTraceLevelChangeMonitor)
@@ -179,6 +192,10 @@ namespace B1.TaskProcessing
                                     traceLevel);
         }
 
+        /// <summary>
+        /// Dispatches a request to sets the max tasks control to show the given value.
+        /// </summary>
+        /// <param name="maxTasks">Current setting for maximum number of tasks.</param>
         public void DisplayMaxTasks(int maxTasks)
         {
             Dispatcher.Invoke(System.Windows.Threading.DispatcherPriority.Send
@@ -186,46 +203,76 @@ namespace B1.TaskProcessing
                                     maxTasks);
         }
 
+        /// <summary>
+        /// Changes the max tasks control to show the given value.
+        /// </summary>
+        /// <param name="maxTasks">Current setting for maximum number of tasks.</param>
         void SetMaxTasks(int maxTasks)
         {
             npmMaxTasks.Value = maxTasks;
         }
 
+        /// <summary>
+        /// Changes the trace level combo box to display the given tracel level as selected item
+        /// </summary>
+        /// <param name="traceLevel">Current trace level enumeration</param>
         void SetTraceLevel(ILoggingManagement.enumTraceLevel traceLevel)
         {
             cmbTraceLevel.SelectedItem = traceLevel;
         }
 
+
+        /// <summary>
+        /// Returns the connection key value
+        /// </summary>
         public string ConnectionKey
         {
             get { return tbConnKey.Text; }
         }
 
+        /// <summary>
+        /// Returns the logging key value
+        /// </summary>
         public string LoggingKey
         {
             get { return tbLoggingKey.Text; }
         }
 
+        /// <summary>
+        /// Returns the engine id  value
+        /// </summary>
         public string EngineId
         {
             get { return tbEngineId.Text; }
         }
 
+        /// <summary>
+        /// Returns the confirguration id value
+        /// </summary>
         public string ConfigId
         {
             get { return tbConfigId.Text; }
         }
 
+        /// <summary>
+        /// Retuns the task assembly path value
+        /// </summary>
         public string TaskAssemblyPath
         {
             get { return tbTaskAssemblyPath.Text; }
         }
 
+        /// <summary>
+        /// Returns the host endpoint address (WCF host TPE) value
+        /// </summary>
         public string HostEndpointAddress
         {
             get { return tbHostEndpointAddress.Text; }
         }
 
+        /// <summary>
+        /// Returns current status value or dispatches request to set the status value
+        /// </summary>
         public string Status
         {
             get { return tbTPEStatus.Text; }
@@ -237,11 +284,20 @@ namespace B1.TaskProcessing
             }
         }
 
+        /// <summary>
+        /// Sets the status control to the given status string
+        /// </summary>
+        /// <param name="status">Status string to display</param>
         void SetStatus(string status)
         {
             tbTPEStatus.Text = status;
         }
 
+        /// <summary>
+        /// Handles trace level combo box selection chenaged event
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">Event arguments</param>
         private void cmbTraceLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_displayOnlyTraceLevelChange)

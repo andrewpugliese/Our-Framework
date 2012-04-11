@@ -72,7 +72,7 @@ namespace B1.SessionManagement
     {
         DataAccessMgr _daMgr = null;
         UserSignonSessionStructure _userSignon;
-        static CacheMgr<AccessControlGroupStructure> _accessControlCache = new CacheMgr<AccessControlGroupStructure>();
+        CacheMgr<AccessControlGroupStructure> _accessControlCache = new CacheMgr<AccessControlGroupStructure>();
         AccessControlGroupStructure _accessControlData;
 
         /// <summary>

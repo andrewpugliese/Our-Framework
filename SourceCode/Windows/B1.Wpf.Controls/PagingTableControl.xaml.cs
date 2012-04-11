@@ -19,22 +19,30 @@ namespace B1.Wpf.Controls
 {
     /// <summary>
     /// Interaction logic for PagingTableControl.xaml
+    /// <para>Provides a WPF control that allows user to page through the result set of a PagingMgr object
+    /// into a WPF grid object.</para>
     /// </summary>
     public partial class PagingTableControl : UserControl, IPagingControl
     {
         public delegate void SelectionChangedDelegate(PagingMgr source, DataRow currentRow);
+        static string _ErrMsgInvalidPageSize = "Invalid Page Size. Enter a number between 1 and " + Int16.MaxValue.ToString();
         PagingMgr _pagingMgr = null;
         string _title = null;
         short _pageSize = 1;
-        static string _ErrMsgInvalidPageSize = "Invalid Page Size. Enter a number between 1 and " + Int16.MaxValue.ToString();
         SelectionChangedDelegate _selectionChangedHandler = null;
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public PagingTableControl()
         {
             InitializeComponent();
             lblPagingGridMsg.Content = null;
         }
 
+        /// <summary>
+        /// Get/Set the source PagingMgr for the control
+        /// </summary>
         public PagingMgr Source
         {
             set
@@ -46,6 +54,9 @@ namespace B1.Wpf.Controls
             get { return _pagingMgr; }
         }
 
+        /// <summary>
+        /// Set the grid's title
+        /// </summary>
         public string Title
         {
             set
@@ -55,6 +66,9 @@ namespace B1.Wpf.Controls
             }
         }
 
+        /// <summary>
+        /// Set the selection changed delegate handler
+        /// </summary>
         public SelectionChangedDelegate SelectionChangedHandler
         {
             set
@@ -64,31 +78,55 @@ namespace B1.Wpf.Controls
 
         }
 
+        /// <summary>
+        /// Sets the grid to contain the first page of data
+        /// </summary>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         public bool First()
         {
             return SetPage(_pagingMgr, PagingMgr.PagingDbCmdEnum.First, _pageSize);
         }
 
+        /// <summary>
+        /// Sets the grid to contain the last page of data
+        /// </summary>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         public bool Last()
         {
             return SetPage(_pagingMgr, PagingMgr.PagingDbCmdEnum.Last, _pageSize);
         }
 
+        /// <summary>
+        /// Sets the grid to contain the previous page of data
+        /// </summary>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         public bool Previous()
         {
             return SetPage(_pagingMgr, PagingMgr.PagingDbCmdEnum.Previous, _pageSize);
         }
 
+        /// <summary>
+        /// Sets the grid to contain the next page of data
+        /// </summary>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         public bool Next()
         {
             return SetPage(_pagingMgr, PagingMgr.PagingDbCmdEnum.Next, _pageSize);
         }
 
+        /// <summary>
+        /// Sets the grid to contain the page of data of given direction for the given page size
+        /// using the given pagingMgr.
+        /// </summary>
+        /// <param name="pagingMgr">PagingMgr object instance</param>
+        /// <param name="pageDirection">Paging enumeration: First, Last, Next, Previou</param>
+        /// <param name="pageSize">Number of records to be loaded in a page</param>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         private bool SetPage(PagingMgr pagingMgr, PagingMgr.PagingDbCmdEnum? pageDirection, short pageSize)
         {
-#warning "Replace with Exception Event"
             if (pagingMgr == null)
-                throw new ArgumentNullException();
+                throw new ILoggingManagement.ExceptionEvent(ILoggingManagement.enumExceptionEventCodes.NullOrEmptyParameter
+                        , "pagingMgr cannot be null");
 
             DataTable page = pageDirection.HasValue ? pagingMgr.GetPage(pageDirection.Value, pageSize)
                 : pagingMgr.RefreshPage(pageSize);
@@ -102,6 +140,10 @@ namespace B1.Wpf.Controls
             return false;
         }
 
+        /// <summary>
+        /// Requeries the database and loads the grid with an updated page of data
+        /// </summary>
+        /// <returns>Bool indicator of whether there was data loaded into grid</returns>
         public bool Refresh()
         {
             return SetPage(_pagingMgr, null, _pagingMgr.PageSize);
