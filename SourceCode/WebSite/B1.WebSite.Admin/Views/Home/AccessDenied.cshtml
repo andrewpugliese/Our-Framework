@@ -1,17 +1,18 @@
 ﻿@model System.Web.Mvc.HandleErrorInfo
+@using B1.WebSite.Admin;           
 
 @{
     ViewBag.Title = "Access Denied";
-    if (Request.QueryString["UrlReferrer"] != null)
+    if (Request.QueryString[Constants.UrlReferrer] != null)
     {
         System.Web.Routing.RouteValueDictionary dictionary = new System.Web.Routing.RouteValueDictionary();
-        dictionary.Add("UrlReferrer", Request.QueryString["UrlReferrer"]);
+        dictionary.Add(Constants.UrlReferrer, Request.QueryString[Constants.UrlReferrer]);
         ViewBag.Dictionary = dictionary;
     }
 }
 
 <h2>@ViewBag.Title</h2>
-<h2>@Request.QueryString["Message"]</h2>
+<h2>@Request.QueryString[Constants.Message]</h2>
 <h2>
     Please ask your system administrator to grant you the privilege.
 </h2>
@@ -19,6 +20,8 @@
  @if(ViewBag.Dictionary != null)
  { 
    <text>
-   [@Html.ActionLink("Go Back", "GoBack", "Admin", (System.Web.Routing.RouteValueDictionary)@ViewBag.Dictionary, null) ]
+   [@Html.ActionLink("Go Back", Constants.GoBack
+    , Constants.Admin
+    , (System.Web.Routing.RouteValueDictionary)@ViewBag.Dictionary, null) ]
    </text>
  }

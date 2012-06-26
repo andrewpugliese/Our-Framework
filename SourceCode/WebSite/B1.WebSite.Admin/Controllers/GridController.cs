@@ -90,7 +90,7 @@ namespace B1.WebSite.Admin.Controllers
                         where a.UserCode == userCode
                         select new { a.UserCode, a.UserId, a.FirstName };
             DbCommand dbCmd = daMgr.BuildSelectDbCommand(query, null);
-            return PartialView("_UserEdit", daMgr.ExecuteCollection<UserMaster>(dbCmd, null).First());
+            return PartialView(Constants._Page_UserEdit, daMgr.ExecuteCollection<UserMaster>(dbCmd, null).First());
         }
 
         public ActionResult TestSequences2()
@@ -101,7 +101,7 @@ namespace B1.WebSite.Admin.Controllers
                         orderby new { a.AppSequenceName, a.AppSequenceId }
                         select new { a.AppSequenceId, a.AppSequenceName, a.DbSequenceId };
             PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 10);
-            return PartialView("_PagingMgrView", testSequenceMgr);
+            return PartialView(Constants._Page_PagingMgrView, testSequenceMgr);
         }
 
         public ActionResult Users2()
@@ -109,9 +109,9 @@ namespace B1.WebSite.Admin.Controllers
             DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
             B1SampleEntities entities = new B1SampleEntities();
             var query = from a in entities.UserMasters
-                        select new { a.UserCode, a.UserId, a.FirstName };
+                        select new { a.UserCode, a.UserId, a.FirstName, "Edit" };
             PagingMgr testSequenceMgr = new PagingMgr(daMgr, query, DataAccess.Constants.PageSize, 5);
-            return PartialView("_PagingMgrView", testSequenceMgr);
+            return PartialView(Constants._Page_PagingMgrView, testSequenceMgr);
         }
 
     }

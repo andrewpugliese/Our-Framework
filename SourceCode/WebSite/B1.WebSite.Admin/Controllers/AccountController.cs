@@ -7,10 +7,13 @@ using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.Security;
-using B1.WebSite.Admin.Models;
+using System.Data.Common;
 
+using B1.WebSite.Admin.Models;
 using B1.DataAccess;
 using B1.SessionManagement;
+using B1.DataManagement;
+using B1.Core;
 
 namespace B1.WebSite.Admin.Controllers
 {
@@ -34,8 +37,6 @@ namespace B1.WebSite.Admin.Controllers
 
         public ActionResult SignOn()
         {
-//            Uri referrer = this.Request.UrlReferrer;
-  //          ViewBag.UrlReferrer = referrer;
             return View();
         }
 
@@ -61,25 +62,27 @@ namespace B1.WebSite.Admin.Controllers
                 {
                     FormsService.SignIn(model.UserName, model.RememberMe);
                     Session[SessionManagement.Constants.UserSessionMgr] = results.UserSessionMgr;
-                    string[] urlParts = returnUrl.Split(new string[] { Constants.UIControlCodeTag }, StringSplitOptions.None);
-                    int controlCode = urlParts.Length > 1 ? Convert.ToInt32(urlParts[1]) : 0;
-                    if (!results.UserSessionMgr.IsAccessAllowed(controlCode) || true)
+                    if (!string.IsNullOrEmpty(returnUrl))
                     {
-                        string msg = string.Format("Sorry, you are not authorized to access this page: {0}.  Please speak to your administrator."
-                                , urlParts[0]);
-                        System.Web.Routing.RouteValueDictionary dictionary = new System.Web.Routing.RouteValueDictionary();
-                        dictionary.Add("Message", msg);
-                        dictionary.Add("UrlReferrer", model.GoBackUri);
-                        return RedirectToAction("accessdenied", "home", dictionary);
+                        string[] urlParts = returnUrl.Split(new string[] { Constants.UIControlCodeTag }, StringSplitOptions.None);
+                        int controlCode = urlParts.Length > 1 ? Convert.ToInt32(urlParts[1]) : 0;
+                        if (!results.UserSessionMgr.IsAccessAllowed(controlCode) || true)
+                        {
+                            string msg = string.Format("Sorry, you are not authorized to access this page: {0}."
+                                    , urlParts[0]);
+                            System.Web.Routing.RouteValueDictionary dictionary = new System.Web.Routing.RouteValueDictionary();
+                            dictionary.Add(Constants.Message, msg);
+                            dictionary.Add(Constants.UrlReferrer, model.GoBackUri);
+                            return RedirectToAction(Constants.AccessDenied, Constants.Home, dictionary);
+                        }
                     }
-
                     if (Url.IsLocalUrl(returnUrl))
                     {
                         return Redirect(returnUrl);
                     }
                     else
                     {
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction(Constants.Index, Constants.Home);
                     }
                 }
                 else
@@ -108,7 +111,7 @@ namespace B1.WebSite.Admin.Controllers
             }
             FormsService.SignOut();
             Session.Abandon();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction(Constants.Index, Constants.Home);
         }
 
         // **************************************
@@ -132,7 +135,7 @@ namespace B1.WebSite.Admin.Controllers
                 if (createStatus == MembershipCreateStatus.Success)
                 {
                     FormsService.SignIn(model.UserName, false /* createPersistentCookie */);
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction(Constants.Index, Constants.Home);
                 }
                 else
                 {
@@ -145,6 +148,88 @@ namespace B1.WebSite.Admin.Controllers
             return View(model);
         }
 
+
+        // **************************************
+        // URL: /Account/EditProfile
+        // **************************************
+ 
+        [Authorize]
+        public ActionResult EditProfile()
+        {
+            UserSession userSessionMgr = (UserSession)Session[SessionManagement.Constants.UserSessionMgr];
+            if (userSessionMgr == null) // we were not signed on yet
+            {
+                return RedirectToAction(Constants.SignOn, Constants.Account, Constants.Admin);
+            }
+            if (userSessionMgr.IsAccessAllowed(Constants.UIControlCode_AdminEditProfile_Code))
+            {
+                DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+                DbCommand dbCmd = UserMaster.GetUserMasterCmd(daMgr);
+                dbCmd.Parameters[daMgr.BuildParamName(DataManagement.Constants.UserId)].Value = this.HttpContext.User.Identity.Name;
+                EditProfileModel profileData = daMgr.ExecuteCollection<EditProfileModel>(dbCmd, null).First();
+                return View(Constants._Page_EditProfile, profileData);
+            }
+            ViewBag.Status = "Insufficient privileges for the action." + Request.Url;
+            string referUrl = Request.QueryString[Constants.UrlReferrer];
+            System.Web.Routing.RouteValueDictionary dictionary = new System.Web.Routing.RouteValueDictionary();
+            dictionary.Add(Constants.UrlReferrer, referUrl);
+            return RedirectToAction(Constants.AccessDenied, Constants.Home, dictionary);
+        }
+
+        [HttpPost]
+        public ActionResult EditProfile(EditProfileModel editProfile)
+        {
+            if (ModelState.IsValid)
+            {
+                if (!string.IsNullOrEmpty(editProfile.ChangedFields))
+                {
+                    DataAccessMgr daMgr = Global.GetDataAccessMgr(this.HttpContext);
+
+                    DbTableDmlMgr dmlUpdate = daMgr.DbCatalogGetTableDmlMgr(DataAccess.Constants.SCHEMA_CORE
+                            , DataManagement.Constants.Table_UserMaster);
+                    foreach (string column in dmlUpdate.MainTable.Columns.Keys)
+                        if (editProfile.ChangedFields.Contains(column))
+                            dmlUpdate.AddColumn(column);
+
+                    dmlUpdate.AddColumn(SessionManagement.Constants.LastModifiedUserCode);
+                    dmlUpdate.AddColumn(SessionManagement.Constants.LastModifiedDateTime
+                        , Core.EnumDateTimeLocale.Default);
+
+                    dmlUpdate.SetWhereCondition(j => j.Column(DataManagement.Constants.UserId)
+                        == j.Parameter(dmlUpdate.MainTable.SchemaName
+                            , dmlUpdate.MainTable.TableName
+                            , DataManagement.Constants.UserId
+                            , daMgr.BuildParamName(DataManagement.Constants.UserId)));
+
+                    DbCommand cmdUpdate = daMgr.BuildUpdateDbCommand(dmlUpdate);
+                    UserSession userSessionMgr = (UserSession)Session[SessionManagement.Constants.UserSessionMgr];
+                    cmdUpdate.Parameters[daMgr.BuildParamName(DataManagement.Constants.UserId)].Value = userSessionMgr.UserId;
+                    cmdUpdate.Parameters[daMgr.BuildParamName(SessionManagement.Constants.LastModifiedUserCode)].Value = userSessionMgr.UserCode;
+
+                    foreach (DbParameter param in cmdUpdate.Parameters)
+                        if (param.Value == DBNull.Value)
+                            param.Value = GetValueFromModelState(ModelState, param.ParameterName.Substring(1));
+                    daMgr.ExecuteNonQuery(cmdUpdate, null, null);
+                }
+                else ViewBag.NoDataChanged = true;
+            }
+            return View(editProfile);
+        }
+
+        private object GetValueFromModelState(ModelStateDictionary modelStateDictionary, string column)
+        {
+            if (modelStateDictionary.ContainsKey(column))
+                return modelStateDictionary[column].Value.AttemptedValue;
+            else return DBNull.Value;
+        }
+
+        private object GetValueFromModel(EditProfileModel editProfile, string column)
+        {
+            string columnLower = column.ToLower();
+            if (columnLower == DataManagement.Constants.Email.ToLower())
+                return editProfile.EmailAddress;
+            throw new ArgumentOutOfRangeException(column, "The given column was not found in the EditProfile data model");
+        }
         // **************************************
         // URL: /Account/ChangePassword
         // **************************************
@@ -164,7 +249,7 @@ namespace B1.WebSite.Admin.Controllers
             {
                 if (MembershipService.ChangePassword(User.Identity.Name, model.OldPassword, model.NewPassword))
                 {
-                    return RedirectToAction("ChangePasswordSuccess");
+                    return RedirectToAction(Constants._Page_ChangePasswordSuccess);
                 }
                 else
                 {

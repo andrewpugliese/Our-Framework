@@ -392,6 +392,13 @@ namespace B1.DataAccess
                    , params object[] selectColumns)
         {
             _daMgr = daMgr;
+            if (selectColumns == null || selectColumns.Count() == 0)
+            {
+                selectColumns = new object[_daMgr.DbCatalogGetTable(schemaName, tableName).Columns.Count()];
+                int i = 0;
+                foreach (string column in _daMgr.DbCatalogGetTable(schemaName, tableName).Columns.Keys)
+                    selectColumns[i++] = column;
+            }
             AddJoin(schemaName, tableName, alias, DbTableJoinType.None, null, selectColumns);
         }
 

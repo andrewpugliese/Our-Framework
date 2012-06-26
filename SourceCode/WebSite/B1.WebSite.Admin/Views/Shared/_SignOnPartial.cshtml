@@ -1,15 +1,28 @@
-﻿@if(Request.IsAuthenticated) 
+﻿@using B1.WebSite.Admin;
+
+@if (Request.IsAuthenticated && Session[B1.SessionManagement.Constants.UserSessionMgr] != null) 
 {
-    if (Session[B1.SessionManagement.Constants.UserSessionMgr] != null)
+    if (ViewBag.Partial == Constants.SignOn)
     {
-        <text>Welcome <b>@Context.User.Identity.Name</b>!   
-        [ @Html.ActionLink("Sign Off", "SignOff", "Account") ]</text>
+        @Html.ActionLink("Sign Off", Constants.SignOff, Constants.Account)
     }
-    else {
-            FormsAuthentication.SignOut();
-            @:[@Html.ActionLink("Sign On", "SignOn", "Account") ]
-         }
+    else
+    {
+         @Html.ActionLink(Context.User.Identity.Name + " Profile", Constants.EditProfile, Constants.Account)
+    }
 }
-else {
-    @:[ @Html.ActionLink("Sign On", "SignOn", "Account") ]
+else
+{
+    if (Request.IsAuthenticated)
+    {
+        FormsAuthentication.SignOut();
+    }
+    if (ViewBag.Partial == Constants.SignOn)
+    {
+        @Html.ActionLink("Sign On", Constants.SignOn, Constants.Account)
+    }
+    else
+    {
+         @Html.ActionLink("Sign Up", Constants.SignUp, Constants.Account)
+    }
 }

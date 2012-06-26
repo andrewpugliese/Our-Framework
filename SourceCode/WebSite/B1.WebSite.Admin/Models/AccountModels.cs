@@ -58,6 +58,23 @@ namespace B1.WebSite.Admin.Models
         public string UserName { get; set; }
 
         [Required]
+        [Display(Name = "First name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last name")]
+        public string LastName { get; set; }
+
+        [Display(Name = "Middle name")]
+        public string MiddleName { get; set; }
+
+        [Display(Name = "Name prefix")]
+        public string NamePrefix { get; set; }
+
+        [Display(Name = "Name suffix")]
+        public string NameSuffix { get; set; }
+
+        [Required]
         [DataType(DataType.EmailAddress)]
         [Display(Name = "Email address")]
         public string Email { get; set; }
@@ -72,6 +89,37 @@ namespace B1.WebSite.Admin.Models
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
+    }
+
+    [Serializable]
+    public class EditProfileModel
+    {
+        [Required]
+        [Display(Name = "User Identifier")]
+        public string UserId { get; set; }
+
+        [Required]
+        [Display(Name = "First name")]
+        public string FirstName { get; set; }
+
+        [Required]
+        [Display(Name = "Last name")]
+        public string LastName { get; set; }
+
+        [Display(Name = "Middle name")]
+        public string MiddleName { get; set; }
+
+        [Display(Name = "Name prefix")]
+        public string NamePrefix { get; set; }
+
+        [Display(Name = "Name suffix")]
+        public string NameSuffix { get; set; }
+
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "Email address")]
+        public string EmailAddress { get; set; }
+
+        public string ChangedFields { get; set; }
     }
     #endregion
 
@@ -129,6 +177,13 @@ namespace B1.WebSite.Admin.Models
             MembershipCreateStatus status;
             _provider.CreateUser(userName, password, email, null, null, true, null, out status);
             return status;
+        }
+
+        public MembershipUser GetUser(string userName, bool isUserOnline)
+        {
+            if (String.IsNullOrEmpty(userName)) throw new ArgumentException("Value cannot be null or empty.", "userName");
+
+            return _provider.GetUser(userName, isUserOnline);
         }
 
         public bool ChangePassword(string userName, string oldPassword, string newPassword)

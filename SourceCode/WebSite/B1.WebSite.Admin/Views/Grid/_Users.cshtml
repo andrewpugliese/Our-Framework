@@ -35,8 +35,23 @@
 </table>
 
 
-<script language="javascript">
-    var _userTable = new B1List("userTable", { showCheckBox: true, editable: true, onselected: userSelected });
+<script type="text/javascript">
+ // Basic initialisation
+    $(document).ready(function () {
+        var aaData = [];
+        for (var i = 1; i < 50000; i++) {
+            aaData.push([i, i, i, i, i]);
+        }
+
+        var oTable = $('#example').dataTable({
+            "sScrollY": "200px",
+            "aaData": aaData,
+            "sDom": "frtiS",
+            "bDeferRender": true
+        });
+    });
+
+   var _userTable = new B1List("userTable", { showCheckBox: true, editable: true, onselected: userSelected });
 
     function userSelected() {
         // Load the user edit screen - display with overlay effect

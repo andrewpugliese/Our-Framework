@@ -653,6 +653,38 @@ VALUES
 
 GO
 
+EXEC B1.usp_UniqueIdsGetNextBlock 'UIControlCode', 1, @UIControlCode out
+
+INSERT INTO B1.UIControls
+(
+UIControlCode
+, UIControlURI
+, Description
+)
+VALUES
+(
+@UIControlCode
+, '/Account/EditProfile'
+, 'User Profile Settings'
+)
+
+GO
+
+INSERT INTO B1.AccessControlGroupRules
+(
+AccessControlGroupCode
+, UIControlCode
+, AccessDenied
+)
+VALUES
+(
+@guests
+, @UIControlCode
+, 1
+)
+
+GO
+
 INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (0, 'NotQueued')
 
 INSERT INTO B1.TaskStatusCodes (StatusCode, StatusName) VALUES (32, 'Queued')
